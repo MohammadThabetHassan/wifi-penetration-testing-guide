@@ -1,130 +1,114 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 500" width="860" height="500" font-family="'Cascadia Code','Fira Code','Consolas',monospace">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" font-family="'Segoe UI',system-ui,sans-serif">
 
-  <!-- Background -->
-  <rect width="860" height="500" fill="#0d1117"/>
+  <rect width="900" height="560" fill="#0d1117"/>
 
   <!-- Title -->
-  <text x="430" y="36" text-anchor="middle" fill="#e6edf3" font-size="16" font-weight="700" letter-spacing="0.5">Recommended Wireless Adapters — Monitor Mode &amp; Injection</text>
-  <text x="430" y="55" text-anchor="middle" fill="#8b949e" font-size="11">Attack capability depends on chipset, not brand. All adapters below confirmed for aircrack-ng suite.</text>
+  <text x="450" y="34" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="700">Recommended Wireless Adapters</text>
+  <text x="450" y="52" text-anchor="middle" fill="#8b949e" font-size="11">Attack capability depends on chipset, not brand name. All confirmed for monitor mode + injection.</text>
 
-  <!-- ── Column headers ── -->
-  <rect x="14" y="68" width="832" height="28" rx="4" fill="rgba(88,166,255,0.06)" stroke="#30363d" stroke-width="1"/>
-  <text x="30"  y="86" fill="#58a6ff" font-size="11" font-weight="700" letter-spacing="0.5">ADAPTER</text>
-  <text x="240" y="86" fill="#58a6ff" font-size="11" font-weight="700" letter-spacing="0.5">CHIPSET</text>
-  <text x="360" y="86" fill="#58a6ff" font-size="11" font-weight="700" letter-spacing="0.5">BAND</text>
-  <text x="440" y="86" fill="#58a6ff" font-size="11" font-weight="700" letter-spacing="0.5">MONITOR</text>
-  <text x="530" y="86" fill="#58a6ff" font-size="11" font-weight="700" letter-spacing="0.5">INJECTION</text>
-  <text x="620" y="86" fill="#58a6ff" font-size="11" font-weight="700" letter-spacing="0.5">DRIVER</text>
-  <text x="730" y="86" fill="#58a6ff" font-size="11" font-weight="700" letter-spacing="0.5">RATING</text>
+  <!-- Header row -->
+  <rect x="16" y="62" width="868" height="26" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="26"  y="79" fill="#58a6ff" font-size="10" font-weight="700">ADAPTER</text>
+  <text x="230" y="79" fill="#58a6ff" font-size="10" font-weight="700">CHIPSET</text>
+  <text x="340" y="79" fill="#58a6ff" font-size="10" font-weight="700">BAND</text>
+  <text x="420" y="79" fill="#58a6ff" font-size="10" font-weight="700">MONITOR</text>
+  <text x="500" y="79" fill="#58a6ff" font-size="10" font-weight="700">INJECT</text>
+  <text x="570" y="79" fill="#58a6ff" font-size="10" font-weight="700">DRIVER</text>
+  <text x="680" y="79" fill="#58a6ff" font-size="10" font-weight="700">NOTES</text>
 
-  <!-- ── Row 1: Alfa AWUS036ACH ── BEST ALL-ROUNDER -->
-  <rect x="14" y="100" width="832" height="52" rx="4" fill="rgba(63,185,80,0.05)" stroke="rgba(63,185,80,0.4)" stroke-width="1.2"/>
-  <!-- USB adapter icon -->
-  <rect x="22" y="110" width="28" height="18" rx="3" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
-  <rect x="30" y="128" width="12" height="8" rx="1" fill="#3fb950"/>
-  <line x1="30" y1="110" x2="26" y2="104" stroke="#3fb950" stroke-width="1.5"/>
-  <line x1="42" y1="110" x2="46" y2="104" stroke="#3fb950" stroke-width="1.5"/>
-  <text x="60" y="120" fill="#e6edf3" font-size="12" font-weight="700">Alfa AWUS036ACH</text>
-  <rect x="60" y="125" width="68" height="14" rx="7" fill="rgba(63,185,80,0.2)" stroke="rgba(63,185,80,0.5)" stroke-width="1"/>
-  <text x="94" y="136" text-anchor="middle" fill="#3fb950" font-size="9" font-weight="700">BEST CHOICE</text>
-  <text x="240" y="120" fill="#79c0ff" font-size="12" font-weight="600">RTL8812AU</text>
-  <text x="240" y="135" fill="#8b949e" font-size="10">Realtek — USB 3.0</text>
-  <text x="360" y="128" fill="#c9d1d9" font-size="11">2.4 + 5 GHz</text>
-  <text x="450" y="128" fill="#3fb950" font-size="14" font-weight="700">✓</text>
-  <text x="542" y="128" fill="#3fb950" font-size="14" font-weight="700">✓</text>
-  <text x="620" y="120" fill="#c9d1d9" font-size="11">88XXau</text>
-  <text x="620" y="134" fill="#8b949e" font-size="9">DKMS / apt</text>
-  <text x="730" y="121" fill="#3fb950" font-size="13" font-weight="700">★★★★★</text>
-  <text x="730" y="135" fill="#8b949e" font-size="9">High TX power</text>
+  <!-- ── Row 1: AWUS036ACH ── -->
+  <rect x="16" y="91" width="868" height="56" rx="4" fill="rgba(63,185,80,0.05)" stroke="rgba(63,185,80,0.4)" stroke-width="1.2"/>
+  <text x="26"  y="110" fill="#e6edf3" font-size="12" font-weight="700">Alfa AWUS036ACH</text>
+  <rect x="26"  y="115" width="60" height="14" rx="7" fill="rgba(63,185,80,0.2)"/>
+  <text x="56"  y="126" text-anchor="middle" fill="#3fb950" font-size="9" font-weight="700">TOP PICK</text>
+  <text x="230" y="110" fill="#79c0ff" font-size="12" font-weight="600">RTL8812AU</text>
+  <text x="230" y="125" fill="#8b949e" font-size="10">Realtek USB 3.0</text>
+  <text x="340" y="119" fill="#c9d1d9" font-size="11">2.4 + 5 GHz</text>
+  <text x="432" y="119" fill="#3fb950" font-size="16">✓</text>
+  <text x="512" y="119" fill="#3fb950" font-size="16">✓</text>
+  <text x="570" y="110" fill="#c9d1d9" font-size="11">88XXau (DKMS)</text>
+  <text x="570" y="124" fill="#3fb950" font-size="10">apt install</text>
+  <text x="680" y="110" fill="#c9d1d9" font-size="11">High TX power</text>
+  <text x="680" y="124" fill="#3fb950" font-size="10">★★★★★</text>
 
-  <!-- ── Row 2: Alfa AWUS036ACM ── -->
-  <rect x="14" y="156" width="832" height="48" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
-  <rect x="22" y="165" width="28" height="18" rx="3" fill="#161b22" stroke="#58a6ff" stroke-width="1.2"/>
-  <rect x="30" y="183" width="12" height="6" rx="1" fill="#58a6ff"/>
-  <line x1="30" y1="165" x2="26" y2="160" stroke="#58a6ff" stroke-width="1.2"/>
-  <line x1="42" y1="165" x2="46" y2="160" stroke="#58a6ff" stroke-width="1.2"/>
-  <text x="60" y="174" fill="#e6edf3" font-size="12" font-weight="700">Alfa AWUS036ACM</text>
-  <text x="60" y="188" fill="#8b949e" font-size="10">Stable, excellent driver support</text>
-  <text x="240" y="177" fill="#79c0ff" font-size="12" font-weight="600">MT7612U</text>
-  <text x="240" y="191" fill="#8b949e" font-size="10">MediaTek — USB 3.0</text>
-  <text x="360" y="184" fill="#c9d1d9" font-size="11">2.4 + 5 GHz</text>
-  <text x="450" y="184" fill="#3fb950" font-size="14" font-weight="700">✓</text>
-  <text x="542" y="184" fill="#3fb950" font-size="14" font-weight="700">✓</text>
-  <text x="620" y="177" fill="#c9d1d9" font-size="11">mt76x2u</text>
-  <text x="620" y="191" fill="#3fb950" font-size="9">Mainline kernel</text>
-  <text x="730" y="184" fill="#3fb950" font-size="13" font-weight="700">★★★★★</text>
+  <!-- ── Row 2: AWUS036ACM ── -->
+  <rect x="16" y="151" width="868" height="52" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="26"  y="170" fill="#e6edf3" font-size="12" font-weight="700">Alfa AWUS036ACM</text>
+  <text x="230" y="170" fill="#79c0ff" font-size="12" font-weight="600">MT7612U</text>
+  <text x="230" y="184" fill="#8b949e" font-size="10">MediaTek USB 3.0</text>
+  <text x="340" y="178" fill="#c9d1d9" font-size="11">2.4 + 5 GHz</text>
+  <text x="432" y="178" fill="#3fb950" font-size="16">✓</text>
+  <text x="512" y="178" fill="#3fb950" font-size="16">✓</text>
+  <text x="570" y="170" fill="#c9d1d9" font-size="11">mt76x2u</text>
+  <text x="570" y="184" fill="#3fb950" font-size="10">Mainline kernel</text>
+  <text x="680" y="170" fill="#c9d1d9" font-size="11">Very stable driver</text>
+  <text x="680" y="184" fill="#3fb950" font-size="10">★★★★★</text>
 
-  <!-- ── Row 3: Alfa AWUS036NHA ── -->
-  <rect x="14" y="208" width="832" height="48" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
-  <rect x="22" y="217" width="28" height="18" rx="3" fill="#161b22" stroke="#58a6ff" stroke-width="1.2"/>
-  <line x1="36" y1="217" x2="36" y2="210" stroke="#58a6ff" stroke-width="2"/>
-  <line x1="30" y1="212" x2="42" y2="212" stroke="#58a6ff" stroke-width="1"/>
-  <text x="60" y="226" fill="#e6edf3" font-size="12" font-weight="700">Alfa AWUS036NHA</text>
-  <text x="60" y="240" fill="#8b949e" font-size="10">Most stable — native kernel driver</text>
-  <text x="240" y="229" fill="#79c0ff" font-size="12" font-weight="600">AR9271</text>
-  <text x="240" y="243" fill="#8b949e" font-size="10">Atheros — USB 2.0</text>
-  <text x="360" y="236" fill="#c9d1d9" font-size="11">2.4 GHz only</text>
-  <text x="450" y="236" fill="#3fb950" font-size="14" font-weight="700">✓</text>
-  <text x="542" y="236" fill="#3fb950" font-size="14" font-weight="700">✓</text>
-  <text x="620" y="229" fill="#c9d1d9" font-size="11">ath9k_htc</text>
-  <text x="620" y="243" fill="#3fb950" font-size="9">Built-in kernel</text>
-  <text x="730" y="236" fill="#3fb950" font-size="13" font-weight="700">★★★★☆</text>
+  <!-- ── Row 3: AWUS036NHA ── -->
+  <rect x="16" y="207" width="868" height="52" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="26"  y="226" fill="#e6edf3" font-size="12" font-weight="700">Alfa AWUS036NHA</text>
+  <text x="230" y="226" fill="#79c0ff" font-size="12" font-weight="600">AR9271</text>
+  <text x="230" y="240" fill="#8b949e" font-size="10">Atheros USB 2.0</text>
+  <text x="340" y="234" fill="#c9d1d9" font-size="11">2.4 GHz</text>
+  <text x="432" y="234" fill="#3fb950" font-size="16">✓</text>
+  <text x="512" y="234" fill="#3fb950" font-size="16">✓</text>
+  <text x="570" y="226" fill="#c9d1d9" font-size="11">ath9k_htc</text>
+  <text x="570" y="240" fill="#3fb950" font-size="10">Built-in kernel</text>
+  <text x="680" y="226" fill="#c9d1d9" font-size="11">Most stable of all</text>
+  <text x="680" y="240" fill="#3fb950" font-size="10">★★★★☆</text>
 
-  <!-- ── Row 4: TP-Link TL-WN722N v1 ── -->
-  <rect x="14" y="260" width="832" height="48" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
-  <rect x="22" y="269" width="28" height="18" rx="3" fill="#161b22" stroke="#d29922" stroke-width="1.2"/>
-  <rect x="30" y="287" width="12" height="6" rx="1" fill="#d29922"/>
-  <text x="60" y="278" fill="#e6edf3" font-size="12" font-weight="700">TP-Link TL-WN722N</text>
-  <rect x="60" y="281" width="44" height="14" rx="7" fill="rgba(210,153,34,0.2)" stroke="rgba(210,153,34,0.5)" stroke-width="1"/>
-  <text x="82" y="292" text-anchor="middle" fill="#d29922" font-size="9" font-weight="700">v1 ONLY</text>
-  <text x="110" y="292" fill="#8b949e" font-size="10"> v2/v3 use Realtek — no injection</text>
-  <text x="240" y="281" fill="#79c0ff" font-size="12" font-weight="600">AR9271</text>
-  <text x="240" y="295" fill="#8b949e" font-size="10">Atheros (v1 only)</text>
-  <text x="360" y="288" fill="#c9d1d9" font-size="11">2.4 GHz only</text>
-  <text x="450" y="288" fill="#3fb950" font-size="14" font-weight="700">✓</text>
-  <text x="542" y="288" fill="#3fb950" font-size="14" font-weight="700">✓</text>
-  <text x="620" y="281" fill="#c9d1d9" font-size="11">ath9k_htc</text>
-  <text x="620" y="295" fill="#3fb950" font-size="9">Built-in kernel</text>
-  <text x="730" y="288" fill="#d29922" font-size="13" font-weight="700">★★★☆☆</text>
+  <!-- ── Row 4: TP-Link WN722N ── -->
+  <rect x="16" y="263" width="868" height="52" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="26"  y="282" fill="#e6edf3" font-size="12" font-weight="700">TP-Link TL-WN722N</text>
+  <rect x="26"  y="287" width="44" height="14" rx="7" fill="rgba(210,153,34,0.2)"/>
+  <text x="48"  y="298" text-anchor="middle" fill="#d29922" font-size="9" font-weight="700">v1 ONLY</text>
+  <text x="230" y="282" fill="#79c0ff" font-size="12" font-weight="600">AR9271</text>
+  <text x="230" y="296" fill="#8b949e" font-size="10">Atheros (v1 only)</text>
+  <text x="340" y="290" fill="#c9d1d9" font-size="11">2.4 GHz</text>
+  <text x="432" y="290" fill="#3fb950" font-size="16">✓</text>
+  <text x="512" y="290" fill="#3fb950" font-size="16">✓</text>
+  <text x="570" y="282" fill="#c9d1d9" font-size="11">ath9k_htc</text>
+  <text x="570" y="296" fill="#3fb950" font-size="10">Built-in kernel</text>
+  <text x="680" y="282" fill="#c9d1d9" font-size="11">v2/v3 = no inject</text>
+  <text x="680" y="296" fill="#d29922" font-size="10">★★★☆☆</text>
 
   <!-- ── Row 5: Panda PAU09 ── -->
-  <rect x="14" y="312" width="832" height="48" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
-  <rect x="22" y="321" width="28" height="18" rx="3" fill="#161b22" stroke="#58a6ff" stroke-width="1.2"/>
-  <line x1="36" y1="321" x2="36" y2="314" stroke="#58a6ff" stroke-width="2"/>
-  <text x="60" y="330" fill="#e6edf3" font-size="12" font-weight="700">Panda PAU09</text>
-  <text x="60" y="344" fill="#8b949e" font-size="10">Budget dual-band option</text>
-  <text x="240" y="333" fill="#79c0ff" font-size="12" font-weight="600">RT5572</text>
-  <text x="240" y="347" fill="#8b949e" font-size="10">Ralink — USB 2.0</text>
-  <text x="360" y="340" fill="#c9d1d9" font-size="11">2.4 + 5 GHz</text>
-  <text x="450" y="340" fill="#3fb950" font-size="14" font-weight="700">✓</text>
-  <text x="542" y="340" fill="#3fb950" font-size="14" font-weight="700">✓</text>
-  <text x="620" y="333" fill="#c9d1d9" font-size="11">rt2800usb</text>
-  <text x="620" y="347" fill="#3fb950" font-size="9">Mainline kernel</text>
-  <text x="730" y="340" fill="#3fb950" font-size="13" font-weight="700">★★★★☆</text>
+  <rect x="16" y="319" width="868" height="52" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="26"  y="338" fill="#e6edf3" font-size="12" font-weight="700">Panda PAU09</text>
+  <text x="230" y="338" fill="#79c0ff" font-size="12" font-weight="600">RT5572</text>
+  <text x="230" y="352" fill="#8b949e" font-size="10">Ralink USB 2.0</text>
+  <text x="340" y="346" fill="#c9d1d9" font-size="11">2.4 + 5 GHz</text>
+  <text x="432" y="346" fill="#3fb950" font-size="16">✓</text>
+  <text x="512" y="346" fill="#3fb950" font-size="16">✓</text>
+  <text x="570" y="338" fill="#c9d1d9" font-size="11">rt2800usb</text>
+  <text x="570" y="352" fill="#3fb950" font-size="10">Mainline kernel</text>
+  <text x="680" y="338" fill="#c9d1d9" font-size="11">Budget option</text>
+  <text x="680" y="352" fill="#3fb950" font-size="10">★★★★☆</text>
 
-  <!-- ── Row 6 — AVOID ── -->
-  <rect x="14" y="372" width="832" height="48" rx="4" fill="rgba(247,129,102,0.04)" stroke="rgba(247,129,102,0.3)" stroke-width="1" stroke-dasharray="6,3"/>
-  <text x="60" y="391" fill="#f78166" font-size="12" font-weight="700">Broadcom BCM / Intel iwlwifi / Built-in Laptop NIC</text>
-  <text x="60" y="407" fill="#f78166" font-size="10">Poor or no Linux monitor/injection support. Do NOT use these for this course.</text>
-  <text x="450" y="391" fill="#f78166" font-size="14" font-weight="700">✗</text>
-  <text x="542" y="391" fill="#f78166" font-size="14" font-weight="700">✗</text>
-  <text x="730" y="391" fill="#f78166" font-size="13" font-weight="700">★☆☆☆☆</text>
-  <rect x="14" y="372" width="160" height="48" rx="4" fill="rgba(247,129,102,0.08)" stroke="none"/>
-  <text x="94" y="391" text-anchor="middle" fill="#f78166" font-size="11" font-weight="700">AVOID</text>
-  <text x="94" y="407" text-anchor="middle" fill="#f78166" font-size="9">Not compatible</text>
+  <!-- ── AVOID row ── -->
+  <rect x="16" y="375" width="868" height="52" rx="4" fill="rgba(247,129,102,0.04)" stroke="rgba(247,129,102,0.3)" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="26"  y="394" fill="#f78166" font-size="12" font-weight="700">AVOID: Broadcom BCM / Intel iwlwifi / Built-in laptop NIC</text>
+  <text x="26"  y="412" fill="#f78166" font-size="11">No reliable monitor mode or injection support on Linux. Do NOT use for this course.</text>
+  <text x="432" y="394" fill="#f78166" font-size="16">✗</text>
+  <text x="512" y="394" fill="#f78166" font-size="16">✗</text>
+  <text x="680" y="394" fill="#f78166" font-size="10">★☆☆☆☆</text>
 
-  <!-- ── How to check chipset ── -->
-  <rect x="14" y="430" width="832" height="58" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
-  <text x="28" y="448" fill="#58a6ff" font-size="11" font-weight="700">HOW TO VERIFY CHIPSET</text>
-  <text x="28" y="464" fill="#c9d1d9" font-size="11" font-family="monospace">$ lsusb</text>
-  <text x="120" y="464" fill="#8b949e" font-size="11">→  Bus 001 Device 003: ID <tspan fill="#3fb950">0bda:8812</tspan> Realtek RTL8812AU   (0bda = Realtek, 8812 = RTL8812AU)</text>
-  <text x="28" y="480" fill="#c9d1d9" font-size="11" font-family="monospace">$ iw phy phy0 info | grep -A5 "Supported interface modes"</text>
-  <text x="400" y="480" fill="#8b949e" font-size="11">→  must include  <tspan fill="#3fb950">* monitor</tspan>  to be usable</text>
+  <!-- Divider -->
+  <line x1="16" y1="438" x2="884" y2="438" stroke="#30363d" stroke-width="1"/>
 
-  <!-- ── USB icon legend ── -->
-  <rect x="650" y="432" width="190" height="52" rx="4" fill="rgba(88,166,255,0.04)" stroke="#30363d" stroke-width="1"/>
-  <text x="745" y="448" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="700">USB TYPE MATTERS</text>
-  <text x="745" y="462" text-anchor="middle" fill="#8b949e" font-size="9">RTL8812AU needs USB 3.0 port</text>
-  <text x="745" y="476" text-anchor="middle" fill="#8b949e" font-size="9">USB 2.0 port → driver errors / low TX</text>
+  <!-- How to check section -->
+  <rect x="16" y="446" width="868" height="96" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="30"  y="465" fill="#58a6ff" font-size="11" font-weight="700">HOW TO IDENTIFY YOUR CHIPSET</text>
+
+  <text x="30"  y="484" fill="#3fb950" font-size="11" font-family="'Cascadia Code','Consolas',monospace">$ lsusb</text>
+  <text x="115" y="484" fill="#8b949e" font-size="11">→  Bus 001 Device 003: ID 0bda:8812 Realtek RTL8812AU   (0bda = Realtek, 8812 = RTL8812AU)</text>
+
+  <text x="30"  y="503" fill="#3fb950" font-size="11" font-family="'Cascadia Code','Consolas',monospace">$ dmesg | grep -i wlan</text>
+  <text x="200" y="503" fill="#8b949e" font-size="11">→  confirms driver loaded  (e.g. rtl8812au, ath9k_htc, mt76x2u)</text>
+
+  <text x="30"  y="522" fill="#3fb950" font-size="11" font-family="'Cascadia Code','Consolas',monospace">$ iw phy phy0 info | grep -A6 "interface modes"</text>
+  <text x="430" y="522" fill="#8b949e" font-size="11">→  must show  * monitor</text>
+
+  <text x="30"  y="536" fill="#8b949e" font-size="10">RTL8812AU requires USB 3.0 port — using USB 2.0 causes driver errors and reduced TX power</text>
 
 </svg>
