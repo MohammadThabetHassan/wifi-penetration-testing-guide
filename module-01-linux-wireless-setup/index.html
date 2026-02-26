@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 01 — Linux Wireless Lab Setup | WiFi Exploitation Course</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d1117;
+      --bg-card:   #161b22;
+      --bg-code:   #0d1117;
+      --border:    #30363d;
+      --accent:    #58a6ff;
+      --accent2:   #3fb950;
+      --accent3:   #f78166;
+      --warn:      #d29922;
+      --text:      #c9d1d9;
+      --text-dim:  #8b949e;
+      --text-head: #e6edf3;
+      --radius:    8px;
+      --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      --font-body: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); line-height: 1.7; font-size: 15px; }
+
+    .page-wrapper { display: flex; min-height: 100vh; }
+
+    aside.sidebar {
+      width: 260px; min-width: 260px;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    }
+
+    main { flex: 1; padding: 48px 64px; max-width: 960px; }
+
+    .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); }
+    .sidebar-logo .course-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 6px; }
+    .sidebar-logo h2 { font-size: 14px; color: var(--accent); font-weight: 600; }
+
+    .sidebar-nav { padding: 16px 0; }
+    .sidebar-section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); padding: 12px 20px 6px; }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 20px; color: var(--text-dim); text-decoration: none;
+      font-size: 13px; transition: all 0.15s; border-left: 2px solid transparent;
+    }
+    .sidebar-nav a:hover { color: var(--text); background: rgba(88,166,255,0.05); }
+    .sidebar-nav a.active { color: var(--accent); border-left-color: var(--accent); background: rgba(88,166,255,0.08); }
+    .sidebar-nav a .mod-num { font-size: 10px; background: var(--border); border-radius: 4px; padding: 2px 6px; font-family: var(--font-mono); min-width: 28px; text-align: center; }
+    .sidebar-nav a.active .mod-num { background: rgba(88,166,255,0.2); color: var(--accent); }
+
+    /* Header */
+    .module-header { margin-bottom: 40px; }
+    .breadcrumb { font-size: 12px; color: var(--text-dim); margin-bottom: 12px; }
+    .breadcrumb a { color: var(--accent); text-decoration: none; }
+    .module-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(63,185,80,0.12); border: 1px solid rgba(63,185,80,0.3); border-radius: 20px; padding: 4px 14px; font-size: 12px; color: var(--accent2); margin-bottom: 16px; }
+    .module-header h1 { font-size: 2.2rem; color: var(--text-head); line-height: 1.2; margin-bottom: 12px; }
+    .module-header .subtitle { font-size: 16px; color: var(--text-dim); max-width: 640px; }
+    .meta-row { display: flex; gap: 24px; margin-top: 20px; flex-wrap: wrap; }
+    .meta-pill { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); }
+    .meta-pill .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* Warning */
+    .warning-box { background: rgba(210,153,34,0.08); border: 1px solid rgba(210,153,34,0.4); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 36px; display: flex; gap: 12px; }
+    .warning-box .icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+    .warning-box p { font-size: 13px; color: var(--warn); line-height: 1.6; }
+    .warning-box strong { color: #e3b341; }
+
+    /* Sections */
+    section { margin-bottom: 52px; }
+    section h2 { font-size: 1.35rem; color: var(--text-head); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    section h2 .section-num { font-size: 12px; color: var(--accent); font-family: var(--font-mono); background: rgba(88,166,255,0.1); border-radius: 4px; padding: 2px 8px; }
+    section h3 { font-size: 1.05rem; color: var(--text-head); margin: 24px 0 10px; }
+    p { margin-bottom: 12px; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: rgba(88,166,255,0.06); }
+    th { padding: 10px 14px; text-align: left; color: var(--accent); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border); }
+    td { padding: 10px 14px; border-bottom: 1px solid rgba(48,54,61,0.6); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(88,166,255,0.03); }
+
+    /* Code */
+    code { font-family: var(--font-mono); font-size: 12px; background: rgba(110,118,129,0.15); padding: 2px 6px; border-radius: 4px; color: #79c0ff; }
+
+    /* Terminal block */
+    .terminal {
+      background: #010409;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 16px 0;
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+
+    .terminal-bar {
+      background: #161b22;
+      border-bottom: 1px solid var(--border);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .terminal-dots { display: flex; gap: 6px; }
+    .terminal-dots span { width: 10px; height: 10px; border-radius: 50%; }
+    .terminal-dots .d-red { background: #f78166; }
+    .terminal-dots .d-yellow { background: #e3b341; }
+    .terminal-dots .d-green { background: #3fb950; }
+
+    .terminal-title { font-size: 11px; color: var(--text-dim); margin-left: 4px; }
+
+    .terminal-copy {
+      margin-left: auto;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 10px;
+      color: var(--text-dim);
+      font-size: 11px;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all 0.15s;
+    }
+
+    .terminal-copy:hover { border-color: var(--accent); color: var(--accent); }
+    .terminal-copy.copied { border-color: var(--accent2); color: var(--accent2); }
+
+    .terminal-body { padding: 16px 18px; overflow-x: auto; line-height: 1.8; color: #c9d1d9; }
+    .terminal-body .prompt { color: var(--accent2); user-select: none; }
+    .terminal-body .cmd { color: #e6edf3; }
+    .terminal-body .out { color: var(--text-dim); }
+    .terminal-body .out-ok { color: var(--accent2); }
+    .terminal-body .out-err { color: var(--accent3); }
+    .terminal-body .out-warn { color: var(--warn); }
+    .terminal-body .cmt { color: #6e7681; font-style: italic; }
+    .terminal-body .flag { color: #ffa657; }
+    .terminal-body .str { color: #a5d6ff; }
+
+    /* Callout */
+    .callout { border-radius: var(--radius); padding: 14px 18px; margin: 16px 0; display: flex; gap: 12px; font-size: 13px; line-height: 1.6; }
+    .callout.info { background: rgba(88,166,255,0.07); border-left: 3px solid var(--accent); }
+    .callout.attack { background: rgba(247,129,102,0.07); border-left: 3px solid var(--accent3); }
+    .callout.tip { background: rgba(63,185,80,0.07); border-left: 3px solid var(--accent2); }
+    .callout.warn { background: rgba(210,153,34,0.07); border-left: 3px solid var(--warn); }
+    .callout .ci { flex-shrink: 0; font-size: 16px; }
+    .callout strong { color: var(--text-head); }
+
+    /* Adapter cards */
+    .adapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin: 20px 0; }
+    .adapter-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      transition: border-color 0.2s;
+    }
+    .adapter-card:hover { border-color: var(--accent); }
+    .adapter-card.recommended { border-color: rgba(63,185,80,0.4); }
+    .adapter-card .ac-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .adapter-card .ac-name { font-size: 14px; font-weight: 700; color: var(--text-head); }
+    .adapter-card .ac-chip { font-size: 11px; font-family: var(--font-mono); color: var(--accent); background: rgba(88,166,255,0.1); padding: 2px 8px; border-radius: 4px; }
+    .adapter-card .ac-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; }
+    .badge-rec { background: rgba(63,185,80,0.15); color: var(--accent2); }
+    .badge-ok { background: rgba(88,166,255,0.1); color: var(--accent); }
+    .adapter-card .ac-specs { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+    .adapter-card .ac-spec { font-size: 12px; color: var(--text-dim); display: flex; gap: 8px; }
+    .adapter-card .ac-spec .label { color: var(--text-dim); min-width: 60px; }
+    .adapter-card .ac-spec .val { color: var(--text); }
+
+    /* Checklist */
+    .checklist { list-style: none; margin: 16px 0; }
+    .checklist li {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 10px 14px; border-radius: 6px;
+      margin-bottom: 6px; font-size: 13px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      cursor: pointer; transition: all 0.15s; user-select: none;
+    }
+    .checklist li:hover { border-color: var(--accent); }
+    .checklist li.done { background: rgba(63,185,80,0.05); border-color: rgba(63,185,80,0.3); }
+    .checklist li .check-box {
+      width: 18px; height: 18px; min-width: 18px;
+      border: 2px solid var(--border); border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; transition: all 0.15s; margin-top: 1px;
+    }
+    .checklist li.done .check-box { background: var(--accent2); border-color: var(--accent2); color: #0d1117; }
+    .checklist li .check-text { line-height: 1.5; }
+    .checklist li.done .check-text { color: var(--text-dim); text-decoration: line-through; }
+
+    /* VM vs Bare metal comparison */
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 20px 0; }
+    .compare-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+    .compare-card h4 { font-size: 13px; font-weight: 700; color: var(--text-head); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .compare-card .pros, .compare-card .cons { margin-top: 10px; }
+    .compare-card .pros-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent2); margin-bottom: 6px; }
+    .compare-card .cons-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent3); margin-top: 10px; margin-bottom: 6px; }
+    .compare-card ul { list-style: none; }
+    .compare-card ul li { font-size: 12px; color: var(--text-dim); padding: 2px 0; display: flex; gap: 6px; }
+    .compare-card ul.pros-list li::before { content: '+'; color: var(--accent2); }
+    .compare-card ul.cons-list li::before { content: '−'; color: var(--accent3); }
+    .compare-card.recommended-env { border-color: rgba(63,185,80,0.4); }
+
+    /* Troubleshoot accordion */
+    .trouble-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .trouble-header {
+      padding: 14px 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-head);
+      transition: background 0.15s;
+    }
+    .trouble-header:hover { background: rgba(88,166,255,0.04); }
+    .trouble-header .problem { display: flex; align-items: center; gap: 10px; }
+    .trouble-header .prob-badge { font-size: 10px; padding: 2px 8px; background: rgba(247,129,102,0.15); color: var(--accent3); border-radius: 10px; }
+    .trouble-header .arrow { font-size: 10px; color: var(--text-dim); transition: transform 0.2s; }
+    .trouble-header.open .arrow { transform: rotate(90deg); }
+    .trouble-body { display: none; padding: 0 18px 16px; font-size: 13px; color: var(--text-dim); }
+    .trouble-body.show { display: block; }
+
+    /* Progress tracker */
+    .progress-tracker { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 24px 0; }
+    .progress-tracker h3 { font-size: 14px; color: var(--text-head); margin-bottom: 16px; }
+    .progress-bar-wrap { background: var(--bg); border-radius: 4px; height: 6px; margin-bottom: 8px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 4px; transition: width 0.4s ease; }
+    .progress-label { font-size: 12px; color: var(--text-dim); display: flex; justify-content: space-between; }
+
+    /* Nav footer */
+    .nav-footer { display: flex; justify-content: space-between; align-items: center; padding: 32px 0 0; border-top: 1px solid var(--border); margin-top: 48px; }
+    .nav-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius); text-decoration: none; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+    .nav-btn.next { background: var(--accent); color: #0d1117; }
+    .nav-btn.next:hover { background: #79c0ff; }
+    .nav-btn.prev { border: 1px solid var(--border); color: var(--text-dim); }
+    .nav-btn.prev:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+    @media (max-width: 900px) { aside.sidebar { display: none; } main { padding: 24px 20px; } .compare-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="course-title">WiFi Exploitation Course</div>
+      <h2>Wireless Security</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Tier 1 — Foundations</div>
+      <a href="../module-00-foundations/"><span class="mod-num">00</span> 802.11 Foundations</a>
+      <a href="#" class="active"><span class="mod-num">01</span> Linux Wireless Setup</a>
+      <a href="../module-02-monitor-mode/"><span class="mod-num">02</span> Monitor Mode</a>
+      <div class="sidebar-section-label">Tier 2 — Recon</div>
+      <a href="../module-03-reconnaissance/"><span class="mod-num">03</span> Reconnaissance</a>
+      <a href="../module-04-packet-analysis/"><span class="mod-num">04</span> Packet Analysis</a>
+      <div class="sidebar-section-label">Tier 3 — Legacy</div>
+      <a href="../module-05-wep-cracking/"><span class="mod-num">05</span> WEP Cracking</a>
+      <div class="sidebar-section-label">Tier 4 — WPA2-Personal</div>
+      <a href="../module-06-wpa2-handshake/"><span class="mod-num">06</span> WPA2 Handshake</a>
+      <a href="../module-07-wpa2-cracking/"><span class="mod-num">07</span> WPA2 Cracking</a>
+      <div class="sidebar-section-label">Tier 5 — Active Attacks</div>
+      <a href="../module-08-deauth-dos/"><span class="mod-num">08</span> Deauth &amp; DoS</a>
+      <div class="sidebar-section-label">Tier 6 — Rogue AP</div>
+      <a href="../module-09-evil-twin/"><span class="mod-num">09</span> Evil Twin</a>
+      <a href="../module-10-captive-portal/"><span class="mod-num">10</span> Captive Portal</a>
+      <div class="sidebar-section-label">Tier 7 — WPS</div>
+      <a href="../module-11-wps-attacks/"><span class="mod-num">11</span> WPS Attacks</a>
+      <div class="sidebar-section-label">Tier 8 — Modern</div>
+      <a href="../module-12-pmkid-attack/"><span class="mod-num">12</span> PMKID Attack</a>
+      <a href="../module-13-enterprise-wpa/"><span class="mod-num">13</span> WPA-Enterprise</a>
+      <div class="sidebar-section-label">Tier 9 — Chaining</div>
+      <a href="../module-14-attack-chaining/"><span class="mod-num">14</span> Attack Chaining</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main>
+    <div class="module-header">
+      <div class="breadcrumb"><a href="../">WiFi Exploitation Course</a> / Module 01</div>
+      <div class="module-badge">&#9679; Tier 1 &mdash; Foundations</div>
+      <h1>Linux Wireless Lab Setup</h1>
+      <p class="subtitle">Select the right hardware, configure your OS, install drivers, and build a safe isolated lab environment. Your effectiveness in every subsequent module depends on getting this right.</p>
+      <div class="meta-row">
+        <div class="meta-pill"><span class="dot" style="background:#3fb950"></span> Beginner</div>
+        <div class="meta-pill"><span class="dot" style="background:#58a6ff"></span> ~60 min setup</div>
+        <div class="meta-pill"><span class="dot" style="background:#d29922"></span> Hardware required</div>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <span class="icon">&#9888;</span>
+      <p><strong>Legal Notice:</strong> Configure your lab on <strong>equipment you own</strong>. Never practice these techniques on public or third-party networks. Unauthorized wireless attacks are criminal offenses worldwide.</p>
+    </div>
+
+    <!-- Section 1: Hardware -->
+    <section id="hardware">
+      <h2><span class="section-num">01</span> Choosing Your Wireless Adapter</h2>
+      <p>The most common reason beginners fail is using an incompatible adapter. The brand on the box is irrelevant — the <strong>chipset</strong> determines capability. You need monitor mode support and packet injection. The adapters below are confirmed working.</p>
+
+      <div class="diagram-placeholder" style="background:var(--bg-card);border:1px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;margin:20px 0;color:var(--text-dim);font-size:13px;">
+        <img src="../assets/images/placeholder-wireless-adapters.png" alt="Recommended wireless adapters — Alfa AWUS036ACH, AWUS036NHA, Panda PAU09" style="max-width:100%;opacity:0.5;" />
+        <p style="margin-top:8px;font-style:italic;">[ Placeholder: Photo of recommended wireless adapters ]</p>
+      </div>
+
+      <div class="adapter-grid">
+        <div class="adapter-card recommended">
+          <div class="ac-top">
+            <div>
+              <div class="ac-name">Alfa AWUS036ACH</div>
+              <div class="ac-chip">RTL8812AU</div>
+            </div>
+            <span class="ac-badge badge-rec">BEST CHOICE</span>
+          </div>
+          <div class="ac-specs">
+            <div class="ac-spec"><span class="label">Band:</span><span class="val">2.4 &amp; 5 GHz</span></div>
+            <div class="ac-spec"><span class="label">Injection:</span><span class="val" style="color:var(--accent2)">&#10003; Yes</span></div>
+            <div class="ac-spec"><span class="label">Driver:</span><span class="val">rtl88xxau-dkms</span></div>
+            <div class="ac-spec"><span class="label">Notes:</span><span class="val">Dual-band, high TX power, USB 3.0</span></div>
+          </div>
+        </div>
+        <div class="adapter-card recommended">
+          <div class="ac-top">
+            <div>
+              <div class="ac-name">Alfa AWUS036NHA</div>
+              <div class="ac-chip">AR9271</div>
+            </div>
+            <span class="ac-badge badge-rec">MOST STABLE</span>
+          </div>
+          <div class="ac-specs">
+            <div class="ac-spec"><span class="label">Band:</span><span class="val">2.4 GHz only</span></div>
+            <div class="ac-spec"><span class="label">Injection:</span><span class="val" style="color:var(--accent2)">&#10003; Yes</span></div>
+            <div class="ac-spec"><span class="label">Driver:</span><span class="val">ath9k_htc (built-in)</span></div>
+            <div class="ac-spec"><span class="label">Notes:</span><span class="val">Native kernel — no driver install</span></div>
+          </div>
+        </div>
+        <div class="adapter-card">
+          <div class="ac-top">
+            <div>
+              <div class="ac-name">Alfa AWUS036ACM</div>
+              <div class="ac-chip">MT7612U</div>
+            </div>
+            <span class="ac-badge badge-ok">RECOMMENDED</span>
+          </div>
+          <div class="ac-specs">
+            <div class="ac-spec"><span class="label">Band:</span><span class="val">2.4 &amp; 5 GHz</span></div>
+            <div class="ac-spec"><span class="label">Injection:</span><span class="val" style="color:var(--accent2)">&#10003; Yes</span></div>
+            <div class="ac-spec"><span class="label">Driver:</span><span class="val">mt76x2u (built-in 4.19+)</span></div>
+            <div class="ac-spec"><span class="label">Notes:</span><span class="val">Excellent stability, mainline kernel</span></div>
+          </div>
+        </div>
+        <div class="adapter-card">
+          <div class="ac-top">
+            <div>
+              <div class="ac-name">TP-Link TL-WN722N</div>
+              <div class="ac-chip">AR9271 (v1 only!)</div>
+            </div>
+            <span class="ac-badge badge-ok">BUDGET</span>
+          </div>
+          <div class="ac-specs">
+            <div class="ac-spec"><span class="label">Band:</span><span class="val">2.4 GHz only</span></div>
+            <div class="ac-spec"><span class="label">Injection:</span><span class="val" style="color:var(--accent2)">&#10003; v1 only</span></div>
+            <div class="ac-spec"><span class="label">Driver:</span><span class="val">ath9k_htc (built-in)</span></div>
+            <div class="ac-spec"><span class="label">Notes:</span><span class="val" style="color:var(--accent3)">v2/v3 use Realtek — no injection</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <span class="ci">&#9888;</span>
+        <div><strong>TP-Link Version Warning:</strong> The TL-WN722N v2 and v3 use a different chipset (RTL8188EUS) that <em>does not support packet injection</em>. Check the product label — v1 is the only usable version. When in doubt, buy Alfa.</div>
+      </div>
+
+      <h3>Identifying Your Chipset</h3>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">kali@kali:~$ — Identify USB adapter chipset</span>
+          <button class="terminal-copy" onclick="copyTerminal(this, 'term-lsusb')">Copy</button>
+        </div>
+        <div class="terminal-body" id="term-lsusb">
+<span class="prompt">kali@kali:~$ </span><span class="cmd">lsusb</span>
+<span class="out">Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub</span>
+<span class="out-ok">Bus 001 Device 004: ID 0bda:8812 Realtek Semiconductor Corp. RTL8812AU</span>
+<span class="out">Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub</span>
+<span class="cmt"># Vendor 0bda = Realtek, Product 8812 = RTL8812AU ← confirmed chipset</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">dmesg | tail <span class="flag">-5</span></span>
+<span class="out-ok">[ 4823.112] usb 1-2: new high-speed USB device number 4 using xhci_hcd</span>
+<span class="out-ok">[ 4823.263] usb 1-2: New USB device found, idVendor=0bda, idProduct=8812</span>
+<span class="out-ok">[ 4823.541] usb 1-2: Product: RTL8812AU</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: OS -->
+    <section id="os">
+      <h2><span class="section-num">02</span> OS Environment — VM vs. Bare Metal</h2>
+      <p>Your choice of environment has a direct impact on injection reliability. Understand the trade-offs before committing.</p>
+
+      <div class="compare-grid">
+        <div class="compare-card">
+          <h4>&#128187; Virtual Machine</h4>
+          <div class="pros">
+            <div class="pros-label">Pros</div>
+            <ul class="pros-list">
+              <li>Easy snapshots / rollback</li>
+              <li>Runs on any host OS</li>
+              <li>Disposable environment</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <div class="cons-label">Cons</div>
+            <ul class="cons-list">
+              <li>USB passthrough unreliable</li>
+              <li>Injection may fail/drop</li>
+              <li>Channel hopping broken</li>
+              <li>Internal adapter inaccessible</li>
+            </ul>
+          </div>
+        </div>
+        <div class="compare-card recommended-env">
+          <h4>&#9881; Bare Metal <span style="font-size:10px;color:var(--accent2);margin-left:4px;">RECOMMENDED</span></h4>
+          <div class="pros">
+            <div class="pros-label">Pros</div>
+            <ul class="pros-list">
+              <li>Full hardware access</li>
+              <li>Reliable injection</li>
+              <li>Native kernel drivers</li>
+              <li>Best performance</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <div class="cons-label">Cons</div>
+            <ul class="cons-list">
+              <li>Dedicated machine or dual-boot</li>
+              <li>Less convenient for daily use</li>
+            </ul>
+          </div>
+        </div>
+        <div class="compare-card">
+          <h4>&#128190; Live USB Boot</h4>
+          <div class="pros">
+            <div class="pros-label">Pros</div>
+            <ul class="pros-list">
+              <li>No installation needed</li>
+              <li>Full hardware access</li>
+              <li>Portable</li>
+            </ul>
+          </div>
+          <div class="cons">
+            <div class="cons-label">Cons</div>
+            <ul class="cons-list">
+              <li>No persistence (unless configured)</li>
+              <li>Slower than bare metal install</li>
+              <li>Wordlists lost on reboot</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Driver Installation -->
+    <section id="drivers">
+      <h2><span class="section-num">03</span> Driver Installation</h2>
+
+      <h3>RTL8812AU (Alfa AWUS036ACH) — Most Common</h3>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">kali@kali:~$ — Install RTL8812AU driver via DKMS</span>
+          <button class="terminal-copy" onclick="copyTerminal(this, 'term-driver')">Copy</button>
+        </div>
+        <div class="terminal-body" id="term-driver">
+<span class="cmt"># Install the packaged DKMS driver (Kali repo)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo apt install <span class="flag">-y</span> realtek-rtl88xxau-dkms</span>
+<span class="out">Reading package lists... Done</span>
+<span class="out">Building dependency tree... Done</span>
+<span class="out-ok">Setting up realtek-rtl88xxau-dkms (5.6.4.2+git20231101-0kali1) ...</span>
+<span class="out-ok">DKMS: install completed.</span>
+
+<span class="cmt"># Verify the module is loaded</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">lsmod | grep 88XXau</span>
+<span class="out-ok">88XXau               3477504  0</span>
+
+<span class="cmt"># If not auto-loaded, load it manually</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo modprobe 88XXau</span>
+
+<span class="cmt"># Confirm interface appeared</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">iw dev</span>
+<span class="out-ok">phy#1</span>
+<span class="out-ok">    Interface wlan1</span>
+<span class="out">        ifindex 4</span>
+<span class="out">        addr 00:c0:ca:a1:b2:c3</span>
+<span class="out">        type managed</span>
+        </div>
+      </div>
+
+      <h3>AR9271 — Native Kernel (No Action Needed)</h3>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">kali@kali:~$ — Verify AR9271 (ath9k_htc) is loaded</span>
+          <button class="terminal-copy" onclick="copyTerminal(this, 'term-ar9')">Copy</button>
+        </div>
+        <div class="terminal-body" id="term-ar9">
+<span class="prompt">kali@kali:~$ </span><span class="cmd">dmesg | grep ath9k</span>
+<span class="out-ok">ath9k_htc: Firmware ath9k_htc/htc_9271-1.4.0.fw loaded successfully</span>
+<span class="out-ok">ath9k_htc 1-1.4:1.0: ath9k_htc: HTC initialized with 33 credits</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">lsmod | grep ath9k_htc</span>
+<span class="out-ok">ath9k_htc              65536  0</span>
+<span class="out">ath9k_common           24576  1 ath9k_htc</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: Core Tools -->
+    <section id="tools">
+      <h2><span class="section-num">04</span> Core Wireless Commands</h2>
+
+      <h3>Identifying and Inspecting Interfaces</h3>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">kali@kali:~$ — Interface discovery and inspection</span>
+          <button class="terminal-copy" onclick="copyTerminal(this, 'term-iw')">Copy</button>
+        </div>
+        <div class="terminal-body" id="term-iw">
+<span class="cmt"># List all wireless interfaces</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">iw dev</span>
+<span class="out-ok">phy#0</span>
+<span class="out">    Interface wlan0</span>
+<span class="out">        type managed</span>
+<span class="out">        addr aa:bb:cc:dd:ee:ff</span>
+<span class="out">        channel 6 (2437 MHz)</span>
+
+<span class="cmt"># Check if phy supports monitor mode</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">iw phy phy0 info | grep <span class="flag">-A</span> <span class="str">10</span> <span class="str">"Supported interface modes"</span></span>
+<span class="out">Supported interface modes:</span>
+<span class="out">     * IBSS</span>
+<span class="out-ok">     * managed</span>
+<span class="out-ok">     * AP</span>
+<span class="out-ok">     * monitor   ← Must be present!</span>
+<span class="out">     * P2P-client</span>
+
+<span class="cmt"># Legacy tool — still useful for quick checks</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">iwconfig wlan0</span>
+<span class="out">wlan0  IEEE 802.11  ESSID:off/any  Mode:Managed</span>
+<span class="out">       Frequency:2.412 GHz  Access Point: Not-Associated</span>
+<span class="out">       Tx-Power=20 dBm  Retry short limit:7</span>
+        </div>
+      </div>
+
+      <h3>Fixing RF Kill &amp; Blocked Adapters</h3>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">kali@kali:~$ — rfkill troubleshooting</span>
+          <button class="terminal-copy" onclick="copyTerminal(this, 'term-rfkill')">Copy</button>
+        </div>
+        <div class="terminal-body" id="term-rfkill">
+<span class="prompt">kali@kali:~$ </span><span class="cmd">rfkill list</span>
+<span class="out">0: phy0: Wireless LAN</span>
+<span class="out">   Soft blocked: no</span>
+<span class="out">   Hard blocked: no</span>
+<span class="out-warn">1: phy1: Wireless LAN</span>
+<span class="out-warn">   Soft blocked: yes   ← blocked! fix with rfkill unblock</span>
+<span class="out-warn">   Hard blocked: no</span>
+
+<span class="cmt"># Unblock by index</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo rfkill unblock <span class="str">1</span></span>
+<span class="cmt"># Or unblock everything</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo rfkill unblock all</span>
+        </div>
+      </div>
+
+      <h3>Killing Interfering Processes</h3>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">kali@kali:~$ — airmon-ng check kill</span>
+          <button class="terminal-copy" onclick="copyTerminal(this, 'term-kill')">Copy</button>
+        </div>
+        <div class="terminal-body" id="term-kill">
+<span class="cmt"># Check what processes might interfere</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airmon-ng check</span>
+<span class="out">Found 2 processes that could cause trouble.</span>
+<span class="out-warn">  PID  Name</span>
+<span class="out-warn">  743  NetworkManager</span>
+<span class="out-warn">  891  wpa_supplicant</span>
+
+<span class="cmt"># Kill them all at once</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airmon-ng check kill</span>
+<span class="out-ok">Killing these processes...</span>
+<span class="out-ok">  PID Name</span>
+<span class="out-ok">  743 NetworkManager</span>
+<span class="out-ok">  891 wpa_supplicant</span>
+
+<span class="cmt"># Restore when done</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo systemctl start NetworkManager</span>
+        </div>
+      </div>
+
+      <h3>MAC Address Spoofing</h3>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">kali@kali:~$ — MAC spoofing with macchanger</span>
+          <button class="terminal-copy" onclick="copyTerminal(this, 'term-mac')">Copy</button>
+        </div>
+        <div class="terminal-body" id="term-mac">
+<span class="cmt"># Always bring interface down before changing MAC</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ip link set wlan0 down</span>
+
+<span class="cmt"># Assign a random MAC address</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo macchanger <span class="flag">-r</span> wlan0</span>
+<span class="out">Current MAC:   00:c0:ca:a1:b2:c3 (Alfa, Inc.)</span>
+<span class="out-ok">Permanent MAC: 00:c0:ca:a1:b2:c3 (Alfa, Inc.)</span>
+<span class="out-ok">New MAC:       36:4a:c9:8f:12:7e (unknown)</span>
+
+<span class="cmt"># Bring interface back up</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ip link set wlan0 up</span>
+
+<span class="cmt"># Restore original hardware MAC</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ip link set wlan0 down &amp;&amp; sudo macchanger <span class="flag">-p</span> wlan0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Pre-Flight Checklist -->
+    <section id="checklist">
+      <h2><span class="section-num">05</span> Pre-Flight Checklist</h2>
+      <p>Complete this checklist before starting any attack module. Click each item to mark it done.</p>
+
+      <div class="progress-tracker">
+        <h3>Setup Progress</h3>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+        </div>
+        <div class="progress-label">
+          <span id="progressText">0 / 8 complete</span>
+          <span id="progressPct">0%</span>
+        </div>
+      </div>
+
+      <ul class="checklist" id="setupChecklist">
+        <li onclick="toggleCheck(this)"><span class="check-box"></span><span class="check-text"><strong>Adapter plugged in</strong> — USB adapter connected; <code>lsusb</code> shows the device.</span></li>
+        <li onclick="toggleCheck(this)"><span class="check-box"></span><span class="check-text"><strong>Driver loaded</strong> — <code>lsmod | grep &lt;chipset&gt;</code> confirms module is active.</span></li>
+        <li onclick="toggleCheck(this)"><span class="check-box"></span><span class="check-text"><strong>Interface visible</strong> — <code>iw dev</code> shows a wireless interface (e.g., wlan1).</span></li>
+        <li onclick="toggleCheck(this)"><span class="check-box"></span><span class="check-text"><strong>Monitor mode supported</strong> — <code>iw phy phy0 info</code> lists "monitor" in supported modes.</span></li>
+        <li onclick="toggleCheck(this)"><span class="check-box"></span><span class="check-text"><strong>Interfering processes killed</strong> — <code>sudo airmon-ng check kill</code> completed.</span></li>
+        <li onclick="toggleCheck(this)"><span class="check-box"></span><span class="check-text"><strong>Lab router configured</strong> — Target AP is set up with WPA2-PSK on isolated network.</span></li>
+        <li onclick="toggleCheck(this)"><span class="check-box"></span><span class="check-text"><strong>Toolchain installed</strong> — <code>aircrack-ng --version</code> and <code>hashcat --version</code> return without error.</span></li>
+        <li onclick="toggleCheck(this)"><span class="check-box"></span><span class="check-text"><strong>Wordlist available</strong> — <code>ls /usr/share/wordlists/rockyou.txt</code> succeeds (gunzip if needed).</span></li>
+      </ul>
+    </section>
+
+    <!-- Section 6: Troubleshooting -->
+    <section id="troubleshoot">
+      <h2><span class="section-num">06</span> Troubleshooting Common Issues</h2>
+
+      <div class="trouble-item">
+        <div class="trouble-header" onclick="toggleTrouble(this)">
+          <div class="problem"><span class="prob-badge">ERROR</span> Interface not appearing after plugging in adapter</div>
+          <span class="arrow">&#9654;</span>
+        </div>
+        <div class="trouble-body">
+          <div class="terminal" style="margin-top:10px;">
+            <div class="terminal-bar">
+              <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+              <span class="terminal-title">Fix: adapter not detected</span>
+            </div>
+            <div class="terminal-body">
+<span class="prompt">kali@kali:~$ </span><span class="cmd">dmesg | tail <span class="flag">-20</span></span>
+<span class="cmt"># Look for USB attach messages and any driver errors</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">lsusb</span>
+<span class="cmt"># If device shows in lsusb but no interface, try loading driver:</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo modprobe 88XXau</span>
+<span class="cmt"># For AR9271:</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo modprobe ath9k_htc</span>
+<span class="cmt"># RTL8812AU: plug into USB 3.0 port (blue port)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-header" onclick="toggleTrouble(this)">
+          <div class="problem"><span class="prob-badge">ERROR</span> airmon-ng fails to enable monitor mode</div>
+          <span class="arrow">&#9654;</span>
+        </div>
+        <div class="trouble-body">
+          <div class="terminal" style="margin-top:10px;">
+            <div class="terminal-bar">
+              <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+              <span class="terminal-title">Fix: monitor mode failure</span>
+            </div>
+            <div class="terminal-body">
+<span class="cmt"># Kill interfering processes first</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airmon-ng check kill</span>
+<span class="cmt"># Try manual monitor mode as fallback</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ip link set wlan1 down</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iw dev wlan1 set type monitor</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ip link set wlan1 up</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">iwconfig wlan1 | grep Mode</span>
+<span class="out-ok">Mode:Monitor  ← success</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-header" onclick="toggleTrouble(this)">
+          <div class="problem"><span class="prob-badge">ERROR</span> Packet injection test fails — "No answer from AP"</div>
+          <span class="arrow">&#9654;</span>
+        </div>
+        <div class="trouble-body">
+          <div class="terminal" style="margin-top:10px;">
+            <div class="terminal-bar">
+              <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+              <span class="terminal-title">Fix: injection test failure</span>
+            </div>
+            <div class="terminal-body">
+<span class="cmt"># Lock to the AP's channel first</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iw dev wlan1mon set channel <span class="str">6</span></span>
+<span class="cmt"># Then retry injection test</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">-9</span> wlan1mon</span>
+<span class="out-ok">Trying broadcast probe requests...</span>
+<span class="out-ok">Injection is working!</span>
+<span class="cmt"># If still failing, try a powered USB hub or different port</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-header" onclick="toggleTrouble(this)">
+          <div class="problem"><span class="prob-badge">ERROR</span> Soft-blocked adapter — rfkill shows "blocked: yes"</div>
+          <span class="arrow">&#9654;</span>
+        </div>
+        <div class="trouble-body">
+          <div class="terminal" style="margin-top:10px;">
+            <div class="terminal-bar">
+              <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+              <span class="terminal-title">Fix: rfkill soft block</span>
+            </div>
+            <div class="terminal-body">
+<span class="prompt">kali@kali:~$ </span><span class="cmd">rfkill list</span>
+<span class="out-warn">1: phy1: Wireless LAN</span>
+<span class="out-warn">   Soft blocked: yes</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo rfkill unblock all</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">rfkill list</span>
+<span class="out-ok">1: phy1: Wireless LAN</span>
+<span class="out-ok">   Soft blocked: no</span>
+<span class="out-ok">   Hard blocked: no</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Nav -->
+    <div class="nav-footer">
+      <a href="../module-00-foundations/" class="nav-btn prev">&#8592; Module 00: Foundations</a>
+      <a href="../module-02-monitor-mode/" class="nav-btn next">Module 02: Monitor Mode &#8594;</a>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Copy terminal content
+  function copyTerminal(btn, id) {
+    const el = document.getElementById(id);
+    const lines = el.querySelectorAll('.cmd, .out, .out-ok, .out-err, .out-warn, .cmt');
+    let text = '';
+    el.childNodes.forEach(node => {
+      if (node.nodeType === Node.TEXT_NODE) text += node.textContent;
+      else if (node.classList && (node.classList.contains('cmd') || node.classList.contains('out') || node.classList.contains('cmt') || node.classList.contains('out-ok') || node.classList.contains('out-warn'))) {
+        text += node.textContent + '\n';
+      } else if (node.classList && node.classList.contains('prompt')) {
+        // skip
+      } else {
+        text += node.textContent;
+      }
+    });
+    // simpler: just get all text content except prompts
+    const promptEls = el.querySelectorAll('.prompt');
+    let fullText = el.innerText || el.textContent;
+    // strip prompt text
+    promptEls.forEach(p => { fullText = fullText.replace(p.textContent, ''); });
+    navigator.clipboard.writeText(fullText.trim()).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // Checklist with progress bar
+  function toggleCheck(li) {
+    li.classList.toggle('done');
+    const checkBox = li.querySelector('.check-box');
+    checkBox.textContent = li.classList.contains('done') ? '✓' : '';
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const total = document.querySelectorAll('#setupChecklist li').length;
+    const done = document.querySelectorAll('#setupChecklist li.done').length;
+    const pct = Math.round((done / total) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = done + ' / ' + total + ' complete';
+    document.getElementById('progressPct').textContent = pct + '%';
+  }
+
+  // Trouble accordion
+  function toggleTrouble(header) {
+    const body = header.nextElementSibling;
+    const isOpen = header.classList.contains('open');
+    // close all
+    document.querySelectorAll('.trouble-header.open').forEach(h => {
+      h.classList.remove('open');
+      h.nextElementSibling.classList.remove('show');
+    });
+    if (!isOpen) {
+      header.classList.add('open');
+      body.classList.add('show');
+    }
+  }
+</script>
+</body>
+</html>
