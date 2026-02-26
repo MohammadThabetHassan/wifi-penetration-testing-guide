@@ -148,6 +148,27 @@
     .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
     .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
 
+    /* Quiz */
+    .quiz-container { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin:24px 0; }
+    .quiz-container h3 { font-size:14px; color:var(--accent); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .quiz-question { margin-bottom:28px; }
+    .quiz-question .q-text { font-size:14px; color:var(--text-head); margin-bottom:14px; line-height:1.5; }
+    .quiz-question .q-num { font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:6px; }
+    .option-list { display:flex; flex-direction:column; gap:8px; }
+    .option-btn { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 16px; color:var(--text); text-align:left; cursor:pointer; font-size:13px; transition:all 0.15s; font-family:var(--font-body); }
+    .option-btn:hover { border-color:var(--accent); color:var(--text-head); }
+    .option-btn.correct { border-color:var(--accent2); background:rgba(63,185,80,0.08); color:var(--accent2); }
+    .option-btn.wrong { border-color:var(--accent3); background:rgba(247,129,102,0.08); color:var(--accent3); }
+    .option-btn:disabled { cursor:default; }
+    .quiz-feedback { margin-top:10px; font-size:13px; padding:10px 14px; border-radius:6px; display:none; line-height:1.5; }
+    .quiz-feedback.show { display:block; }
+    .quiz-feedback.correct-fb { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.3); color:var(--accent2); }
+    .quiz-feedback.wrong-fb { background:rgba(247,129,102,0.08); border:1px solid rgba(247,129,102,0.3); color:var(--accent3); }
+    .quiz-score { display:none; text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
+    .quiz-score.show { display:block; }
+    .score-num { font-size:3rem; font-weight:700; color:var(--accent); font-family:var(--font-mono); }
+    .score-label { font-size:14px; color:var(--text-dim); margin-top:4px; }
+
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:var(--bg); }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
@@ -520,6 +541,260 @@
       </div>
     </section>
 
+    <!-- Section 7: Full Flag Reference -->
+    <section id="flags">
+      <h2><span class="section-num">07</span> Full airodump-ng Flag Reference</h2>
+      <p>Every important flag — with its argument type, explanation, and the attack module that uses it.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Flag</th><th>Argument</th><th>Description</th><th>Used In</th></tr></thead>
+          <tbody>
+            <tr><td><code>-c</code></td><td><code>&lt;ch&gt;</code></td><td>Lock to channel(s). Comma-separate: <code>-c 1,6,11</code></td><td>Modules 05–08</td></tr>
+            <tr><td><code>--band</code></td><td><code>a/b/g/abg</code></td><td><code>a</code>=5GHz, <code>g</code>=2.4GHz, <code>abg</code>=both bands</td><td>Recon, Module 03</td></tr>
+            <tr><td><code>--bssid</code></td><td><code>&lt;MAC&gt;</code></td><td>Filter display + capture to one AP</td><td>All attack modules</td></tr>
+            <tr><td><code>--essid</code></td><td><code>&lt;name&gt;</code></td><td>Filter by SSID name</td><td>Targeted recon</td></tr>
+            <tr><td><code>-w</code></td><td><code>&lt;prefix&gt;</code></td><td>Write capture files (auto-increments: <code>-01.cap</code>, <code>-02.cap</code>…)</td><td>All capture modules</td></tr>
+            <tr><td><code>--output-format</code></td><td><code>pcap,ivs,csv…</code></td><td>File formats. <code>pcap</code>=standard; <code>ivs</code>=WEP only; <code>csv</code>=metadata</td><td>Module 05 (ivs), 06 (pcap)</td></tr>
+            <tr><td><code>--wps</code></td><td>—</td><td>Show WPS version column in AP table</td><td>Module 11 target ID</td></tr>
+            <tr><td><code>--manufacturer</code></td><td>—</td><td>Resolve OUI → vendor name in output</td><td>Asset identification</td></tr>
+            <tr><td><code>--uptime</code></td><td>—</td><td>Estimate AP uptime from beacon sequence numbers</td><td>Recon reporting</td></tr>
+            <tr><td><code>--gpsd</code></td><td>—</td><td>Tag captures with GPS coordinates (requires <code>gpsd</code> running)</td><td>Wardriving</td></tr>
+            <tr><td><code>--berlin</code></td><td><code>&lt;secs&gt;</code></td><td>Seconds before removing APs not heard recently (default: 120)</td><td>Long captures</td></tr>
+            <tr><td><code>-t</code></td><td><code>&lt;secs&gt;</code></td><td>Stop after N seconds (scripted capture)</td><td>Automated workflows</td></tr>
+            <tr><td><code>--beacons</code></td><td>—</td><td>Record all beacon frames (not just first per AP)</td><td>RSN IE analysis</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 8: WPS Detection -->
+    <section id="wps">
+      <h2><span class="section-num">08</span> WPS Detection</h2>
+      <p>WPS-enabled APs are targets for Pixie Dust and PIN brute force attacks (Module 11). Detecting WPS during recon is essential.</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">WPS detection with airodump-ng and wash</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-wps')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-wps"><span class="cmt"># airodump-ng: --wps flag adds WPS column</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airodump-ng <span class="flag">--wps</span> <span class="flag">--manufacturer</span> wlan0mon</span>
+<span class="out"> BSSID              ...  WPS   MANUF    ESSID</span>
+<span class="out-ok"> AA:BB:CC:DD:EE:FF  ...  2.0   TP-LINK  HomeNet   ← WPS 2.0 enabled</span>
+<span class="out-warn"> 00:11:22:33:44:55  ...  1.0   Netgear  OldAP     ← WPS 1.0 (Pixie Dust target!)</span>
+<span class="out">  11:22:33:44:55:66  ...   --   ASUS     Office    ← WPS disabled</span>
+
+<span class="cmt"># wash: dedicated WPS scanner (included with reaver)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo wash <span class="flag">-i</span> wlan0mon</span>
+<span class="out"> BSSID               Ch  dBm  WPS  Lck  Vendor    ESSID</span>
+<span class="out-ok"> AA:BB:CC:DD:EE:FF    6  -45  2.0  No   TP-LINK   HomeNet</span>
+<span class="out-warn"> 00:11:22:33:44:55    1  -52  1.0  No   Netgear   OldAP    ← unlocked = attackable</span>
+<span class="out-err"> 11:22:33:44:55:66   11  -67  2.0  Yes  ASUS      Office   ← locked = brute-force locked out</span>
+<span class="cmt"># Lck=Yes means too many failed PINs triggered WPS lockout</span></div>
+      </div>
+
+      <div class="callout attack">
+        <span class="ci">&#9889;</span>
+        <div><strong>Attack selection:</strong> WPS 1.0 + Lck=No → immediate Pixie Dust attempt. WPS 2.0 + Lck=No → PIN brute force. WPS Lck=Yes → wait for lockout to expire (usually 60 sec) or try a different time. Full attack in Module 11.</div>
+      </div>
+    </section>
+
+    <!-- Section 9: Alternative Tools -->
+    <section id="tools">
+      <h2><span class="section-num">09</span> Alternative Recon Tools</h2>
+      <p>airodump-ng is not the only tool for wireless recon. Each alternative has distinct advantages.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Feature</th><th><code>airodump-ng</code></th><th><code>kismet</code></th><th><code>hcxdumptool</code></th><th><code>wash</code></th></tr></thead>
+          <tbody>
+            <tr><td>AP discovery</td><td style="color:var(--accent2)">✓</td><td style="color:var(--accent2)">✓</td><td style="color:var(--accent2)">✓</td><td style="color:var(--accent2)">✓</td></tr>
+            <tr><td>Client detection</td><td style="color:var(--accent2)">✓</td><td style="color:var(--accent2)">✓</td><td style="color:var(--accent2)">✓</td><td style="color:var(--accent3)">✗</td></tr>
+            <tr><td>WPS detection</td><td style="color:var(--accent2)">✓ (--wps)</td><td style="color:var(--accent2)">✓</td><td style="color:var(--accent2)">✓</td><td style="color:var(--accent2)">✓ (dedicated)</td></tr>
+            <tr><td>PMKID capture</td><td style="color:var(--accent3)">✗</td><td style="color:var(--accent3)">✗</td><td style="color:var(--accent2)">✓</td><td style="color:var(--accent3)">✗</td></tr>
+            <tr><td>Multi-channel simultaneous</td><td style="color:var(--accent3)">✗</td><td style="color:var(--accent2)">✓</td><td style="color:var(--accent3)">✗</td><td style="color:var(--accent3)">✗</td></tr>
+            <tr><td>Web UI</td><td style="color:var(--accent3)">✗</td><td style="color:var(--accent2)">✓ (:2501)</td><td style="color:var(--accent3)">✗</td><td style="color:var(--accent3)">✗</td></tr>
+            <tr><td>GPS integration</td><td style="color:var(--accent2)">✓ (--gpsd)</td><td style="color:var(--accent2)">✓</td><td style="color:var(--accent3)">✗</td><td style="color:var(--accent3)">✗</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">kismet quick-start recon</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-kismet')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-kismet"><span class="cmt"># Start kismet with web interface (http://localhost:2501)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo kismet <span class="flag">-c</span> wlan0mon</span>
+<span class="out-ok">[INFO] Starting Kismet server...</span>
+<span class="out-ok">[INFO] Kismet web server ready: http://localhost:2501</span>
+<span class="cmt"># Default login: kismet / kismet</span>
+
+<span class="cmt"># Headless (no console wrapper)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo kismet <span class="flag">--no-console-wrapper</span> <span class="flag">-c</span> wlan0mon <span class="flag">--log-prefix</span> <span class="str">./kismet-recon</span></span>
+
+<span class="cmt"># hcxdumptool: PMKID + EAPOL capture (more powerful than airodump-ng)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo hcxdumptool <span class="flag">-i</span> wlan0mon <span class="flag">-o</span> <span class="str">recon.pcapng</span> <span class="flag">--enable_status=1</span></span>
+<span class="cmt"># --enable_status=1   Required in hcxdumptool v6+ for output</span>
+<span class="cmt"># Captures PMKID + EAPOL passively — no deauth needed</span></div>
+      </div>
+    </section>
+
+    <!-- Section 10: tshark extraction -->
+    <section id="tshark">
+      <h2><span class="section-num">10</span> Extracting Recon Data with tshark</h2>
+      <p>After a capture session, <code>tshark</code> lets you programmatically extract intelligence from the <code>.cap</code> file without opening Wireshark.</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">tshark intelligence extraction</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-tshark')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-tshark"><span class="cmt"># All unique SSIDs from beacon frames</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">tshark <span class="flag">-r</span> capture-01.cap <span class="flag">-Y</span> <span class="str">"wlan.fc.type_subtype==8"</span> <span class="flag">-T</span> fields <span class="flag">-e</span> wlan_mgt.ssid | sort -u</span>
+<span class="out-ok">HomeNet</span>
+<span class="out-ok">OfficeWifi</span>
+<span class="out-ok">CoffeeShop</span>
+
+<span class="cmt"># All client probe requests (PNL leakage)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">tshark <span class="flag">-r</span> capture-01.cap <span class="flag">-Y</span> <span class="str">"wlan.fc.type_subtype==4 &amp;&amp; wlan_mgt.ssid"</span> <span class="flag">-T</span> fields <span class="flag">-e</span> wlan.sa <span class="flag">-e</span> wlan_mgt.ssid | sort -u</span>
+<span class="out-ok">11:22:33:44:55:66    HomeWiFi</span>
+<span class="out-ok">11:22:33:44:55:66    OfficeNet</span>
+<span class="out-warn">2a:bb:cc:dd:ee:ff    (randomized MAC probing)</span>
+
+<span class="cmt"># Check EAPOL handshake frames (for cracking readiness)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">tshark <span class="flag">-r</span> capture-01.cap <span class="flag">-Y</span> <span class="str">"eapol"</span> <span class="flag">-T</span> fields <span class="flag">-e</span> frame.number <span class="flag">-e</span> eapol.keydes.msgnr <span class="flag">-e</span> wlan.sa <span class="flag">-e</span> wlan.da</span>
+<span class="out-ok">  42   1  AA:BB:CC:DD:EE:FF  11:22:33:44:55:66   (M1: AP→Client)</span>
+<span class="out-ok">  43   2  11:22:33:44:55:66  AA:BB:CC:DD:EE:FF   (M2: Client→AP ← crackable!)</span>
+<span class="out-ok">  44   3  AA:BB:CC:DD:EE:FF  11:22:33:44:55:66   (M3: AP→Client)</span>
+<span class="out-ok">  45   4  11:22:33:44:55:66  AA:BB:CC:DD:EE:FF   (M4: Client→AP)</span>
+<span class="cmt"># All 4 messages captured = complete handshake</span></div>
+      </div>
+    </section>
+
+    <!-- Section 11: Quiz -->
+    <section id="quiz">
+      <h2><span class="section-num">11</span> Knowledge Check</h2>
+      <p>Test your reconnaissance skills before moving to Module 04.</p>
+
+      <div class="quiz-container">
+        <h3>&#127358; Module 03 Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions</span></h3>
+
+        <!-- Q1 -->
+        <div class="quiz-question" id="q1">
+          <div class="q-num">Question 1 of 8</div>
+          <div class="q-text">In airodump-ng output, a network shows: <code>ENC=WPA2  CIPHER=CCMP  AUTH=MGT</code>. What does <code>AUTH=MGT</code> indicate and which module targets this?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q1',false)">Management Frame Protection (PMF) is enabled — Module 08</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)">802.1X / RADIUS Enterprise authentication (WPA2-Enterprise) — Module 13</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">The AP uses MAC address filtering — Module 09</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">The AP is in master mode — Module 10</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" id="q2">
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">You want to capture a WPA2 handshake. The target AP is on channel 6 with BSSID <code>AA:BB:CC:DD:EE:FF</code>. Write the correct airodump-ng command.</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q2',false)"><code>sudo airodump-ng --band g -w capture wlan0mon</code></button>
+            <button class="option-btn" onclick="answer(this,'q2',true)"><code>sudo airodump-ng --bssid AA:BB:CC:DD:EE:FF -c 6 -w capture --output-format pcap wlan0mon</code></button>
+            <button class="option-btn" onclick="answer(this,'q2',false)"><code>sudo airodump-ng --essid HomeNet -w capture wlan0mon</code></button>
+            <button class="option-btn" onclick="answer(this,'q2',false)"><code>sudo airodump-ng --channel 6 --wps -w capture wlan0mon</code></button>
+          </div>
+          <div class="quiz-feedback" id="fb-q2"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" id="q3">
+          <div class="q-num">Question 3 of 8</div>
+          <div class="q-text">The Notes column for a client station shows <code>EAPOL</code>. What does this mean and what should you do?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q3',false)">The client is using enterprise authentication — you need hostapd-wpe</button>
+            <button class="option-btn" onclick="answer(this,'q3',true)">A WPA2 4-way handshake was captured — stop airodump-ng and begin cracking</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">The EAPOL port is open on the client — run a port scan</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">The handshake was rejected — retry the deauth attack</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q3"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" id="q4">
+          <div class="q-num">Question 4 of 8</div>
+          <div class="q-text">A hidden network shows <code>&lt;length: 8&gt;</code> in the ESSID column. What information does this give you?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q4',false)">Nothing — the SSID is completely unknown</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">The SSID is 8 bits long (1 character)</button>
+            <button class="option-btn" onclick="answer(this,'q4',true)">The SSID is exactly 8 characters long — useful for dictionary/brute-force when attempting to reveal it</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">8 clients are connected to this hidden AP</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q4"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" id="q5">
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">What does the <code>--wps</code> flag add to airodump-ng output, and why is it important for Module 11?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q5',false)">It enables WPA3 SAE scanning on 6 GHz channels</button>
+            <button class="option-btn" onclick="answer(this,'q5',true)">It adds a WPS column showing WPS version (1.0/2.0) per AP — identifying targets for Pixie Dust and PIN brute force attacks</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">It activates WPS bypass mode to speed up capture</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">It displays the wireless power setting of each AP</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q5"></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">A client's MAC address begins with <code>2a:...</code>. What does this reveal?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)">The client is a Cisco device (OUI 2a = Cisco)</button>
+            <button class="option-btn" onclick="answer(this,'q6',true)">It is a locally-administered (randomized) MAC — bit 1 of the first octet is set, indicating the device is using MAC randomization</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">The client is behind a NAT gateway</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">The client is using WPA3 with OWE</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text">What does <code>wpaclean clean.cap capture-01.cap</code> do and why should you run it before hashcat?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">It decrypts WPA2 frames using a known key</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">It strips all non-handshake frames from the capture file, leaving only the EAPOL exchange — making the file smaller and faster to crack</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">It converts the .cap file to .hc22000 format for hashcat</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">It removes duplicate packets caused by retransmissions</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">Which advantage does <code>hcxdumptool</code> have over <code>airodump-ng</code> for recon?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)">It displays a real-time channel map in the terminal</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">It automatically runs dictionary attacks on captured handshakes</button>
+            <button class="option-btn" onclick="answer(this,'q8',true)">It captures PMKIDs from APs without requiring any client to deauthenticate or reconnect — enabling a completely passive clientless WPA2 attack path</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">It can scan all 14 2.4 GHz channels simultaneously</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
+        <div class="quiz-score" id="quizScore">
+          <div class="score-num" id="scoreNum">0/8</div>
+          <div class="score-label" id="scoreLabel"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Nav -->
     <div class="nav-footer">
       <a href="../module-02-monitor-mode/" class="nav-btn prev">&#8592; Module 02: Monitor Mode</a>
@@ -538,6 +813,78 @@
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
     });
+  }
+
+  // ── Quiz ──────────────────────────────────────────────────────
+  const TOTAL_Q = 8;
+  const qAnswered = {};
+  const qFeedbacks = {
+    q1: {
+      correct: "Correct. AUTH=MGT means the network uses 802.1X management-level authentication — i.e., WPA-Enterprise with a RADIUS server. PSK = personal password. MGT = enterprise (EAP methods, certificates). Module 13 covers rogue RADIUS attacks against MGT networks.",
+      wrong: "Incorrect. MGT in the AUTH column stands for Management/802.1X — WPA-Enterprise backed by a RADIUS server. PMF is shown differently. MAC filtering is not reflected in the AUTH column."
+    },
+    q2: {
+      correct: "Correct. You need --bssid to filter to the target AP, -c 6 to lock to its channel (critical — without this you miss ~95% of frames), -w capture to write the file, --output-format pcap for standard PCAP, and the interface last.",
+      wrong: "Incorrect. The correct command requires: --bssid (target AP), -c 6 (channel lock — essential for handshake capture), -w (write file), and --output-format pcap. Using --band g just scans 2.4 GHz but doesn't lock to channel 6."
+    },
+    q3: {
+      correct: "Correct. EAPOL in the Notes column means airodump-ng detected and captured a WPA2 4-way EAPOL handshake. You should immediately stop the capture (Ctrl+C) — the handshake is in the .cap file ready for cracking with aircrack-ng or hashcat.",
+      wrong: "Incorrect. EAPOL = Extensible Authentication Protocol over LAN = the WPA2 4-way handshake was captured. This is your signal to stop capture and start cracking (Module 07). It does NOT indicate Enterprise auth — that's shown in the AUTH column as MGT."
+    },
+    q4: {
+      correct: "Correct. The length field tells you the SSID is exactly 8 characters. This is useful because: (1) you can confirm a guessed SSID has the right length before attempting to reveal it; (2) a brute-force or dictionary attack can be constrained to 8-character strings.",
+      wrong: "Incorrect. <length: 8> means the SSID is 8 characters long. This is important information — you can filter your wordlist to only 8-character entries when trying to guess the SSID, or confirm a suspected SSID has the right length."
+    },
+    q5: {
+      correct: "Correct. The --wps flag adds a WPS column showing the WPS version for each AP. WPS 1.0 (unlocked) = primary Pixie Dust target; WPS 2.0 (unlocked) = PIN brute force target. Both attack paths are covered in Module 11 using reaver and pixiewps.",
+      wrong: "Incorrect. --wps adds a WPS version column (1.0/2.0/--) to airodump-ng output. This identifies which APs have WPS enabled — the prerequisite for Pixie Dust (pixiewps) and PIN brute force (reaver) attacks in Module 11."
+    },
+    q6: {
+      correct: "Correct. The 'locally administered' bit (bit 1, LSB of the first octet) being SET indicates a randomized/software-assigned MAC rather than a hardware-burned address. In hex, first octets like 2, 6, A, E (binary ...10) indicate local assignment. This breaks OUI vendor lookup and KARMA tracking.",
+      wrong: "Incorrect. A MAC starting with 2a (binary 00101010) has bit 1 (LSB of byte 1) set = locally administered address = MAC randomization. This is not a vendor OUI — it's a randomly generated address used by modern devices to prevent tracking."
+    },
+    q7: {
+      correct: "Correct. wpaclean strips all non-handshake frames (beacons, probe requests, data frames) from a large capture file, leaving only the EAPOL messages. A 50,000-frame capture becomes ~100 frames. hashcat/aircrack-ng processes smaller files faster.",
+      wrong: "Incorrect. wpaclean takes a large .cap file and produces a minimal file containing only the WPA handshake EAPOL frames. It does NOT decrypt, convert, or deduplicate — it strips non-relevant frames. hcxpcapngtool converts to .hc22000 for hashcat."
+    },
+    q8: {
+      correct: "Correct. hcxdumptool can capture PMKIDs from APs passively — extracting them from EAPOL RSNIE fields without needing a client to be present or deauthenticated. This enables a completely clientless WPA2 attack path. airodump-ng cannot do this. Module 12 covers this attack.",
+      wrong: "Incorrect. The key advantage of hcxdumptool is PMKID capture — it extracts the Pairwise Master Key Identifier from APs without any client present and without deauthentication. This is the 'clientless' WPA2 attack that makes airodump-ng handshake capture unnecessary in many cases. See Module 12."
+    }
+  };
+
+  let qScore = 0;
+  let qCount = 0;
+
+  function answer(btn, qId, isCorrect) {
+    if (qAnswered[qId]) return;
+    qAnswered[qId] = true;
+    qCount++;
+    const qEl = document.getElementById(qId);
+    const buttons = qEl.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    const fb = document.getElementById('fb-' + qId);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      qScore++;
+      fb.textContent = '✓ ' + qFeedbacks[qId].correct;
+      fb.className = 'quiz-feedback correct-fb show';
+    } else {
+      btn.classList.add('wrong');
+      fb.textContent = '✗ ' + qFeedbacks[qId].wrong;
+      fb.className = 'quiz-feedback wrong-fb show';
+      buttons.forEach(b => { if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct'); });
+    }
+    if (qCount === TOTAL_Q) {
+      const scoreEl = document.getElementById('quizScore');
+      const numEl = document.getElementById('scoreNum');
+      const labelEl = document.getElementById('scoreLabel');
+      numEl.textContent = qScore + '/' + TOTAL_Q;
+      const pct = qScore / TOTAL_Q;
+      labelEl.textContent = pct === 1 ? 'Perfect — ready for Module 04!' : pct >= 0.75 ? 'Strong — review missed questions.' : pct >= 0.5 ? 'Getting there — revisit the output columns and flag sections.' : 'Re-read the airodump-ng output section and the WPS/tools sections.';
+      numEl.style.color = pct === 1 ? 'var(--accent2)' : pct >= 0.625 ? 'var(--warn)' : 'var(--accent3)';
+      scoreEl.classList.add('show');
+    }
   }
 
   // Live feed simulation
