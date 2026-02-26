@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 02 — Monitor Mode & Packet Injection | WiFi Exploitation Course</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d1117; --bg-card:#161b22; --bg-code:#010409; --border:#30363d;
+      --accent:#58a6ff; --accent2:#3fb950; --accent3:#f78166; --warn:#d29922;
+      --text:#c9d1d9; --text-dim:#8b949e; --text-head:#e6edf3;
+      --radius:8px; --font-mono:'Cascadia Code','Fira Code','Consolas',monospace;
+      --font-body:'Segoe UI',system-ui,sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font-body); line-height:1.7; font-size:15px; }
+    .page-wrapper { display:flex; min-height:100vh; }
+
+    /* Sidebar */
+    aside.sidebar { width:260px; min-width:260px; background:var(--bg-card); border-right:1px solid var(--border); padding:24px 0; position:sticky; top:0; height:100vh; overflow-y:auto; }
+    .sidebar-logo { padding:0 20px 24px; border-bottom:1px solid var(--border); }
+    .sidebar-logo .course-title { font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); margin-bottom:6px; }
+    .sidebar-logo h2 { font-size:14px; color:var(--accent); font-weight:600; }
+    .sidebar-nav { padding:16px 0; }
+    .sidebar-section-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); padding:12px 20px 6px; }
+    .sidebar-nav a { display:flex; align-items:center; gap:10px; padding:7px 20px; color:var(--text-dim); text-decoration:none; font-size:13px; transition:all 0.15s; border-left:2px solid transparent; }
+    .sidebar-nav a:hover { color:var(--text); background:rgba(88,166,255,0.05); }
+    .sidebar-nav a.active { color:var(--accent); border-left-color:var(--accent); background:rgba(88,166,255,0.08); }
+    .sidebar-nav a .mod-num { font-size:10px; background:var(--border); border-radius:4px; padding:2px 6px; font-family:var(--font-mono); min-width:28px; text-align:center; }
+    .sidebar-nav a.active .mod-num { background:rgba(88,166,255,0.2); color:var(--accent); }
+
+    main { flex:1; padding:48px 64px; max-width:960px; }
+
+    /* Header */
+    .module-header { margin-bottom:40px; }
+    .breadcrumb { font-size:12px; color:var(--text-dim); margin-bottom:12px; }
+    .breadcrumb a { color:var(--accent); text-decoration:none; }
+    .module-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(88,166,255,0.12); border:1px solid rgba(88,166,255,0.3); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--accent); margin-bottom:16px; }
+    .module-header h1 { font-size:2.2rem; color:var(--text-head); line-height:1.2; margin-bottom:12px; }
+    .module-header .subtitle { font-size:16px; color:var(--text-dim); max-width:640px; }
+    .meta-row { display:flex; gap:24px; margin-top:20px; flex-wrap:wrap; }
+    .meta-pill { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); }
+    .meta-pill .dot { width:8px; height:8px; border-radius:50%; }
+
+    .warning-box { background:rgba(210,153,34,0.08); border:1px solid rgba(210,153,34,0.4); border-radius:var(--radius); padding:16px 20px; margin-bottom:36px; display:flex; gap:12px; }
+    .warning-box p { font-size:13px; color:var(--warn); line-height:1.6; }
+    .warning-box strong { color:#e3b341; }
+
+    section { margin-bottom:52px; }
+    section h2 { font-size:1.35rem; color:var(--text-head); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    section h2 .section-num { font-size:12px; color:var(--accent); font-family:var(--font-mono); background:rgba(88,166,255,0.1); border-radius:4px; padding:2px 8px; }
+    section h3 { font-size:1.05rem; color:var(--text-head); margin:24px 0 10px; }
+    p { margin-bottom:12px; }
+
+    /* Terminal */
+    .terminal { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:16px 0; font-family:var(--font-mono); font-size:13px; }
+    .terminal-bar { background:#161b22; border-bottom:1px solid var(--border); padding:8px 14px; display:flex; align-items:center; gap:10px; }
+    .terminal-dots { display:flex; gap:6px; }
+    .terminal-dots span { width:10px; height:10px; border-radius:50%; }
+    .d-red { background:#f78166; } .d-yellow { background:#e3b341; } .d-green { background:#3fb950; }
+    .terminal-title { font-size:11px; color:var(--text-dim); }
+    .terminal-copy { margin-left:auto; background:none; border:1px solid var(--border); border-radius:4px; padding:3px 10px; color:var(--text-dim); font-size:11px; cursor:pointer; font-family:var(--font-body); transition:all 0.15s; }
+    .terminal-copy:hover { border-color:var(--accent); color:var(--accent); }
+    .terminal-copy.copied { border-color:var(--accent2); color:var(--accent2); }
+    .terminal-body { padding:16px 18px; overflow-x:auto; line-height:1.9; color:#c9d1d9; white-space:pre-wrap; }
+    .prompt { color:var(--accent2); user-select:none; }
+    .cmd { color:#e6edf3; }
+    .flag { color:#ffa657; }
+    .str { color:#a5d6ff; }
+    .cmt { color:#6e7681; font-style:italic; }
+    .out { color:var(--text-dim); }
+    .out-ok { color:var(--accent2); }
+    .out-warn { color:var(--warn); }
+    .out-err { color:var(--accent3); }
+
+    /* Tables */
+    .table-wrap { overflow-x:auto; margin:20px 0; border-radius:var(--radius); border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    thead tr { background:rgba(88,166,255,0.06); }
+    th { padding:10px 14px; text-align:left; color:var(--accent); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.8px; border-bottom:1px solid var(--border); }
+    td { padding:10px 14px; border-bottom:1px solid rgba(48,54,61,0.6); vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(88,166,255,0.03); }
+
+    code { font-family:var(--font-mono); font-size:12px; background:rgba(110,118,129,0.15); padding:2px 6px; border-radius:4px; color:#79c0ff; }
+
+    /* Callout */
+    .callout { border-radius:var(--radius); padding:14px 18px; margin:16px 0; display:flex; gap:12px; font-size:13px; line-height:1.6; }
+    .callout.info { background:rgba(88,166,255,0.07); border-left:3px solid var(--accent); }
+    .callout.attack { background:rgba(247,129,102,0.07); border-left:3px solid var(--accent3); }
+    .callout.tip { background:rgba(63,185,80,0.07); border-left:3px solid var(--accent2); }
+    .callout.warn { background:rgba(210,153,34,0.07); border-left:3px solid var(--warn); }
+    .callout .ci { flex-shrink:0; font-size:16px; }
+    .callout strong { color:var(--text-head); }
+
+    /* Mode visualizer */
+    .mode-vis { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:24px 0; }
+    .mode-box { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+    .mode-box.mode-monitor { border-color:rgba(88,166,255,0.5); }
+    .mode-box h4 { font-size:13px; font-weight:700; color:var(--text-head); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+    .mode-badge { font-size:10px; padding:2px 8px; border-radius:10px; }
+    .mb-managed { background:rgba(210,153,34,0.15); color:var(--warn); }
+    .mb-monitor { background:rgba(88,166,255,0.15); color:var(--accent); }
+    .frame-filter-sim { font-size:12px; color:var(--text-dim); line-height:1.8; }
+    .frame-row { display:flex; align-items:center; gap:8px; padding:4px 0; }
+    .frame-row .frame-type { font-family:var(--font-mono); font-size:11px; min-width:140px; }
+    .pass { color:var(--accent2); } .block { color:var(--accent3); text-decoration:line-through; opacity:0.5; }
+
+    /* Steps tabs */
+    .method-tabs { display:flex; gap:4px; margin-bottom:0; border-bottom:1px solid var(--border); }
+    .method-tab { padding:8px 18px; font-size:13px; cursor:pointer; color:var(--text-dim); border-radius:6px 6px 0 0; border:1px solid transparent; border-bottom:none; transition:all 0.15s; background:none; font-family:var(--font-body); }
+    .method-tab:hover { color:var(--text); }
+    .method-tab.active { color:var(--accent); border-color:var(--border); border-bottom-color:var(--bg-card); background:var(--bg-card); }
+    .method-pane { display:none; background:var(--bg-card); border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius) var(--radius); padding:20px; }
+    .method-pane.active { display:block; }
+
+    /* Channel map */
+    .channel-map { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin:20px 0; }
+    .channel-map h4 { font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:16px; }
+    .ch-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+    .ch-btn { width:44px; height:44px; border-radius:6px; border:1px solid var(--border); background:var(--bg); font-size:12px; font-family:var(--font-mono); color:var(--text-dim); cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:all 0.15s; gap:2px; }
+    .ch-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .ch-btn.non-overlap { border-color:rgba(63,185,80,0.5); color:var(--accent2); background:rgba(63,185,80,0.05); }
+    .ch-btn.active-ch { border-color:var(--accent); background:rgba(88,166,255,0.15); color:var(--accent); }
+    .ch-btn .ch-num { font-size:13px; font-weight:700; }
+    .ch-btn .ch-freq { font-size:9px; opacity:0.7; }
+    .ch-legend { display:flex; gap:16px; margin-top:12px; flex-wrap:wrap; }
+    .ch-legend-item { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-dim); }
+    .ch-legend-dot { width:10px; height:10px; border-radius:2px; }
+    #channelOutput { margin-top:12px; padding:10px 14px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-family:var(--font-mono); font-size:12px; color:var(--accent2); display:none; }
+
+    /* Injection tester sim */
+    .injection-sim { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:20px 0; }
+    .injection-sim h3 { font-size:14px; color:var(--text-head); margin-bottom:16px; }
+    .sim-controls { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; align-items:flex-end; }
+    .sim-control { display:flex; flex-direction:column; gap:6px; }
+    .sim-control label { font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; }
+    .sim-control select, .sim-control input { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:7px 12px; color:var(--text); font-size:13px; font-family:var(--font-body); outline:none; }
+    .sim-control select:focus, .sim-control input:focus { border-color:var(--accent); }
+    .sim-btn { padding:8px 20px; background:var(--accent); border:none; border-radius:6px; color:#0d1117; font-weight:700; font-size:13px; cursor:pointer; font-family:var(--font-body); transition:all 0.2s; height:36px; }
+    .sim-btn:hover { background:#79c0ff; }
+    .sim-output { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); padding:16px; font-family:var(--font-mono); font-size:12px; line-height:1.9; min-height:100px; white-space:pre-wrap; }
+    .sim-out-ok { color:var(--accent2); }
+    .sim-out-err { color:var(--accent3); }
+    .sim-out-dim { color:var(--text-dim); }
+    .sim-spinner { display:inline-block; animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* Nav footer */
+    .nav-footer { display:flex; justify-content:space-between; align-items:center; padding:32px 0 0; border-top:1px solid var(--border); margin-top:48px; }
+    .nav-btn { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:var(--radius); text-decoration:none; font-size:13px; font-weight:600; transition:all 0.2s; }
+    .nav-btn.next { background:var(--accent); color:#0d1117; }
+    .nav-btn.next:hover { background:#79c0ff; }
+    .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
+    .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
+
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--text-dim); }
+
+    @media (max-width:900px) { aside.sidebar { display:none; } main { padding:24px 20px; } .mode-vis { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="course-title">WiFi Exploitation Course</div>
+      <h2>Wireless Security</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Tier 1 — Foundations</div>
+      <a href="../module-00-foundations/"><span class="mod-num">00</span> 802.11 Foundations</a>
+      <a href="../module-01-linux-wireless-setup/"><span class="mod-num">01</span> Linux Wireless Setup</a>
+      <a href="#" class="active"><span class="mod-num">02</span> Monitor Mode</a>
+      <div class="sidebar-section-label">Tier 2 — Recon</div>
+      <a href="../module-03-reconnaissance/"><span class="mod-num">03</span> Reconnaissance</a>
+      <a href="../module-04-packet-analysis/"><span class="mod-num">04</span> Packet Analysis</a>
+      <div class="sidebar-section-label">Tier 3 — Legacy</div>
+      <a href="../module-05-wep-cracking/"><span class="mod-num">05</span> WEP Cracking</a>
+      <div class="sidebar-section-label">Tier 4 — WPA2-Personal</div>
+      <a href="../module-06-wpa2-handshake/"><span class="mod-num">06</span> WPA2 Handshake</a>
+      <a href="../module-07-wpa2-cracking/"><span class="mod-num">07</span> WPA2 Cracking</a>
+      <div class="sidebar-section-label">Tier 5 — Active Attacks</div>
+      <a href="../module-08-deauth-dos/"><span class="mod-num">08</span> Deauth &amp; DoS</a>
+      <div class="sidebar-section-label">Tier 6 — Rogue AP</div>
+      <a href="../module-09-evil-twin/"><span class="mod-num">09</span> Evil Twin</a>
+      <a href="../module-10-captive-portal/"><span class="mod-num">10</span> Captive Portal</a>
+      <div class="sidebar-section-label">Tier 7 — WPS</div>
+      <a href="../module-11-wps-attacks/"><span class="mod-num">11</span> WPS Attacks</a>
+      <div class="sidebar-section-label">Tier 8 — Modern</div>
+      <a href="../module-12-pmkid-attack/"><span class="mod-num">12</span> PMKID Attack</a>
+      <a href="../module-13-enterprise-wpa/"><span class="mod-num">13</span> WPA-Enterprise</a>
+      <div class="sidebar-section-label">Tier 9 — Chaining</div>
+      <a href="../module-14-attack-chaining/"><span class="mod-num">14</span> Attack Chaining</a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="module-header">
+      <div class="breadcrumb"><a href="../">WiFi Exploitation Course</a> / Module 02</div>
+      <div class="module-badge">&#9679; Tier 1 &mdash; Foundations</div>
+      <h1>Monitor Mode &amp; Packet Injection</h1>
+      <p class="subtitle">Enable your adapter to see every frame in range and inject arbitrary 802.11 frames — the two foundational capabilities that every attack in this course depends on.</p>
+      <div class="meta-row">
+        <div class="meta-pill"><span class="dot" style="background:#3fb950"></span> Beginner</div>
+        <div class="meta-pill"><span class="dot" style="background:#58a6ff"></span> ~45 min</div>
+        <div class="meta-pill"><span class="dot" style="background:#f78166"></span> Adapter required</div>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <p><strong>Legal Notice:</strong> Monitor mode and injection must only be used on networks you own or have explicit written authorization to test. Unauthorized wireless interception is a federal crime in most jurisdictions.</p>
+    </div>
+
+    <!-- Section 1: What is Monitor Mode -->
+    <section id="what">
+      <h2><span class="section-num">01</span> Managed vs. Monitor Mode — Frame Filtering</h2>
+      <p>In managed mode, the hardware silently discards all frames not addressed to your MAC. Monitor mode removes this filter entirely. Click between the two modes to see what gets through.</p>
+
+      <div class="mode-vis">
+        <div class="mode-box">
+          <h4>&#128274; Managed Mode <span class="mode-badge mb-managed">DEFAULT</span></h4>
+          <div class="frame-filter-sim">
+            <div class="frame-row"><span class="frame-type">Beacon (AP broadcast)</span><span class="block">BLOCKED</span></div>
+            <div class="frame-row"><span class="frame-type">Probe Request (client)</span><span class="block">BLOCKED</span></div>
+            <div class="frame-row"><span class="frame-type">Other clients' data</span><span class="block">BLOCKED</span></div>
+            <div class="frame-row"><span class="frame-type">EAPOL Handshake</span><span class="block">BLOCKED</span></div>
+            <div class="frame-row"><span class="frame-type">Deauth frames</span><span class="block">BLOCKED</span></div>
+            <div class="frame-row"><span class="frame-type">Your own data frames</span><span class="pass">&#10003; PASS</span></div>
+            <div class="frame-row"><span class="frame-type">Broadcast frames</span><span class="pass">&#10003; PASS</span></div>
+          </div>
+          <div style="margin-top:14px;font-size:12px;color:var(--text-dim);font-style:italic;">Hardware filter ON — can't capture attacks or handshakes</div>
+        </div>
+        <div class="mode-box mode-monitor">
+          <h4>&#128275; Monitor Mode (RFMON) <span class="mode-badge mb-monitor">ATTACK MODE</span></h4>
+          <div class="frame-filter-sim">
+            <div class="frame-row"><span class="frame-type">Beacon (AP broadcast)</span><span class="pass">&#10003; CAPTURED</span></div>
+            <div class="frame-row"><span class="frame-type">Probe Request (client)</span><span class="pass">&#10003; CAPTURED</span></div>
+            <div class="frame-row"><span class="frame-type">Other clients' data</span><span class="pass">&#10003; CAPTURED</span></div>
+            <div class="frame-row"><span class="frame-type">EAPOL Handshake</span><span class="pass">&#10003; CAPTURED</span></div>
+            <div class="frame-row"><span class="frame-type">Deauth frames</span><span class="pass">&#10003; CAPTURED</span></div>
+            <div class="frame-row"><span class="frame-type">Your own data frames</span><span class="pass">&#10003; CAPTURED</span></div>
+            <div class="frame-row"><span class="frame-type">Broadcast frames</span><span class="pass">&#10003; CAPTURED</span></div>
+          </div>
+          <div style="margin-top:14px;font-size:12px;color:var(--accent2);font-style:italic;">No hardware filter — every frame on-channel is visible + injectable</div>
+        </div>
+      </div>
+
+      <div class="callout attack">
+        <span class="ci">&#9889;</span>
+        <div><strong>Why this matters:</strong> WPA2 handshake frames, deauthentication frames, probe requests leaking PNLs, WPS M1–M8 messages — all of these only become visible in monitor mode. Without it, your adapter is blind to every attack vector in this course.</div>
+      </div>
+    </section>
+
+    <!-- Section 2: Enabling Monitor Mode — Tabs -->
+    <section id="enabling">
+      <h2><span class="section-num">02</span> Enabling Monitor Mode — Three Methods</h2>
+      <p>Choose the method that fits your workflow. <strong>airmon-ng</strong> is recommended for most attack scenarios.</p>
+
+      <div class="method-tabs">
+        <button class="method-tab active" onclick="switchTab(this, 'tab-airmon')">airmon-ng</button>
+        <button class="method-tab" onclick="switchTab(this, 'tab-iw')">iw (manual)</button>
+        <button class="method-tab" onclick="switchTab(this, 'tab-iwconfig')">iwconfig (legacy)</button>
+      </div>
+
+      <div class="method-pane active" id="tab-airmon">
+        <div class="callout tip" style="margin-top:0;margin-bottom:16px;">
+          <span class="ci">&#128161;</span>
+          <div><strong>Recommended:</strong> airmon-ng handles killing conflicting processes, creating the monitor interface, and naming it predictably (<code>wlan0mon</code>).</div>
+        </div>
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+            <span class="terminal-title">Method 1 — airmon-ng</span>
+            <button class="terminal-copy" onclick="copyTerm(this,'copy-airmon')">Copy</button>
+          </div>
+          <div class="terminal-body" id="copy-airmon"><span class="cmt"># Step 1: Kill interfering processes</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airmon-ng check kill</span>
+<span class="out-ok">Killing these processes...</span>
+<span class="out">  PID  Name</span>
+<span class="out">  743  NetworkManager</span>
+<span class="out">  891  wpa_supplicant</span>
+
+<span class="cmt"># Step 2: Start monitor mode (optionally lock to a channel)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airmon-ng start wlan0</span>
+<span class="out-ok">PHY     Interface   Driver     Chipset</span>
+<span class="out-ok">phy1    wlan0       88XXau     Realtek RTL8812AU</span>
+<span class="out-ok">        (monitor mode enabled on wlan0mon)</span>
+
+<span class="cmt"># Step 3: Verify</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">iwconfig wlan0mon</span>
+<span class="out-ok">wlan0mon  IEEE 802.11  Mode:Monitor  Frequency:2.412 GHz  Tx-Power=20 dBm</span>
+
+<span class="cmt"># Stop monitor mode when done</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airmon-ng stop wlan0mon</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo systemctl start NetworkManager</span></div>
+        </div>
+      </div>
+
+      <div class="method-pane" id="tab-iw">
+        <div class="callout info" style="margin-top:0;margin-bottom:16px;">
+          <span class="ci">&#128268;</span>
+          <div><strong>Best for scripting:</strong> <code>iw</code> gives precise control without renaming the interface and without killing NetworkManager automatically.</div>
+        </div>
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+            <span class="terminal-title">Method 2 — iw (modern)</span>
+            <button class="terminal-copy" onclick="copyTerm(this,'copy-iw')">Copy</button>
+          </div>
+          <div class="terminal-body" id="copy-iw"><span class="cmt"># Interface must be down before mode change</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ip link set wlan0 down</span>
+
+<span class="cmt"># Set monitor mode via cfg80211/nl80211</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iw dev wlan0 set type monitor</span>
+
+<span class="cmt"># Bring interface back up</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ip link set wlan0 up</span>
+
+<span class="cmt"># Confirm type is now 'monitor'</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">iw dev wlan0 info</span>
+<span class="out">Interface wlan0</span>
+<span class="out">    ifindex 4</span>
+<span class="out">    addr aa:bb:cc:dd:ee:ff</span>
+<span class="out-ok">    type monitor</span>
+<span class="out">    channel 1 (2412 MHz)</span>
+
+<span class="cmt"># Return to managed mode</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ip link set wlan0 down</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iw dev wlan0 set type managed</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ip link set wlan0 up</span></div>
+        </div>
+      </div>
+
+      <div class="method-pane" id="tab-iwconfig">
+        <div class="callout warn" style="margin-top:0;margin-bottom:16px;">
+          <span class="ci">&#9888;</span>
+          <div><strong>Legacy:</strong> <code>iwconfig</code> is deprecated but still widely used in older tutorials. Prefer <code>iw</code> for new scripts.</div>
+        </div>
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+            <span class="terminal-title">Method 3 — iwconfig (legacy)</span>
+            <button class="terminal-copy" onclick="copyTerm(this,'copy-iwconfig')">Copy</button>
+          </div>
+          <div class="terminal-body" id="copy-iwconfig"><span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ifconfig wlan0 down</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iwconfig wlan0 mode monitor</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ifconfig wlan0 up</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">iwconfig wlan0 | grep Mode</span>
+<span class="out-ok">          Mode:Monitor</span>
+
+<span class="cmt"># Return to managed mode</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ifconfig wlan0 down</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iwconfig wlan0 mode managed</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ifconfig wlan0 up</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Channel Map -->
+    <section id="channels">
+      <h2><span class="section-num">03</span> Channel Selection &amp; Locking</h2>
+      <p>Your adapter must be on the <strong>same channel as the target AP</strong> to capture its traffic. Click a channel below to see the lock command.</p>
+
+      <div class="channel-map">
+        <h4>2.4 GHz — Channels 1–13</h4>
+        <div class="ch-row" id="chRow24"></div>
+
+        <h4 style="margin-top:20px;">5 GHz — Common Channels (UNII-1/3)</h4>
+        <div class="ch-row" id="chRow5"></div>
+
+        <div class="ch-legend">
+          <div class="ch-legend-item"><span class="ch-legend-dot" style="background:rgba(63,185,80,0.5);border:1px solid var(--accent2);"></span> Non-overlapping (2.4 GHz)</div>
+          <div class="ch-legend-item"><span class="ch-legend-dot" style="background:rgba(88,166,255,0.3);border:1px solid var(--accent);"></span> Selected</div>
+        </div>
+
+        <div id="channelOutput"></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Channel lock commands</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-ch')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-ch"><span class="cmt"># Lock during airmon-ng start</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airmon-ng start wlan0 <span class="str">6</span></span>
+
+<span class="cmt"># Lock after monitor mode is enabled</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iw dev wlan0mon set channel <span class="str">6</span></span>
+
+<span class="cmt"># 5 GHz channel</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iw dev wlan0mon set channel <span class="str">36</span></span>
+
+<span class="cmt"># Verify current channel</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">iw dev wlan0mon info | grep channel</span>
+<span class="out-ok">    channel 6 (2437 MHz), width: 20 MHz</span></div>
+      </div>
+    </section>
+
+    <!-- Section 4: Injection Simulator -->
+    <section id="injection">
+      <h2><span class="section-num">04</span> Packet Injection Test Simulator</h2>
+      <p>The <code>aireplay-ng -9</code> injection test sends probe frames and measures the AP's response rate. Configure the scenario below and run the simulated test.</p>
+
+      <div class="injection-sim">
+        <h3>&#128301; aireplay-ng Injection Test — Simulation</h3>
+        <div class="sim-controls">
+          <div class="sim-control">
+            <label>Interface Mode</label>
+            <select id="simMode">
+              <option value="monitor">Monitor Mode (correct)</option>
+              <option value="managed">Managed Mode (wrong)</option>
+            </select>
+          </div>
+          <div class="sim-control">
+            <label>Adapter Channel</label>
+            <select id="simCh">
+              <option value="match">Matches AP channel</option>
+              <option value="mismatch">Wrong channel</option>
+            </select>
+          </div>
+          <div class="sim-control">
+            <label>NM Process Killed</label>
+            <select id="simNM">
+              <option value="killed">Yes — killed</option>
+              <option value="running">No — still running</option>
+            </select>
+          </div>
+          <button class="sim-btn" onclick="runInjectionSim()">Run Test</button>
+        </div>
+        <div class="sim-output" id="simOutput"><span style="color:var(--text-dim);">Configure options above and click "Run Test"...</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Injection test — real commands</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-inject')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-inject"><span class="cmt"># Basic injection test (broadcast probe)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">--test</span> wlan0mon</span>
+<span class="cmt"># -9 is shorthand for --test</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">-9</span> wlan0mon</span>
+
+<span class="cmt"># Directed test against a specific AP BSSID</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">-9</span> <span class="flag">-b</span> <span class="str">AA:BB:CC:DD:EE:FF</span> wlan0mon</span>
+<span class="out-ok">Trying broadcast probe requests...</span>
+<span class="out-ok">Injection is working!</span>
+<span class="out-ok">Found 3 APs</span>
+<span class="out-ok">AA:BB:CC:DD:EE:FF - channel: 6 - 'TargetNet'  30/30: 100%</span></div>
+      </div>
+    </section>
+
+    <!-- Section 5: RFMON vs Promiscuous -->
+    <section id="rfmon">
+      <h2><span class="section-num">05</span> RFMON vs. Promiscuous Mode</h2>
+      <p>These two modes are frequently confused. They operate at different layers and serve entirely different purposes.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Feature</th><th>Monitor Mode (RFMON)</th><th>Promiscuous Mode</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>OSI Layer</td><td>Layer 1 + 2</td><td>Layer 2 only</td></tr>
+            <tr><td>Association required</td><td style="color:var(--accent2)">No — completely passive</td><td style="color:var(--accent3)">Yes — must be connected</td></tr>
+            <tr><td>Captures management frames</td><td style="color:var(--accent2)">Yes (Beacons, Deauth, Probe...)</td><td style="color:var(--accent3)">No</td></tr>
+            <tr><td>Captures EAPOL handshake</td><td style="color:var(--accent2)">Yes</td><td style="color:var(--accent3)">Only your own</td></tr>
+            <tr><td>Frame format received</td><td>Raw 802.11 + radiotap</td><td>Ethernet (802.3)</td></tr>
+            <tr><td>Packet injection</td><td style="color:var(--accent2)">Yes</td><td style="color:var(--accent3)">No</td></tr>
+            <tr><td>Use case</td><td>All wireless attacks in this course</td><td>Post-association wired sniffing</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn">
+        <span class="ci">&#9888;</span>
+        <div><strong>Common Mistake:</strong> Enabling promiscuous mode on a Wi-Fi adapter in managed mode does NOT give you monitor mode. You will still only see your own traffic. <code>tcpdump -i wlan0 -p</code> is not the same as <code>tcpdump -i wlan0mon</code>.</div>
+      </div>
+    </section>
+
+    <!-- Nav -->
+    <div class="nav-footer">
+      <a href="../module-01-linux-wireless-setup/" class="nav-btn prev">&#8592; Module 01: Linux Setup</a>
+      <a href="../module-03-reconnaissance/" class="nav-btn next">Module 03: Reconnaissance &#8594;</a>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Tab switcher
+  function switchTab(btn, paneId) {
+    document.querySelectorAll('.method-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.method-pane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(paneId).classList.add('active');
+  }
+
+  // Channel map builder
+  const channels24 = [
+    {n:1,f:'2412',no:true},{n:2,f:'2417'},{n:3,f:'2422'},{n:4,f:'2427'},
+    {n:5,f:'2432'},{n:6,f:'2437',no:true},{n:7,f:'2442'},{n:8,f:'2447'},
+    {n:9,f:'2452'},{n:10,f:'2457'},{n:11,f:'2462',no:true},{n:12,f:'2467'},{n:13,f:'2472'}
+  ];
+  const channels5 = [
+    {n:36,f:'5180'},{n:40,f:'5200'},{n:44,f:'5220'},{n:48,f:'5240'},
+    {n:149,f:'5745'},{n:153,f:'5765'},{n:157,f:'5785'},{n:161,f:'5805'}
+  ];
+
+  function buildChannelMap() {
+    const row24 = document.getElementById('chRow24');
+    const row5 = document.getElementById('chRow5');
+    channels24.forEach(ch => {
+      const btn = document.createElement('button');
+      btn.className = 'ch-btn' + (ch.no ? ' non-overlap' : '');
+      btn.innerHTML = `<span class="ch-num">${ch.n}</span><span class="ch-freq">${ch.f}</span>`;
+      btn.onclick = () => selectChannel(ch.n, ch.f, btn);
+      row24.appendChild(btn);
+    });
+    channels5.forEach(ch => {
+      const btn = document.createElement('button');
+      btn.className = 'ch-btn';
+      btn.innerHTML = `<span class="ch-num">${ch.n}</span><span class="ch-freq">${ch.f}</span>`;
+      btn.onclick = () => selectChannel(ch.n, ch.f, btn);
+      row5.appendChild(btn);
+    });
+  }
+
+  function selectChannel(n, f, btn) {
+    document.querySelectorAll('.ch-btn').forEach(b => b.classList.remove('active-ch'));
+    btn.classList.add('active-ch');
+    const out = document.getElementById('channelOutput');
+    out.style.display = 'block';
+    out.innerHTML = `<span style="color:var(--text-dim)">Lock command:</span>  sudo iw dev wlan0mon set channel ${n}  <span style="color:var(--text-dim)"># ${f} MHz</span>`;
+  }
+
+  buildChannelMap();
+
+  // Copy terminal
+  function copyTerm(btn, id) {
+    const el = document.getElementById(id);
+    const text = el.innerText || el.textContent;
+    navigator.clipboard.writeText(text.trim()).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // Injection simulator
+  function runInjectionSim() {
+    const mode = document.getElementById('simMode').value;
+    const ch = document.getElementById('simCh').value;
+    const nm = document.getElementById('simNM').value;
+    const out = document.getElementById('simOutput');
+
+    out.innerHTML = `<span class="sim-out-dim"><span class="sim-spinner">⟳</span> Running injection test...</span>`;
+
+    setTimeout(() => {
+      // Determine outcome
+      let lines = [];
+      const cmd = `sudo aireplay-ng -9 wlan0mon`;
+      lines.push(`<span class="sim-out-dim">$ ${cmd}</span>`);
+
+      if (mode === 'managed') {
+        lines.push(`<span class="sim-out-dim">Trying broadcast probe requests...</span>`);
+        lines.push(`<span class="sim-out-err">ERROR: wlan0mon is not in monitor mode</span>`);
+        lines.push(`<span class="sim-out-err">Injection appears to be broken.</span>`);
+        lines.push(``);
+        lines.push(`<span class="sim-out-err">✗ FIX: Run "sudo airmon-ng start wlan0" first</span>`);
+      } else if (nm === 'running') {
+        lines.push(`<span class="sim-out-dim">Trying broadcast probe requests...</span>`);
+        lines.push(`<span class="sim-out-err">NetworkManager is changing channels — capture corrupted</span>`);
+        lines.push(`<span class="sim-out-err">No answer... Found 0 APs</span>`);
+        lines.push(``);
+        lines.push(`<span class="sim-out-err">✗ FIX: Run "sudo airmon-ng check kill" first</span>`);
+      } else if (ch === 'mismatch') {
+        lines.push(`<span class="sim-out-dim">Trying broadcast probe requests...</span>`);
+        lines.push(`<span class="sim-out-err">No answer... Found 0 APs</span>`);
+        lines.push(`<span class="sim-out-err">Injection appears to be broken.</span>`);
+        lines.push(``);
+        lines.push(`<span class="sim-out-err">✗ FIX: Lock to the AP's channel — "sudo iw dev wlan0mon set channel 6"</span>`);
+      } else {
+        lines.push(`<span class="sim-out-dim">Trying broadcast probe requests...</span>`);
+        lines.push(`<span class="sim-out-ok">Injection is working!</span>`);
+        lines.push(`<span class="sim-out-ok">Found 3 APs</span>`);
+        lines.push(``);
+        lines.push(`<span class="sim-out-dim">Trying directed probe requests...</span>`);
+        lines.push(`<span class="sim-out-ok">AA:BB:CC:DD:EE:FF - channel: 6 - 'TargetNet'</span>`);
+        lines.push(`<span class="sim-out-ok">           30/30: 100%</span>`);
+        lines.push(`<span class="sim-out-ok">BB:CC:DD:EE:FF:00 - channel: 6 - 'HomeNet'</span>`);
+        lines.push(`<span class="sim-out-ok">           28/30: 93%</span>`);
+        lines.push(``);
+        lines.push(`<span class="sim-out-ok">✓ Injection confirmed — ready for attack modules</span>`);
+      }
+      out.innerHTML = lines.join('\n');
+    }, 1200);
+  }
+</script>
+</body>
+</html>
