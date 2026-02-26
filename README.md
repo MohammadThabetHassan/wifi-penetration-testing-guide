@@ -222,15 +222,15 @@ wifi-hacking-course/
 
 | Module | Textbook | Web Page |
 |--------|----------|----------|
-| 00 — Foundations | Pending | Pending |
-| 01 — Linux Wireless Setup | Pending | Pending |
-| 02 — Monitor Mode | Pending | Pending |
-| 03 — Reconnaissance | Pending | Pending |
-| 04 — Packet Analysis | Pending | Pending |
-| 05 — WEP Cracking | Pending | Pending |
-| 06 — WPA2 Handshake | Pending | Pending |
-| 07 — WPA2 Cracking | Pending | Pending |
-| 08 — Deauth & DoS | Pending | Pending |
+| 00 — Foundations | Completed | Completed |
+| 01 — Linux Wireless Setup | Completed | Completed |
+| 02 — Monitor Mode | Completed | Completed |
+| 03 — Reconnaissance | Completed | Completed |
+| 04 — Packet Analysis | Completed | Completed |
+| 05 — WEP Cracking | Completed | Completed |
+| 06 — WPA2 Handshake | Completed | Completed |
+| 07 — WPA2 Cracking | Completed | Completed |
+| 08 — Deauth & DoS | Completed | Completed |
 | 09 — Evil Twin | Pending | Pending |
 | 10 — Captive Portal | Pending | Pending |
 | 11 — WPS Attacks | Pending | Pending |
