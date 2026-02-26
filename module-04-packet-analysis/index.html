@@ -141,6 +141,27 @@
     .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
     .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
 
+    /* Quiz */
+    .quiz-container { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin:24px 0; }
+    .quiz-container h3 { font-size:14px; color:var(--accent); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .quiz-question { margin-bottom:28px; }
+    .quiz-question .q-text { font-size:14px; color:var(--text-head); margin-bottom:14px; line-height:1.5; }
+    .quiz-question .q-num { font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:6px; }
+    .option-list { display:flex; flex-direction:column; gap:8px; }
+    .option-btn { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 16px; color:var(--text); text-align:left; cursor:pointer; font-size:13px; transition:all 0.15s; font-family:var(--font-body); }
+    .option-btn:hover { border-color:var(--accent); color:var(--text-head); }
+    .option-btn.correct { border-color:var(--accent2); background:rgba(63,185,80,0.08); color:var(--accent2); }
+    .option-btn.wrong { border-color:var(--accent3); background:rgba(247,129,102,0.08); color:var(--accent3); }
+    .option-btn:disabled { cursor:default; }
+    .quiz-feedback { margin-top:10px; font-size:13px; padding:10px 14px; border-radius:6px; display:none; line-height:1.5; }
+    .quiz-feedback.show { display:block; }
+    .quiz-feedback.correct-fb { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.3); color:var(--accent2); }
+    .quiz-feedback.wrong-fb { background:rgba(247,129,102,0.08); border:1px solid rgba(247,129,102,0.3); color:var(--accent3); }
+    .quiz-score { display:none; text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
+    .quiz-score.show { display:block; }
+    .score-num { font-size:3rem; font-weight:700; color:var(--accent); font-family:var(--font-mono); }
+    .score-label { font-size:14px; color:var(--text-dim); margin-top:4px; }
+
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:var(--bg); }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
@@ -427,6 +448,351 @@ packet = RadioTap() / Dot11(
       </div>
     </section>
 
+    <!-- Section 6: EAPOL Key Information Decoder -->
+    <section id="eapol-ki">
+      <h2><span class="section-num">06</span> EAPOL Key Information Decoder</h2>
+      <p>
+        The <strong>Key Information</strong> field (2 bytes) in every EAPOL-Key frame encodes which
+        handshake message it is. Understanding it lets you verify captures without tools.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Message</th><th>Key Info (hex)</th><th>Key ACK</th><th>Key MIC</th><th>Secure</th><th>Install</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>M1</strong> AP→Client</td>
+              <td><code>0x008a</code></td>
+              <td style="color:var(--accent2)">1</td>
+              <td style="color:var(--accent3)">0</td>
+              <td style="color:var(--accent3)">0</td>
+              <td style="color:var(--accent3)">0</td>
+              <td>AP sends ANonce. No MIC yet — not crackable alone.</td>
+            </tr>
+            <tr style="background:rgba(247,129,102,0.04);">
+              <td><strong>M2</strong> Client→AP <span style="color:var(--accent3);font-size:10px;">★ CAPTURE TARGET</span></td>
+              <td><code>0x010a</code></td>
+              <td style="color:var(--accent3)">0</td>
+              <td style="color:var(--accent2)">1</td>
+              <td style="color:var(--accent3)">0</td>
+              <td style="color:var(--accent3)">0</td>
+              <td>Client sends SNonce + MIC. M1+M2 = sufficient for offline cracking.</td>
+            </tr>
+            <tr>
+              <td><strong>M3</strong> AP→Client</td>
+              <td><code>0x13ca</code></td>
+              <td style="color:var(--accent2)">1</td>
+              <td style="color:var(--accent2)">1</td>
+              <td style="color:var(--accent2)">1</td>
+              <td style="color:var(--accent2)">1</td>
+              <td>AP sends encrypted GTK + MIC. Confirms PTK derived correctly.</td>
+            </tr>
+            <tr>
+              <td><strong>M4</strong> Client→AP</td>
+              <td><code>0x030a</code></td>
+              <td style="color:var(--accent3)">0</td>
+              <td style="color:var(--accent2)">1</td>
+              <td style="color:var(--accent2)">1</td>
+              <td style="color:var(--accent3)">0</td>
+              <td>Final ACK. Session encryption begins after this.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout attack">
+        <span class="ci">&#9889;</span>
+        <div><strong>Cracking requirement:</strong> You need <strong>M1 + M2</strong> at minimum. M2 contains the SNonce and MIC. Combined with M1's ANonce and both MAC addresses, you can derive candidate PTKs and verify against the MIC. <code>aircrack-ng</code> and <code>hashcat -m 22000</code> do this automatically.</div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Identify EAPOL messages with tshark</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-eapol')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-eapol"><span class="cmt"># Show all EAPOL messages with their numbers and direction</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">tshark <span class="flag">-r</span> capture-01.cap <span class="flag">-Y</span> <span class="str">"eapol"</span> <span class="flag">-T</span> fields <span class="flag">-e</span> frame.number <span class="flag">-e</span> eapol.keydes.msgnr <span class="flag">-e</span> wlan.sa <span class="flag">-e</span> wlan.da</span>
+<span class="out-ok">  42   1   AA:BB:CC:DD:EE:FF   11:22:33:44:55:66    (M1: AP→Client)</span>
+<span class="out-ok">  43   2   11:22:33:44:55:66   AA:BB:CC:DD:EE:FF    (M2: Client→AP ← crackable!)</span>
+<span class="out-ok">  44   3   AA:BB:CC:DD:EE:FF   11:22:33:44:55:66    (M3: AP→Client)</span>
+<span class="out-ok">  45   4   11:22:33:44:55:66   AA:BB:CC:DD:EE:FF    (M4: Client→AP)</span>
+<span class="cmt"># All 4 messages captured → full handshake → ready to crack</span>
+
+<span class="cmt"># Quick check: does the capture have a complete handshake?</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">aircrack-ng capture-01.cap</span>
+<span class="out-ok"># 1  AA:BB:CC:DD:EE:FF  HomeNet   WPA2 (1) handshake   ← valid!</span></div>
+      </div>
+    </section>
+
+    <!-- Section 7: airdecap-ng -->
+    <section id="airdecap">
+      <h2><span class="section-num">07</span> airdecap-ng — Offline WPA2 Decryption</h2>
+      <p>
+        Once you have the correct passphrase (or after cracking it in Module 07),
+        <code>airdecap-ng</code> decrypts the entire capture file so you can analyze all traffic in plaintext.
+      </p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">airdecap-ng — decrypt WPA2 capture</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-airdecap')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-airdecap"><span class="cmt"># WPA2-PSK decryption — requires handshake in capture file</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">airdecap-ng <span class="flag">-e</span> <span class="str">"HomeNet"</span> <span class="flag">-p</span> <span class="str">"Password1!"</span> capture-01.cap</span>
+<span class="cmt"># -e "HomeNet"    → SSID (exact, case-sensitive)</span>
+<span class="cmt"># -p "Password1!" → WPA2 passphrase</span>
+<span class="cmt"># capture-01.cap  → Input capture (must contain 4-way handshake)</span>
+<span class="out-ok">Total number of stations:   3</span>
+<span class="out-ok">Total number of packets:    1524</span>
+<span class="out-ok">WEP Decrypted packets:      0</span>
+<span class="out-ok">WPA Decrypted packets:      891   ← all encrypted data now cleartext</span>
+<span class="out-ok">Bad TKIP(WPA) packets:      0</span>
+<span class="cmt"># Output file: capture-01-dec.cap</span>
+
+<span class="cmt"># Open the decrypted file — now see DNS, HTTP, DHCP etc.</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">wireshark capture-01-dec.cap</span>
+
+<span class="cmt"># Generate hex PMK from passphrase+SSID (alternative input)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">wpa_passphrase <span class="str">"HomeNet"</span> <span class="str">"Password1!"</span> | grep -v '#'</span>
+<span class="out">network={</span>
+<span class="out">    ssid="HomeNet"</span>
+<span class="out-ok">    psk=a8b9c0d1e2f3...  ← 64-char hex PMK</span>
+<span class="out">}</span></div>
+      </div>
+
+      <div class="callout tip">
+        <span class="ci">&#128161;</span>
+        <div><strong>Workflow:</strong> Module 07 (WPA2 cracking) recovers the passphrase → feed it here to <code>airdecap-ng</code> → analyze all victim traffic (DNS queries, HTTP sessions, SMTP credentials) in Wireshark.</div>
+      </div>
+    </section>
+
+    <!-- Section 8: tshark CLI -->
+    <section id="tshark">
+      <h2><span class="section-num">08</span> tshark Command-Line Analysis</h2>
+      <p>
+        <code>tshark</code> is the command-line Wireshark — essential for scripting, large captures,
+        and automating intelligence extraction without a GUI.
+      </p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">tshark intelligence extraction</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-tshark')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-tshark"><span class="cmt"># All unique SSIDs from beacons</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">tshark <span class="flag">-r</span> cap.cap <span class="flag">-Y</span> <span class="str">"wlan.fc.type_subtype==8"</span> <span class="flag">-T</span> fields <span class="flag">-e</span> wlan_mgt.ssid | sort -u</span>
+
+<span class="cmt"># Deauth reason codes (identify injected deauths)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">tshark <span class="flag">-r</span> cap.cap <span class="flag">-Y</span> <span class="str">"wlan.fc.type_subtype==12"</span> <span class="flag">-T</span> fields <span class="flag">-e</span> wlan.sa <span class="flag">-e</span> wlan.da <span class="flag">-e</span> wlan_mgt.fixed.reason_code</span>
+<span class="out-warn">AA:BB:CC:DD:EE:FF   11:22:33:44:55:66   7   ← reason 7 = typical aireplay-ng deauth</span>
+
+<span class="cmt"># EAPOL messages with Key Information</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">tshark <span class="flag">-r</span> cap.cap <span class="flag">-Y</span> <span class="str">"eapol"</span> <span class="flag">-T</span> fields <span class="flag">-e</span> eapol.keydes.msgnr <span class="flag">-e</span> eapol.keydes.key_info <span class="flag">-e</span> wlan.sa</span>
+<span class="out-ok">1   0x008a   AA:BB:CC:DD:EE:FF   (M1)</span>
+<span class="out-ok">2   0x010a   11:22:33:44:55:66   (M2 ← has MIC)</span>
+<span class="out-ok">3   0x13ca   AA:BB:CC:DD:EE:FF   (M3 ← has GTK)</span>
+<span class="out-ok">4   0x030a   11:22:33:44:55:66   (M4)</span>
+
+<span class="cmt"># Probe requests + SSIDs (PNL extraction)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">tshark <span class="flag">-r</span> cap.cap <span class="flag">-Y</span> <span class="str">"wlan.fc.type_subtype==4 &amp;&amp; wlan_mgt.ssid"</span> <span class="flag">-T</span> fields <span class="flag">-e</span> wlan.sa <span class="flag">-e</span> wlan_mgt.ssid | sort -u</span>
+<span class="out-ok">11:22:33:44:55:66   HomeWiFi</span>
+<span class="out-ok">11:22:33:44:55:66   OfficeNet</span>
+
+<span class="cmt"># Data frame traffic volume per BSSID</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">tshark <span class="flag">-r</span> cap.cap <span class="flag">-Y</span> <span class="str">"wlan.fc.type==2"</span> <span class="flag">-T</span> fields <span class="flag">-e</span> wlan.bssid | sort | uniq -c | sort -rn</span>
+<span class="out-ok">  3421  AA:BB:CC:DD:EE:FF   ← most active AP (best target)</span>
+<span class="out">   182  00:11:22:33:44:55</span></div>
+      </div>
+    </section>
+
+    <!-- Section 9: Scapy Sniffer -->
+    <section id="scapy-sniff">
+      <h2><span class="section-num">09</span> Scapy — Sniffing &amp; Detection Scripts</h2>
+      <p>Beyond frame crafting, Scapy enables powerful passive detection scripts.</p>
+
+      <div class="scapy-code">
+        <div class="scapy-header">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">pnl-sniffer.py — Extract Preferred Network Lists</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-pnl')">Copy</button>
+        </div>
+        <div class="scapy-body" id="copy-pnl"><span class="scapy-keyword">from</span> scapy.all <span class="scapy-keyword">import</span> *
+<span class="scapy-keyword">from</span> scapy.layers.dot11 <span class="scapy-keyword">import</span> Dot11, Dot11ProbeReq, Dot11Elt
+
+pnl = {}
+
+<span class="scapy-keyword">def</span> <span class="scapy-func">handle_probe</span>(pkt):
+    <span class="scapy-keyword">if not</span> pkt.haslayer(Dot11ProbeReq): <span class="scapy-keyword">return</span>
+    client = pkt[Dot11].addr2
+    ie = pkt.getlayer(Dot11Elt)
+    <span class="scapy-keyword">while</span> ie:
+        <span class="scapy-keyword">if</span> ie.ID == 0 <span class="scapy-keyword">and</span> ie.info:
+            ssid = ie.info.decode(<span class="scapy-string">'utf-8'</span>, errors=<span class="scapy-string">'replace'</span>)
+            pnl.setdefault(client, set()).add(ssid)
+            print(<span class="scapy-func">f</span><span class="scapy-string">"  [PNL] {client} → '{ssid}'"</span>)
+        ie = ie.payload.getlayer(Dot11Elt) <span class="scapy-keyword">if</span> ie.payload <span class="scapy-keyword">else None</span>
+
+sniff(iface=<span class="scapy-string">"wlan0mon"</span>, prn=handle_probe, store=False,
+      lfilter=<span class="scapy-keyword">lambda</span> p: p.haslayer(Dot11ProbeReq))</div>
+      </div>
+
+      <div class="scapy-code" style="margin-top:16px;">
+        <div class="scapy-header">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">handshake-detector.py — Alert on WPA2 Handshake Capture</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-hsdetect')">Copy</button>
+        </div>
+        <div class="scapy-body" id="copy-hsdetect"><span class="scapy-keyword">from</span> scapy.all <span class="scapy-keyword">import</span> *
+<span class="scapy-keyword">from</span> scapy.layers.dot11 <span class="scapy-keyword">import</span> Dot11
+<span class="scapy-keyword">from</span> scapy.layers.eap <span class="scapy-keyword">import</span> EAPOL
+
+seen = {}
+
+<span class="scapy-keyword">def</span> <span class="scapy-func">handle_eapol</span>(pkt):
+    <span class="scapy-keyword">if not</span> pkt.haslayer(EAPOL) <span class="scapy-keyword">or</span> pkt[EAPOL].type != 3: <span class="scapy-keyword">return</span>
+    bssid = pkt[Dot11].addr3
+    src = pkt[Dot11].addr2
+    ki = int.from_bytes(bytes(pkt[EAPOL])[5:7], <span class="scapy-string">'big'</span>)
+    <span class="scapy-comment"># Determine message from Key Info bits</span>
+    ack = bool(ki & <span class="scapy-val">0x0080</span>)
+    mic = bool(ki & <span class="scapy-val">0x0100</span>)
+    secure = bool(ki & <span class="scapy-val">0x0200</span>)
+    install = bool(ki & <span class="scapy-val">0x0040</span>)
+    msg = <span class="scapy-string">"M1"</span> <span class="scapy-keyword">if</span> (ack <span class="scapy-keyword">and not</span> mic) <span class="scapy-keyword">else</span> \
+          <span class="scapy-string">"M2"</span> <span class="scapy-keyword">if</span> (mic <span class="scapy-keyword">and not</span> secure) <span class="scapy-keyword">else</span> \
+          <span class="scapy-string">"M3"</span> <span class="scapy-keyword">if</span> (mic <span class="scapy-keyword">and</span> install) <span class="scapy-keyword">else</span> <span class="scapy-string">"M4"</span>
+    seen.setdefault((bssid,src), set()).add(msg)
+    print(<span class="scapy-func">f</span><span class="scapy-string">"  [EAPOL] {msg} | BSSID: {bssid} | Client: {src}"</span>)
+    <span class="scapy-keyword">if</span> {<span class="scapy-string">'M1'</span>,<span class="scapy-string">'M2'</span>}.issubset(seen[(bssid,src)]):
+        print(<span class="scapy-func">f</span><span class="scapy-string">"\n  [!] HANDSHAKE READY → BSSID: {bssid}\n"</span>)
+
+sniff(iface=<span class="scapy-string">"wlan0mon"</span>, prn=handle_eapol, store=False,
+      lfilter=<span class="scapy-keyword">lambda</span> p: p.haslayer(EAPOL))</div>
+      </div>
+    </section>
+
+    <!-- Section 10: Quiz -->
+    <section id="quiz">
+      <h2><span class="section-num">10</span> Knowledge Check</h2>
+      <p>Test your packet analysis skills before moving to Module 05.</p>
+
+      <div class="quiz-container">
+        <h3>&#127358; Module 04 Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions</span></h3>
+
+        <!-- Q1 -->
+        <div class="quiz-question" id="q1">
+          <div class="q-num">Question 1 of 8</div>
+          <div class="q-text">What is the minimum set of EAPOL messages needed for an offline WPA2 dictionary attack?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q1',false)">All four messages (M1, M2, M3, M4)</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)">Messages 1 and 2 (M1 + M2) at minimum</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">Message 3 only (contains the GTK)</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">Message 2 only (contains the SNonce)</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" id="q2">
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">The EAPOL Key Information field shows <code>0x008a</code>. Which handshake message is this and why does it not yet enable cracking?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q2',false)">M2 — it has MIC=0 so the SNonce is not yet verified</button>
+            <button class="option-btn" onclick="answer(this,'q2',true)">M1 — Key ACK=1 but Key MIC=0, meaning the AP sent ANonce but no MIC to verify against a candidate PTK</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">M3 — Install bit is not set so GTK is missing</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">M4 — Secure bit is unset so the session hasn't started</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q2"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" id="q3">
+          <div class="q-num">Question 3 of 8</div>
+          <div class="q-text">In the RSN IE, the AKM suite value is <code>00:0f:ac:02</code>. What authentication method does this indicate?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q3',false)">802.1X Enterprise authentication</button>
+            <button class="option-btn" onclick="answer(this,'q3',true)">PSK (Pre-Shared Key) — WPA2-Personal</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">SAE (Simultaneous Authentication of Equals) — WPA3</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">TKIP cipher with RC4 encryption</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q3"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" id="q4">
+          <div class="q-num">Question 4 of 8</div>
+          <div class="q-text">What Wireshark filter shows deauthentication frames that were sent with Management Frame Protection (PMF/802.11w) enabled?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q4',false)"><code>wlan.fc.type_subtype == 12 && wlan.bssid == aa:bb:cc:dd:ee:ff</code></button>
+            <button class="option-btn" onclick="answer(this,'q4',false)"><code>eapol && wlan.fc.type_subtype == 12</code></button>
+            <button class="option-btn" onclick="answer(this,'q4',true)"><code>wlan.fc.type_subtype == 12 && wlan.fc.protected == 1</code></button>
+            <button class="option-btn" onclick="answer(this,'q4',false)"><code>wlan.fc.type == 0 && wlan.fc.subtype == 12 && wlan.ssid</code></button>
+          </div>
+          <div class="quiz-feedback" id="fb-q4"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" id="q5">
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">What does <code>airdecap-ng -e "HomeNet" -p "password" capture-01.cap</code> produce?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q5',false)">It cracks the WPA2 password using a dictionary attack</button>
+            <button class="option-btn" onclick="answer(this,'q5',true)">A new file <code>capture-01-dec.cap</code> with all WPA2-encrypted frames decrypted to plaintext</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">It extracts the 4-way handshake into a separate file</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">It converts the capture to .hc22000 format for hashcat</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q5"></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">You see deauth frames in Wireshark with reason code 7. What does this most likely indicate?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)">The AP is rebooting</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">The client failed WPA2 authentication</button>
+            <button class="option-btn" onclick="answer(this,'q6',true)">Injected deauth frames — reason 7 "Class 3 frame from non-associated STA" is the default code used by aireplay-ng</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">WPA3 is downgrading to WPA2</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text">What does the CCMP Packet Number (PN) field protect against, and what happens if it resets to 0?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">It protects against replay attacks; resetting it disables encryption entirely</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">It protects against replay attacks; resetting it causes nonce reuse — the same AES keystream is used twice, enabling XOR-based plaintext recovery (KRACK)</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">It counts data frames; resetting it triggers a new 4-way handshake</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">It is the GTK sequence counter; resetting causes a group key reinstallation</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">In the Scapy PNL sniffer, <code>lfilter=lambda p: p.haslayer(Dot11ProbeReq)</code> is passed to <code>sniff()</code>. What does this do?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)">It decrypts all captured probe requests using Scapy's built-in WPA2 decoder</button>
+            <button class="option-btn" onclick="answer(this,'q8',true)">It is a BPF pre-filter applied before the callback — only frames containing the Dot11ProbeReq layer are passed to <code>handle_probe()</code>, reducing CPU load</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">It sets the interface to monitor mode automatically</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">It filters only beacon frames from the target BSSID</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
+        <div class="quiz-score" id="quizScore">
+          <div class="score-num" id="scoreNum">0/8</div>
+          <div class="score-label" id="scoreLabel"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Nav -->
     <div class="nav-footer">
       <a href="../module-03-reconnaissance/" class="nav-btn prev">&#8592; Module 03: Reconnaissance</a>
@@ -469,6 +835,78 @@ packet = RadioTap() / Dot11(
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
     });
+  }
+
+  // ── Quiz ──────────────────────────────────────────────────────
+  const TOTAL_Q = 8;
+  const qAnswered = {};
+  const qFeedbacks = {
+    q1: {
+      correct: "Correct. M1 + M2 is the minimum. M1 gives you the ANonce (from the AP). M2 gives you the SNonce and the MIC (computed by the client using its derived PTK). An attacker can take any candidate passphrase, derive a PMK, derive a candidate PTK using captured nonces and MACs, then verify the MIC against M2.",
+      wrong: "Incorrect. M1 + M2 is sufficient. M2 contains the SNonce and the MIC — computed using the client's PTK (derived from its PMK candidate). An attacker with M1 (ANonce) and M2 (SNonce+MIC) can brute-force the PTK offline. M3 and M4 confirm the session but are not needed for cracking."
+    },
+    q2: {
+      correct: "Correct. 0x008a = Key ACK bit set, Key MIC bit clear. This is M1 — the AP sends its ANonce to the client. Without a MIC, there is nothing to verify against a candidate PTK. Cracking requires the MIC in M2.",
+      wrong: "Incorrect. 0x008a has bit 7 (Key ACK) set and bit 8 (Key MIC) clear. This is M1: the AP sends ANonce to start the handshake. Since there is no MIC to verify, you cannot crack the password from M1 alone."
+    },
+    q3: {
+      correct: "Correct. OUI 00:0f:ac = IEEE 802.11 standard suite. Selector byte :02 = PSK (Pre-Shared Key) = WPA2-Personal. If it were :01 = 802.1X (Enterprise); :06 = SAE (WPA3). TKIP is a cipher, not an AKM.",
+      wrong: "Incorrect. In the RSN IE AKM suite: 00:0f:ac:01 = 802.1X (Enterprise), 00:0f:ac:02 = PSK (WPA2-Personal), 00:0f:ac:06 = SAE (WPA3). The :02 selector = PSK."
+    },
+    q4: {
+      correct: "Correct. wlan.fc.protected == 1 on a management frame (type 0) means the frame body is encrypted/MIC'd via 802.11w PMF. A deauth frame with protected=1 was sent legitimately by a WPA2-with-PMF AP — forged deauths cannot have protected=1 without the PTK.",
+      wrong: "Incorrect. wlan.fc.protected == 1 indicates the frame has 802.11w Management Frame Protection applied. Combined with wlan.fc.type_subtype == 12 (deauth), this identifies PMF-protected deauth frames that cannot be forged without the session PTK."
+    },
+    q5: {
+      correct: "Correct. airdecap-ng uses the SSID + passphrase to derive the PMK, then uses the captured 4-way handshake to derive the PTK for each client, then decrypts every CCMP-encrypted data frame. The output file (capture-01-dec.cap) shows all traffic in plaintext — DNS, HTTP, SMTP etc.",
+      wrong: "Incorrect. airdecap-ng decrypts all WPA2-encrypted frames in the capture file using the provided SSID and passphrase. It produces a -dec.cap file with plaintext traffic. It does NOT crack the password (that's aircrack-ng) and does NOT produce hashcat format (that's hcxpcapngtool)."
+    },
+    q6: {
+      correct: "Correct. Reason code 7 ('Class 3 frame received from non-associated STA') is the default reason code used by aireplay-ng -0. Legitimate deauths from APs typically use reason codes 1, 2, or 3. Seeing many reason-7 deauths is a strong indicator of an active deauthentication attack.",
+      wrong: "Incorrect. Reason code 7 is the default used by aireplay-ng deauthentication attacks (-0). Real AP deauths use reason codes 1 (unspecified), 2 (auth invalid), or 3 (leaving). A cluster of reason-7 deauths is a deauth attack signature."
+    },
+    q7: {
+      correct: "Correct. The CCMP PN is a 48-bit counter that prevents replay attacks — receivers reject frames with a PN not strictly greater than the last seen. KRACK (CVE-2017-13077) forces M3 replay, causing the receiver to reset the PN to 0. When PN=0 is reused, the same nonce feeds AES-CTR — the same keystream is generated twice, and XORing two ciphertexts with the same keystream recovers the XOR of plaintexts.",
+      wrong: "Incorrect. The CCMP PN is the 48-bit Packet Number — the CCMP replay counter. Receivers reject out-of-order PNs. KRACK resets PN to 0 via M3 replay → nonce reuse in AES-CTR → same keystream applied twice → XOR of ciphertexts = XOR of plaintexts → partial plaintext recovery."
+    },
+    q8: {
+      correct: "Correct. The lfilter parameter in Scapy's sniff() is a pre-filter function applied before the main callback (prn). Only packets that pass the filter are passed to handle_probe(). This prevents the callback from running on every single frame (beacons, data, control) — significantly reducing CPU overhead on busy channels.",
+      wrong: "Incorrect. lfilter is a pre-filter in Scapy's sniff() — frames are checked against it before being passed to the prn callback. It reduces CPU load by only calling handle_probe() when the frame actually contains a Dot11ProbeReq layer, instead of running on every captured frame."
+    }
+  };
+
+  let qScore = 0;
+  let qCount = 0;
+
+  function answer(btn, qId, isCorrect) {
+    if (qAnswered[qId]) return;
+    qAnswered[qId] = true;
+    qCount++;
+    const qEl = document.getElementById(qId);
+    const buttons = qEl.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    const fb = document.getElementById('fb-' + qId);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      qScore++;
+      fb.textContent = '✓ ' + qFeedbacks[qId].correct;
+      fb.className = 'quiz-feedback correct-fb show';
+    } else {
+      btn.classList.add('wrong');
+      fb.textContent = '✗ ' + qFeedbacks[qId].wrong;
+      fb.className = 'quiz-feedback wrong-fb show';
+      buttons.forEach(b => { if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct'); });
+    }
+    if (qCount === TOTAL_Q) {
+      const scoreEl = document.getElementById('quizScore');
+      const numEl = document.getElementById('scoreNum');
+      const labelEl = document.getElementById('scoreLabel');
+      numEl.textContent = qScore + '/' + TOTAL_Q;
+      const pct = qScore / TOTAL_Q;
+      labelEl.textContent = pct === 1 ? 'Perfect — ready for Module 05!' : pct >= 0.75 ? 'Strong — review missed answers.' : pct >= 0.5 ? 'Getting there — re-read the EAPOL and RSN IE sections.' : 'Re-read the handshake analysis and EAPOL decoder sections.';
+      numEl.style.color = pct === 1 ? 'var(--accent2)' : pct >= 0.625 ? 'var(--warn)' : 'var(--accent3)';
+      scoreEl.classList.add('show');
+    }
   }
 </script>
 </body>
