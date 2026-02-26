@@ -230,7 +230,7 @@ wifi-hacking-course/
 | 05 — WEP Cracking | Completed | Completed |
 | 06 — WPA2 Handshake | Completed | Completed |
 | 07 — WPA2 Cracking | Completed | Completed |
-| 08 — Deauth & DoS | Pending | Pending |
+| 08 — Deauth & DoS | Completed | Completed |
 | 09 — Evil Twin | Pending | Pending |
 | 10 — Captive Portal | Pending | Pending |
 | 11 — WPS Attacks | Pending | Pending |
