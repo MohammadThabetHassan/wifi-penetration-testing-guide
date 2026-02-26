@@ -231,9 +231,9 @@ wifi-hacking-course/
 | 06 — WPA2 Handshake | Completed | Completed |
 | 07 — WPA2 Cracking | Completed | Completed |
 | 08 — Deauth & DoS | Completed | Completed |
-| 09 — Evil Twin | Pending | Pending |
-| 10 — Captive Portal | Pending | Pending |
-| 11 — WPS Attacks | Pending | Pending |
-| 12 — PMKID Attack | Pending | Pending |
-| 13 — Enterprise WPA | Pending | Pending |
-| 14 — Attack Chaining | Pending | Pending |
+| 09 — Evil Twin | Completed | Completed |
+| 10 — Captive Portal | Completed | Completed |
+| 11 — WPS Attacks | Completed | Completed |
+| 12 — PMKID Attack | Completed | Completed |
+| 13 — Enterprise WPA | Completed | Completed |
+| 14 — Attack Chaining | Completed | Completed |
