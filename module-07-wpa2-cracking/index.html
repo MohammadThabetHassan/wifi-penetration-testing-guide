@@ -124,6 +124,27 @@
     .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
     .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
 
+    /* Quiz */
+    .quiz-container { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin:24px 0; }
+    .quiz-container h3 { font-size:14px; color:var(--accent); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .quiz-question { margin-bottom:28px; }
+    .quiz-question .q-text { font-size:14px; color:var(--text-head); margin-bottom:14px; line-height:1.5; }
+    .quiz-question .q-num { font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:6px; }
+    .option-list { display:flex; flex-direction:column; gap:8px; }
+    .option-btn { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 16px; color:var(--text); text-align:left; cursor:pointer; font-size:13px; transition:all 0.15s; font-family:var(--font-body); }
+    .option-btn:hover { border-color:var(--accent); color:var(--text-head); }
+    .option-btn.correct { border-color:var(--accent2); background:rgba(63,185,80,0.08); color:var(--accent2); }
+    .option-btn.wrong { border-color:var(--accent3); background:rgba(247,129,102,0.08); color:var(--accent3); }
+    .option-btn:disabled { cursor:default; }
+    .quiz-feedback { margin-top:10px; font-size:13px; padding:10px 14px; border-radius:6px; display:none; line-height:1.5; }
+    .quiz-feedback.show { display:block; }
+    .quiz-feedback.correct-fb { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.3); color:var(--accent2); }
+    .quiz-feedback.wrong-fb { background:rgba(247,129,102,0.08); border:1px solid rgba(247,129,102,0.3); color:var(--accent3); }
+    .quiz-score { display:none; text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
+    .quiz-score.show { display:block; }
+    .score-num { font-size:3rem; font-weight:700; color:var(--accent); font-family:var(--font-mono); }
+    .score-label { font-size:14px; color:var(--text-dim); margin-top:4px; }
+
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:var(--bg); }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
@@ -328,6 +349,272 @@
       </div>
     </section>
 
+    <!-- Section 5: hashcat Full Flag Reference -->
+    <section id="flags">
+      <h2><span class="section-num">05</span> hashcat Flag Reference</h2>
+      <p>Every important hashcat flag for WPA2 cracking with explanation.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Flag</th><th>Description</th><th>WPA2 Usage</th></tr></thead>
+          <tbody>
+            <tr><td><code>-m 22000</code></td><td>Hash type: WPA2 EAPOL+PMKID (recommended)</td><td>Always use this for modern captures</td></tr>
+            <tr><td><code>-m 2500</code></td><td>Hash type: WPA2 legacy .hccapx (deprecated)</td><td>Only for old .hccapx files</td></tr>
+            <tr><td><code>-a 0</code></td><td>Attack: Straight/dictionary</td><td><code>-a 0 rockyou.txt</code></td></tr>
+            <tr><td><code>-a 3</code></td><td>Attack: Brute-force/mask</td><td><code>-a 3 ?d?d?d?d?d?d?d?d</code></td></tr>
+            <tr><td><code>-a 6</code></td><td>Attack: Hybrid wordlist+mask (append)</td><td><code>-a 6 words.txt ?d?d?d?d</code></td></tr>
+            <tr><td><code>-a 7</code></td><td>Attack: Hybrid mask+wordlist (prepend)</td><td><code>-a 7 ?d?d?d words.txt</code></td></tr>
+            <tr><td><code>-r &lt;file&gt;</code></td><td>Apply rule file</td><td><code>-r rules/best64.rule</code></td></tr>
+            <tr><td><code>-O</code></td><td>Optimized kernel: faster, <strong>max 31 chars</strong></td><td>Always add unless passwords may be >31 chars</td></tr>
+            <tr><td><code>-w 3</code></td><td>Workload: 1=low, 2=default, 3=high, 4=max</td><td><code>-w 3</code> for dedicated cracking machine</td></tr>
+            <tr><td><code>--increment</code></td><td>Try mask lengths from min to max</td><td><code>-a 3 ?a?a?a?a?a?a?a?a --increment --increment-min=8</code></td></tr>
+            <tr><td><code>--session &lt;name&gt;</code></td><td>Name session for restore</td><td><code>--session wpa2_home</code></td></tr>
+            <tr><td><code>--restore</code></td><td>Resume interrupted session</td><td><code>--restore --session wpa2_home</code></td></tr>
+            <tr><td><code>--show</code></td><td>Print cracked passwords from potfile</td><td><code>hashcat -m 22000 hashes.hc22000 --show</code></td></tr>
+            <tr><td><code>--status</code></td><td>Enable periodic status output</td><td><code>--status --status-timer=60</code></td></tr>
+            <tr><td><code>--potfile-disable</code></td><td>Don't save results to potfile</td><td>Use in isolated test environments</td></tr>
+            <tr><td><code>-D 1</code></td><td>Use CPU device (no GPU)</td><td>When GPU unavailable</td></tr>
+            <tr><td><code>-b</code></td><td>Benchmark mode</td><td><code>hashcat -b -m 22000</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 6: Session Management -->
+    <section id="session">
+      <h2><span class="section-num">06</span> Session Management &amp; Restore</h2>
+      <p>Long cracking jobs can be interrupted. Named sessions allow exact resumption.</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">hashcat session management</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-session')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-session"><span class="cmt"># Start a named session</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hashcat <span class="flag">-m</span> <span class="str">22000</span> hashes.hc22000 rockyou.txt <span class="flag">-r</span> rules/best64.rule <span class="flag">-O</span> <span class="flag">-w</span> <span class="str">3</span> <span class="flag">--session</span> <span class="str">wpa2_home</span> <span class="flag">--status</span> <span class="flag">--status-timer</span> <span class="str">60</span></span>
+<span class="cmt"># --session wpa2_home    → creates ~/.hashcat/sessions/wpa2_home.restore</span>
+<span class="cmt"># --status-timer 60      → print progress every 60 seconds</span>
+<span class="cmt"># Press Ctrl+C to pause — state is automatically saved</span>
+
+<span class="cmt"># Resume the session (exact position restored)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hashcat <span class="flag">--restore</span> <span class="flag">--session</span> <span class="str">wpa2_home</span></span>
+
+<span class="cmt"># Show already-cracked passwords (reads potfile)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hashcat <span class="flag">-m</span> <span class="str">22000</span> hashes.hc22000 <span class="flag">--show</span></span>
+<span class="out-ok">WPA*02*...*MyNetwork:password123</span>
+
+<span class="cmt"># Disable potfile saving (clean test environment)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hashcat <span class="flag">-m</span> <span class="str">22000</span> hashes.hc22000 rockyou.txt <span class="flag">--potfile-disable</span></span></div>
+      </div>
+    </section>
+
+    <!-- Section 7: Wordlist Tools (John, CUPP, cewl) -->
+    <section id="wordlist-tools">
+      <h2><span class="section-num">07</span> Wordlist Tools: John, CUPP &amp; cewl</h2>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">John the Ripper — CPU alternative with excellent rules</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-john')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-john"><span class="cmt"># Convert capture to John format</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">python3 /usr/share/john/wpapcap2john handshake-01.cap > handshake.john</span>
+
+<span class="cmt"># Basic wordlist attack</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">john <span class="flag">--wordlist</span>=<span class="str">/usr/share/wordlists/rockyou.txt</span> <span class="flag">--format</span>=<span class="str">wpapsk</span> handshake.john</span>
+
+<span class="cmt"># With John's jumbo rules (very effective)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">john <span class="flag">--wordlist</span>=<span class="str">rockyou.txt</span> <span class="flag">--rules</span>=<span class="str">jumbo</span> <span class="flag">--format</span>=<span class="str">wpapsk</span> handshake.john</span>
+<span class="cmt"># --rules=jumbo   → John's most comprehensive ruleset</span>
+
+<span class="cmt"># Show cracked results</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">john <span class="flag">--show</span> <span class="flag">--format</span>=<span class="str">wpapsk</span> handshake.john</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">CUPP — target-profiled wordlist generation</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-cupp')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-cupp"><span class="cmt"># Interactive: fill in OSINT about target (name, birthday, pet, etc.)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">cupp <span class="flag">-i</span></span>
+<span class="out"> [*] First name: John</span>
+<span class="out"> [*] Last name: Smith</span>
+<span class="out"> [*] Birthdate: 15031990</span>
+<span class="out"> [*] Partners name: Jane</span>
+<span class="out-ok"> [+] 2,467 profiles saved to john.txt</span>
+
+<span class="cmt"># Combine with best64 rules for maximum coverage</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hashcat <span class="flag">-m</span> <span class="str">22000</span> hashes.hc22000 john.txt <span class="flag">-r</span> rules/best64.rule <span class="flag">-O</span></span>
+
+<span class="cmt"># cewl: generate wordlist from target's website</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">cewl https://targetcompany.com <span class="flag">-m</span> <span class="str">8</span> <span class="flag">-d</span> <span class="str">3</span> <span class="flag">-w</span> <span class="str">company_words.txt</span></span>
+<span class="cmt"># -m 8 = minimum word length 8 chars (WPA2 minimum)</span>
+<span class="cmt"># -d 3 = crawl depth 3 links from root</span>
+<span class="cmt"># Useful when password may contain company-related terms</span></div>
+      </div>
+    </section>
+
+    <!-- Section 8: GPU Speed Reference -->
+    <section id="speed">
+      <h2><span class="section-num">08</span> GPU Speed Reference</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>GPU</th><th>WPA2 H/s</th><th>rockyou.txt time</th></tr></thead>
+          <tbody>
+            <tr><td>RTX 4090</td><td style="color:var(--accent2)">~1,900,000</td><td style="color:var(--accent2)">~8 seconds</td></tr>
+            <tr><td>RTX 3090</td><td>~1,250,000</td><td>~12 seconds</td></tr>
+            <tr><td>RTX 3080</td><td>~900,000</td><td>~16 seconds</td></tr>
+            <tr><td>RTX 2080 Ti</td><td>~650,000</td><td>~22 seconds</td></tr>
+            <tr><td>RTX 2080</td><td>~490,000</td><td>~30 seconds</td></tr>
+            <tr><td>GTX 1080 Ti</td><td>~320,000</td><td>~45 seconds</td></tr>
+            <tr><td><strong>CPU (8-core, -D 1)</strong></td><td style="color:var(--accent3)">~5,000</td><td style="color:var(--accent3)">~48 minutes</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Benchmark and temperature monitoring</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-bench')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-bench"><span class="cmt"># Benchmark WPA2 on your GPU before starting a long run</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hashcat <span class="flag">-b</span> <span class="flag">-m</span> <span class="str">22000</span></span>
+<span class="out-ok">Speed.#1.........: 1,988.1 kH/s (1.99 MH/s)</span>
+
+<span class="cmt"># Monitor GPU temperature in real-time</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">nvidia-smi <span class="flag">-l</span> <span class="str">1</span></span>
+<span class="cmt"># Stop cracking if temperature exceeds 85°C (damage risk above 95°C)</span>
+
+<span class="cmt"># CPU-only mode (when no GPU)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hashcat <span class="flag">-m</span> <span class="str">22000</span> hashes.hc22000 rockyou.txt <span class="flag">-D</span> <span class="str">1</span> <span class="flag">-O</span></span>
+<span class="cmt"># -D 1 = use CPU device only</span></div>
+      </div>
+    </section>
+
+    <!-- Section 9: Quiz -->
+    <section id="quiz">
+      <h2><span class="section-num">09</span> Knowledge Check</h2>
+
+      <div class="quiz-container">
+        <h3>&#127358; Module 07 Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions</span></h3>
+
+        <!-- Q1 -->
+        <div class="quiz-question" id="q1">
+          <div class="q-num">Question 1 of 8</div>
+          <div class="q-text">What is the critical limitation of the hashcat <code>-O</code> (optimized kernel) flag?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q1',false)">It only works on NVIDIA GPUs, not AMD</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)">It caps the maximum password length at 31 characters — any password longer than 31 chars will NOT be found even if it's in the wordlist</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">It disables rule-based attacks and only supports straight dictionary mode</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">It reduces speed by 50% to prevent overheating</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" id="q2">
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">What does hashcat attack mode <code>-a 6</code> do, and write an example command for "password + 4 digits"?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q2',false)">Brute-force all positions: <code>hashcat -m 22000 h.hc22000 -a 6 ?d?d?d?d?l?l?l?l</code></button>
+            <button class="option-btn" onclick="answer(this,'q2',true)">Hybrid wordlist+mask (appends mask to each word): <code>hashcat -m 22000 h.hc22000 -a 6 rockyou.txt ?d?d?d?d</code></button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">Combination attack merging two wordlists: <code>hashcat -m 22000 h.hc22000 -a 6 list1.txt list2.txt</code></button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">Rule-based attack using 6 simultaneous rules: <code>hashcat -m 22000 h.hc22000 -a 6 -r rule1 -r rule2</code></button>
+          </div>
+          <div class="quiz-feedback" id="fb-q2"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" id="q3">
+          <div class="q-num">Question 3 of 8</div>
+          <div class="q-text">You start a hashcat session and the system crashes. What is the exact command to resume it if you named it "wpa2_office"?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q3',false)"><code>hashcat -m 22000 hashes.hc22000 rockyou.txt --continue</code></button>
+            <button class="option-btn" onclick="answer(this,'q3',true)"><code>hashcat --restore --session wpa2_office</code></button>
+            <button class="option-btn" onclick="answer(this,'q3',false)"><code>hashcat --resume wpa2_office.restore</code></button>
+            <button class="option-btn" onclick="answer(this,'q3',false)"><code>hashcat -m 22000 hashes.hc22000 --load-session wpa2_office</code></button>
+          </div>
+          <div class="quiz-feedback" id="fb-q3"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" id="q4">
+          <div class="q-num">Question 4 of 8</div>
+          <div class="q-text">What does <code>hashcat -m 22000 hashes.hc22000 --show</code> display?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q4',false)">The full hash content in human-readable format</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">A preview of the first 10 candidate passwords to try</button>
+            <button class="option-btn" onclick="answer(this,'q4',true)">The already-cracked passwords read from the hashcat potfile — no cracking is performed, just displaying previous results</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">The GPU speed for this hash mode</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q4"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" id="q5">
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">What is the purpose of CUPP and when would you use it over rockyou.txt?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q5',false)">CUPP compresses wordlists to save disk space; use it when rockyou.txt is too large</button>
+            <button class="option-btn" onclick="answer(this,'q5',true)">CUPP generates a personalized wordlist based on OSINT about a specific target (name, birthday, pet, company) — use it when you know details about the person who set the password</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">CUPP is a GPU cracker; use it instead of hashcat on AMD GPUs</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">CUPP converts .cap files to .hc22000 format faster than hcxpcapngtool</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q5"></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">Write the mask attack command to crack an 8-character password that you know starts with "admin" followed by digits.</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)"><code>hashcat -m 22000 h.hc22000 -a 0 admin -j '?d?d?d'</code></button>
+            <button class="option-btn" onclick="answer(this,'q6',true)"><code>hashcat -m 22000 h.hc22000 -a 3 admin?d?d?d -O</code></button>
+            <button class="option-btn" onclick="answer(this,'q6',false)"><code>hashcat -m 22000 h.hc22000 -a 6 admin.txt ?d?d?d</code></button>
+            <button class="option-btn" onclick="answer(this,'q6',false)"><code>hashcat -m 22000 h.hc22000 -a 3 ?l?l?l?l?l?d?d?d -O</code></option></button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text">What does <code>cewl</code> generate and when is it most useful for WPA2 cracking?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">It generates random character masks; useful when password length is unknown</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">It scrapes words from a target website to build a custom wordlist; most useful when the WPA2 password likely contains company-specific terms, product names, or employee names found on the company site</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">It generates all combinations of letters found in the SSID; useful for short SSIDs</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">It creates a wordlist from previously cracked hashes in hashcat's potfile</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">What does the hashcat <code>--increment</code> flag do in a mask attack?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)">It increases the workload profile by 1 automatically as the GPU heats up</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">It appends an incrementing number to each candidate password</button>
+            <button class="option-btn" onclick="answer(this,'q8',true)">It tries the mask at increasing lengths — starting from the minimum (e.g., 8 chars) up to the maximum mask length — useful when the exact password length is unknown</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">It doubles the number of GPU threads on each iteration to maximize speed</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
+        <div class="quiz-score" id="quizScore">
+          <div class="score-num" id="scoreNum">0/8</div>
+          <div class="score-label" id="scoreLabel"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Nav -->
     <div class="nav-footer">
       <a href="../module-06-wpa2-handshake/" class="nav-btn prev">&#8592; Module 06: WPA2 Handshake</a>
@@ -337,6 +624,78 @@
 </div>
 
 <script>
+  // ── Quiz ──────────────────────────────────────────────────────
+  const TOTAL_Q = 8;
+  const qAnswered = {};
+  const qFeedbacks = {
+    q1: {
+      correct: "Correct. hashcat -O uses a faster optimized kernel but imposes a hard cap: passwords longer than 31 characters are silently skipped. For typical WPA2 home passwords this is fine, but for corporate environments with 32+ char passphrases, run without -O.",
+      wrong: "Incorrect. The -O flag enables the optimized kernel which is faster but cannot test passwords longer than 31 characters. This is the only limitation — it works on all GPU vendors and supports all attack modes."
+    },
+    q2: {
+      correct: "Correct. Attack mode -a 6 is 'Hybrid wordlist+mask' — it takes each word from the wordlist and appends the mask to it. So 'password' with ?d?d?d?d becomes 'password0000', 'password0001', ..., 'password9999'. Perfect for 'word + year' patterns.",
+      wrong: "Incorrect. -a 6 is Hybrid wordlist+mask: it appends the mask to each word in the wordlist. 'rockyou.txt ?d?d?d?d' → every rockyou word tried with every 4-digit suffix. -a 1 combines two wordlists; -a 3 is pure mask brute-force."
+    },
+    q3: {
+      correct: "Correct. 'hashcat --restore --session wpa2_office' is the exact syntax. hashcat saves session state to ~/.hashcat/sessions/wpa2_office.restore and resumes from the exact keyspace position where it was interrupted.",
+      wrong: "Incorrect. To restore a named session: 'hashcat --restore --session wpa2_office'. The --restore flag tells hashcat to load the saved session state. The session name must match what was used in the original --session parameter."
+    },
+    q4: {
+      correct: "Correct. --show reads the hashcat potfile (~/.hashcat/hashcat.potfile) and prints any previously cracked passwords matching the provided hashes. No GPU computation happens — it just does a lookup. Always run --show after a cracking session to see results.",
+      wrong: "Incorrect. --show reads the potfile (hashcat's local database of previously cracked hashes) and prints any matches. No cracking occurs. It's how you retrieve results after a session completes or to check if a hash was already cracked in a previous run."
+    },
+    q5: {
+      correct: "Correct. CUPP (Common User Passwords Profiler) takes personal information about a target (from OSINT/social engineering) and generates a custom wordlist with combinations of their name, birthdate, partner, pets, etc. Use it when you know details about who set the password — far more effective than rockyou.txt for personal/family networks.",
+      wrong: "Incorrect. CUPP generates personalized wordlists using target-specific OSINT. It creates combinations like 'john1990', 'J0hn$mith', 'Rover2010!' based on info you provide about the target. Most effective against personal networks where the password relates to the user."
+    },
+    q6: {
+      correct: "Correct. -a 3 is the mask attack mode. The mask 'admin?d?d?d' means: literal 'admin' (5 chars) + 3 digits = 8 total characters. Combined with -O for speed. This tries admin000, admin001, ..., admin999.",
+      wrong: "Incorrect. Mask attacks use -a 3. The mask 'admin?d?d?d' means literal text 'admin' followed by 3 digit positions. -a 6 would require a wordlist file. -j is an inline rule for mode -a 0. The correct answer is: hashcat -m 22000 h.hc22000 -a 3 admin?d?d?d -O"
+    },
+    q7: {
+      correct: "Correct. cewl (Custom Word List generator) crawls a target website and extracts words, building a vocabulary-based wordlist. Most effective when the WPA2 password was set by a company IT admin using company-related terms, or by an employee using their company's product names, jargon, or brand names.",
+      wrong: "Incorrect. cewl scrapes words from URLs to build custom wordlists. It's useful when the password setter likely used company-specific vocabulary — company name, products, team names, etc. Run: cewl https://target.com -m 8 -d 3 -w wordlist.txt"
+    },
+    q8: {
+      correct: "Correct. --increment makes hashcat try the mask at progressively longer lengths. With '--increment --increment-min=8' and mask ?a?a?a?a?a?a?a?a?a?a, it tries 8 chars first, then 9, then 10, etc. Essential when you don't know the exact password length.",
+      wrong: "Incorrect. --increment enables incremental mode for mask attacks — it tries the mask at lengths from --increment-min up to the full mask length. This is useful when the password length is unknown: start at 8 (WPA2 minimum) and go up."
+    }
+  };
+
+  let qScore = 0;
+  let qCount = 0;
+
+  function answer(btn, qId, isCorrect) {
+    if (qAnswered[qId]) return;
+    qAnswered[qId] = true;
+    qCount++;
+    const qEl = document.getElementById(qId);
+    const buttons = qEl.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    const fb = document.getElementById('fb-' + qId);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      qScore++;
+      fb.textContent = '✓ ' + qFeedbacks[qId].correct;
+      fb.className = 'quiz-feedback correct-fb show';
+    } else {
+      btn.classList.add('wrong');
+      fb.textContent = '✗ ' + qFeedbacks[qId].wrong;
+      fb.className = 'quiz-feedback wrong-fb show';
+      buttons.forEach(b => { if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct'); });
+    }
+    if (qCount === TOTAL_Q) {
+      const scoreEl = document.getElementById('quizScore');
+      const numEl = document.getElementById('scoreNum');
+      const labelEl = document.getElementById('scoreLabel');
+      numEl.textContent = qScore + '/' + TOTAL_Q;
+      const pct = qScore / TOTAL_Q;
+      labelEl.textContent = pct === 1 ? 'Perfect — ready for Module 08!' : pct >= 0.75 ? 'Strong — review any missed questions.' : pct >= 0.5 ? 'Getting there — re-read the hashcat flags and attack modes.' : 'Re-read the attack modes, session management, and wordlist tool sections.';
+      numEl.style.color = pct === 1 ? 'var(--accent2)' : pct >= 0.625 ? 'var(--warn)' : 'var(--accent3)';
+      scoreEl.classList.add('show');
+    }
+  }
+
   let currentMask = '';
 
   function addMask(m) {
