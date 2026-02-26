@@ -252,6 +252,36 @@
     .nav-btn.prev { border: 1px solid var(--border); color: var(--text-dim); }
     .nav-btn.prev:hover { border-color: var(--accent); color: var(--accent); }
 
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: rgba(88,166,255,0.06); }
+    th { padding: 10px 14px; text-align: left; color: var(--accent); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border); }
+    td { padding: 10px 14px; border-bottom: 1px solid rgba(48,54,61,0.6); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(88,166,255,0.03); }
+
+    /* Quiz */
+    .quiz-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin: 24px 0; }
+    .quiz-container h3 { font-size: 14px; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question .q-text { font-size: 14px; color: var(--text-head); margin-bottom: 14px; line-height: 1.5; }
+    .quiz-question .q-num { font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-bottom: 6px; }
+    .option-list { display: flex; flex-direction: column; gap: 8px; }
+    .option-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 16px; color: var(--text); text-align: left; cursor: pointer; font-size: 13px; transition: all 0.15s; font-family: var(--font-body); }
+    .option-btn:hover { border-color: var(--accent); color: var(--text-head); }
+    .option-btn.correct { border-color: var(--accent2); background: rgba(63,185,80,0.08); color: var(--accent2); }
+    .option-btn.wrong { border-color: var(--accent3); background: rgba(247,129,102,0.08); color: var(--accent3); }
+    .option-btn:disabled { cursor: default; }
+    .quiz-feedback { margin-top: 10px; font-size: 13px; padding: 10px 14px; border-radius: 6px; display: none; line-height: 1.5; }
+    .quiz-feedback.show { display: block; }
+    .quiz-feedback.correct-fb { background: rgba(63,185,80,0.08); border: 1px solid rgba(63,185,80,0.3); color: var(--accent2); }
+    .quiz-feedback.wrong-fb { background: rgba(247,129,102,0.08); border: 1px solid rgba(247,129,102,0.3); color: var(--accent3); }
+    .quiz-score { display: none; text-align: center; padding: 20px; border-top: 1px solid var(--border); margin-top: 20px; }
+    .quiz-score.show { display: block; }
+    .score-num { font-size: 3rem; font-weight: 700; color: var(--accent); font-family: var(--font-mono); }
+    .score-label { font-size: 14px; color: var(--text-dim); margin-top: 4px; }
+
     /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
@@ -781,6 +811,276 @@
       </div>
     </section>
 
+    <!-- Section 7: TX Power & Regulatory Domains -->
+    <section id="txpower">
+      <h2><span class="section-num">07</span> TX Power &amp; Regulatory Domains</h2>
+      <p>
+        Your adapter's transmit power is capped by two things: the hardware maximum and the
+        <strong>regulatory domain</strong> enforced by the kernel. Higher TX power extends your
+        effective injection and capture range. In a lab environment you can adjust this.
+      </p>
+
+      <div class="callout warn">
+        <span class="ci">&#9888;</span>
+        <div><strong>Lab Only:</strong> Increasing TX power beyond your country's legal limit is illegal on public spectrum. Only do this in your isolated lab environment with no external interference.</div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">kali@kali:~$ — Check and set TX power</span>
+          <button class="terminal-copy" onclick="copyTerminal(this, 'term-txpwr')">Copy</button>
+        </div>
+        <div class="terminal-body" id="term-txpwr">
+<span class="cmt"># Check current regulatory domain</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">iw reg get</span>
+<span class="out">global</span>
+<span class="out">country US: DFS-FCC</span>
+<span class="out">    (2400 - 2483.5 @ 40), (N/A, 30), (N/A)</span>
+<span class="cmt"># US = max 30 dBm on 2.4 GHz. Some regions allow more.</span>
+
+<span class="cmt"># Set regulatory domain for lab (unconstrained in many drivers)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iw reg set <span class="str">BO</span></span>
+<span class="cmt"># BO = Bolivia — historically less restricted in out-of-tree drivers</span>
+
+<span class="cmt"># Set TX power to 30 dBm (3000 mBm)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo iw dev wlan0mon set txpower fixed <span class="str">3000</span></span>
+<span class="cmt"># fixed = don't let the driver reduce this automatically</span>
+<span class="cmt"># 3000  = value in mBm (millidecibels-milliwatt); 3000 mBm = 30 dBm</span>
+
+<span class="cmt"># Verify change</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">iwconfig wlan0mon | grep Tx-Power</span>
+<span class="out-ok">Tx-Power=30 dBm</span>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>dBm</th><th>mW</th><th>Range (Estimate)</th><th>Use Case</th></tr></thead>
+          <tbody>
+            <tr><td><code>10 dBm</code></td><td>10 mW</td><td>~10m</td><td>Default low-power mode</td></tr>
+            <tr><td><code>20 dBm</code></td><td>100 mW</td><td>~50m</td><td>Standard adapter default</td></tr>
+            <tr><td><code>27 dBm</code></td><td>500 mW</td><td>~150m</td><td>High-gain mode</td></tr>
+            <tr><td><code>30 dBm</code></td><td>1000 mW</td><td>~300m+</td><td>Max for Alfa AWUS036ACH</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 8: Dual Adapter Setup -->
+    <section id="dual">
+      <h2><span class="section-num">08</span> Dual-Adapter Setup</h2>
+      <p>
+        Several attack modules require two wireless interfaces running simultaneously — one in monitor mode
+        for injection/capture, and one in AP mode serving a rogue network. Evil Twin (Module 09) and
+        Captive Portal (Module 10) both need this.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Attack</th><th>Interface 1</th><th>Interface 2</th></tr></thead>
+          <tbody>
+            <tr><td>Evil Twin (Module 09)</td><td>Monitor — deauth clients</td><td>AP mode — fake AP via hostapd</td></tr>
+            <tr><td>Captive Portal (Module 10)</td><td>Monitor — recon/deauth</td><td>AP mode — rogue portal</td></tr>
+            <tr><td>MITM with relay</td><td>AP mode — client connects</td><td>Managed — upstream relay</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">kali@kali:~$ — Dual adapter setup</span>
+          <button class="terminal-copy" onclick="copyTerminal(this, 'term-dual')">Copy</button>
+        </div>
+        <div class="terminal-body" id="term-dual">
+<span class="cmt"># Plug in both adapters, then list all interfaces</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">iw dev</span>
+<span class="out">phy#0</span>
+<span class="out">    Interface wlan0    type: managed  <span class="cmt">← adapter 1 (built-in or first USB)</span></span>
+<span class="out">phy#1</span>
+<span class="out">    Interface wlan1    type: managed  <span class="cmt">← adapter 2 (second USB)</span></span>
+
+<span class="cmt"># Put wlan1 into monitor mode for injection/capture</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airmon-ng start wlan1</span>
+<span class="out-ok">PHY     Interface       Driver          Chipset</span>
+<span class="out-ok">phy1    wlan1           88XXau          Realtek RTL8812AU</span>
+<span class="out-ok">                (monitor mode enabled; use wlan1mon)</span>
+
+<span class="cmt"># Verify both are available simultaneously</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">iw dev</span>
+<span class="out-ok">phy#0  Interface wlan0     type: managed   ← AP mode / relay</span>
+<span class="out-ok">phy#1  Interface wlan1mon  type: monitor   ← injection + capture</span>
+
+<span class="cmt"># Confirm wlan0 supports AP mode (required for hostapd)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">iw phy phy0 info | grep <span class="flag">-A</span> 8 <span class="str">"interface modes"</span></span>
+<span class="out">Supported interface modes:</span>
+<span class="out-ok">     * AP           ← must be present for hostapd</span>
+<span class="out-ok">     * managed</span>
+<span class="out-ok">     * monitor</span>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <span class="ci">&#128161;</span>
+        <div><strong>Rule:</strong> Never try to put one physical radio (<code>phy</code>) into two modes simultaneously. Each <code>phy</code> is a separate hardware radio. <code>wlan0</code> and <code>wlan0mon</code> share the same <code>phy#0</code> — you can only use one at a time on a single-radio adapter.</div>
+      </div>
+    </section>
+
+    <!-- Section 9: Full Toolchain -->
+    <section id="toolchain">
+      <h2><span class="section-num">09</span> Complete Toolchain Reference</h2>
+      <p>Every tool used in this course, the module it appears in, and its purpose.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tool</th><th>Module(s)</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>airmon-ng</code></td><td>02+</td><td>Enable/disable monitor mode; kill interfering processes</td></tr>
+            <tr><td><code>airodump-ng</code></td><td>03+</td><td>Passive AP/client discovery and packet capture to .cap file</td></tr>
+            <tr><td><code>aireplay-ng</code></td><td>05–08</td><td>Frame injection: deauth, fake auth, ARP replay, WEP chopchop</td></tr>
+            <tr><td><code>aircrack-ng</code></td><td>05, 07</td><td>WEP key cracking (PTW) and WPA2 handshake cracking (CPU)</td></tr>
+            <tr><td><code>hashcat</code></td><td>07, 12</td><td>GPU-accelerated WPA2 cracking (-m 22000); rule-based attacks</td></tr>
+            <tr><td><code>hcxdumptool</code></td><td>12</td><td>Clientless PMKID capture + EAPOL capture without full handshake</td></tr>
+            <tr><td><code>hcxtools</code></td><td>12</td><td>Convert .pcapng to .hc22000 for hashcat; wlanhcxinfo for analysis</td></tr>
+            <tr><td><code>wireshark</code> / <code>tshark</code></td><td>04+</td><td>Deep packet analysis; filter by BSSID, frame type, EAPOL</td></tr>
+            <tr><td><code>hostapd</code></td><td>09, 10</td><td>Create rogue/Evil Twin APs</td></tr>
+            <tr><td><code>hostapd-wpe</code></td><td>13</td><td>Rogue Enterprise AP — captures MSCHAPv2 from clients</td></tr>
+            <tr><td><code>dnsmasq</code></td><td>09, 10</td><td>DHCP + DNS for clients connecting to rogue AP</td></tr>
+            <tr><td><code>reaver</code></td><td>11</td><td>WPS PIN brute force (online attack against WPS registrar)</td></tr>
+            <tr><td><code>pixiewps</code></td><td>11</td><td>Offline Pixie Dust: recover WPS PIN from E-S1/E-S2 nonces</td></tr>
+            <tr><td><code>bully</code></td><td>11</td><td>Alternative WPS PIN attack; handles more AP implementations</td></tr>
+            <tr><td><code>mdk4</code></td><td>08</td><td>Beacon flood, deauth storm, EAPOL flood DoS attacks</td></tr>
+            <tr><td><code>bettercap</code></td><td>09, 10</td><td>Full MITM framework; KARMA mode, ARP poisoning, SSL strip</td></tr>
+            <tr><td><code>wifite</code></td><td>—</td><td>Automated: scans → deauths → captures → cracks in sequence</td></tr>
+            <tr><td><code>kismet</code></td><td>03</td><td>Passive IDS scanner; detects hidden SSIDs + anomalous frames</td></tr>
+            <tr><td><code>scapy</code></td><td>Advanced</td><td>Python: craft and send arbitrary 802.11 frames</td></tr>
+            <tr><td><code>macchanger</code></td><td>01+</td><td>Random or specific MAC address spoofing</td></tr>
+            <tr><td><code>crunch</code></td><td>07</td><td>Generate wordlists by charset, length, and pattern</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 10: Quiz -->
+    <section id="quiz">
+      <h2><span class="section-num">10</span> Knowledge Check</h2>
+      <p>Test your understanding before moving to Module 02. All questions draw from this module.</p>
+
+      <div class="quiz-container">
+        <h3>&#127358; Module 01 Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions</span></h3>
+
+        <!-- Q1 -->
+        <div class="quiz-question" id="q1">
+          <div class="q-num">Question 1 of 8</div>
+          <div class="q-text">You plug in a TP-Link TL-WN722N and injection tests fail. What is the most likely cause?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q1',false)">The AR9271 chipset does not support injection</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)">It is v2 or v3, which uses an RTL8188EUS chipset with no injection support</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">NetworkManager needs to be disabled first</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">The ath9k_htc driver is not installed</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" id="q2">
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">What does DKMS do that a simple <code>make install</code> does not?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q2',false)">It compiles the driver faster using GPU acceleration</button>
+            <button class="option-btn" onclick="answer(this,'q2',true)">It automatically recompiles and reinstalls the driver whenever the kernel is updated</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">It signs the driver for Secure Boot compatibility</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">It installs the driver to all users on the system</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q2"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" id="q3">
+          <div class="q-num">Question 3 of 8</div>
+          <div class="q-text">After running <code>sudo airmon-ng start wlan0</code>, the injection test still fails with "No answer from AP". What is the first thing to check?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q3',false)">Reinstall the driver from source</button>
+            <button class="option-btn" onclick="answer(this,'q3',true)">Lock the interface to the AP's channel with <code>iw dev wlan0mon set channel &lt;N&gt;</code></button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">Check if WPA3 is enabled on the target AP</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">Enable DHCP on wlan0mon</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q3"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" id="q4">
+          <div class="q-num">Question 4 of 8</div>
+          <div class="q-text">What does <code>sudo iw reg set BO</code> accomplish and why is it used in wireless labs?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q4',false)">It sets the interface to Bolivia's frequency plan, adding new 5 GHz channels</button>
+            <button class="option-btn" onclick="answer(this,'q4',true)">It sets the regulatory domain to Bolivia, which in many out-of-tree drivers removes TX power restrictions, allowing higher transmit power</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">It bypasses WPA2 encryption using a Bolivian government exploit</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">It enables monitor mode on Broadcom chipsets</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q4"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" id="q5">
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">You need to run an Evil Twin attack. Which two interface roles do you need simultaneously?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q5',false)">Two adapters in monitor mode</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">One in managed mode for the internet, one in WEP mode for capture</button>
+            <button class="option-btn" onclick="answer(this,'q5',true)">One in monitor mode (deauth + capture) and one in AP mode (rogue AP via hostapd)</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">One in monitor mode and one in ad-hoc (IBSS) mode</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q5"></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">What is the difference between <code>hcxdumptool</code> and <code>airodump-ng</code>?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)">hcxdumptool can only capture WEP traffic; airodump-ng captures WPA2</button>
+            <button class="option-btn" onclick="answer(this,'q6',true)">hcxdumptool captures PMKID and EAPOL without needing a client to deauthenticate; airodump-ng is a general-purpose passive capture tool</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">airodump-ng is GPU-accelerated; hcxdumptool is CPU-only</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">They are identical tools from different vendors</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text"><code>rfkill list</code> shows "Soft blocked: yes" for your external adapter. How do you fix it?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">Reboot the machine</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">Toggle the physical hardware switch on the laptop</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">Run <code>sudo rfkill unblock all</code> (or unblock by index)</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">Reinstall the wireless driver</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">Why must you run <code>sudo airmon-ng check kill</code> before enabling monitor mode?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)">To prevent the kernel from crashing when switching modes</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">To flush the ARP cache before packet capture</button>
+            <button class="option-btn" onclick="answer(this,'q8',true)">NetworkManager and wpa_supplicant continuously manage the interface — they switch channels, reconfigure modes, and generate frames that corrupt your capture</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">It is not necessary; monitor mode works fine with NetworkManager running</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
+        <div class="quiz-score" id="quizScore">
+          <div class="score-num" id="scoreNum">0/8</div>
+          <div class="score-label" id="scoreLabel"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Nav -->
     <div class="nav-footer">
       <a href="../module-00-foundations/" class="nav-btn prev">&#8592; Module 00: Foundations</a>
@@ -832,6 +1132,78 @@
     document.getElementById('progressFill').style.width = pct + '%';
     document.getElementById('progressText').textContent = done + ' / ' + total + ' complete';
     document.getElementById('progressPct').textContent = pct + '%';
+  }
+
+  // ── Quiz ──────────────────────────────────────────────────────
+  const TOTAL_Q = 8;
+  const qAnswered = {};
+  const qFeedbacks = {
+    q1: {
+      correct: "Correct. The TL-WN722N v2 and v3 use the RTL8188EUS chipset which does not support packet injection. Only v1 uses AR9271. Always check the hardware version before purchasing.",
+      wrong: "Incorrect. The issue is the hardware version. v1 uses AR9271 (injection capable); v2/v3 use RTL8188EUS which has no injection support in Linux."
+    },
+    q2: {
+      correct: "Correct. DKMS (Dynamic Kernel Module Support) registers the driver source with the DKMS framework so it is automatically recompiled and reinstalled whenever the kernel is upgraded via apt.",
+      wrong: "Incorrect. The key advantage of DKMS is automatic recompilation after kernel upgrades. A plain 'make install' produces a module tied to one specific kernel version — it breaks on every kernel update."
+    },
+    q3: {
+      correct: "Correct. aireplay-ng -9 uses broadcast probe requests to find nearby APs. If it cannot hear responses, it is usually because the interface is on a different channel than the target AP. Lock the channel first.",
+      wrong: "Incorrect. The most common cause of 'No answer from AP' is a channel mismatch. Use 'iw dev wlan0mon set channel N' to lock to the AP's channel, then retry the injection test."
+    },
+    q4: {
+      correct: "Correct. Bolivia (BO) has historically been an unrestricted regulatory domain in many out-of-tree drivers. Setting it removes TX power caps enforced by the CRDA, allowing you to set higher power for better range in your lab.",
+      wrong: "Incorrect. 'iw reg set BO' sets the regulatory domain to Bolivia. In many out-of-tree drivers (like RTL8812AU), this removes TX power restrictions — purely a driver behavior, not geographic routing."
+    },
+    q5: {
+      correct: "Correct. Evil Twin requires one adapter in monitor mode (to send deauth frames kicking clients off the real AP) and a second in AP mode running hostapd (to serve the rogue network they reconnect to).",
+      wrong: "Incorrect. Evil Twin needs two different modes: monitor mode for the deauth injection, and AP mode (via hostapd) for the rogue access point. Two monitor-mode adapters cannot serve a network."
+    },
+    q6: {
+      correct: "Correct. hcxdumptool is specialized for capturing PMKIDs and EAPOL frames using a clientless technique — it does not require a connected client or deauthentication. airodump-ng is a general passive capture tool that requires a full 4-way handshake.",
+      wrong: "Incorrect. The key difference is clientless operation. hcxdumptool can extract a PMKID from the AP's beacon/probe response without any client present or any deauth frames. airodump-ng requires waiting for or forcing a full WPA2 handshake."
+    },
+    q7: {
+      correct: "Correct. 'Soft blocked' means the kernel has disabled the radio via software. 'sudo rfkill unblock all' (or unblock by index) re-enables it. Hard block requires a physical switch — rfkill cannot fix that.",
+      wrong: "Incorrect. Soft block is a software-level disable. Run 'sudo rfkill unblock all' to clear it. A hard block requires toggling a physical switch (e.g., a keyboard Fn key) which rfkill cannot control."
+    },
+    q8: {
+      correct: "Correct. NetworkManager and wpa_supplicant continuously scan for networks, switch channels on the interface, and reconfigure its mode. This destroys targeted packet captures and prevents monitor mode from working reliably.",
+      wrong: "Incorrect. NetworkManager and wpa_supplicant actively manage the wireless interface — they hop channels, send management frames, and reset the mode. This directly corrupts airodump-ng captures and blocks monitor mode."
+    }
+  };
+
+  let qScore = 0;
+  let qCount = 0;
+
+  function answer(btn, qId, isCorrect) {
+    if (qAnswered[qId]) return;
+    qAnswered[qId] = true;
+    qCount++;
+    const qEl = document.getElementById(qId);
+    const buttons = qEl.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    const fb = document.getElementById('fb-' + qId);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      qScore++;
+      fb.textContent = '✓ ' + qFeedbacks[qId].correct;
+      fb.className = 'quiz-feedback correct-fb show';
+    } else {
+      btn.classList.add('wrong');
+      fb.textContent = '✗ ' + qFeedbacks[qId].wrong;
+      fb.className = 'quiz-feedback wrong-fb show';
+      buttons.forEach(b => { if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct'); });
+    }
+    if (qCount === TOTAL_Q) {
+      const scoreEl = document.getElementById('quizScore');
+      const numEl = document.getElementById('scoreNum');
+      const labelEl = document.getElementById('scoreLabel');
+      numEl.textContent = qScore + '/' + TOTAL_Q;
+      const pct = qScore / TOTAL_Q;
+      labelEl.textContent = pct === 1 ? 'Perfect — ready for Module 02!' : pct >= 0.75 ? 'Strong — review any missed questions.' : pct >= 0.5 ? 'Getting there — revisit the driver and TX power sections.' : 'Re-read the hardware, driver, and troubleshooting sections.';
+      numEl.style.color = pct === 1 ? 'var(--accent2)' : pct >= 0.625 ? 'var(--warn)' : 'var(--accent3)';
+      scoreEl.classList.add('show');
+    }
   }
 
   // Trouble accordion

@@ -13,13 +13,15 @@
 4. [VM vs. Bare Metal vs. Live Boot](#4-vm-vs-bare-metal-vs-live-boot)
 5. [Driver Installation](#5-driver-installation)
 6. [Core Linux Wireless Tools](#6-core-linux-wireless-tools)
-7. [Identifying & Managing Interfaces](#7-identifying--managing-interfaces)
-8. [Killing Interfering Processes](#8-killing-interfering-processes)
-9. [Verifying Your Setup](#9-verifying-your-setup)
-10. [Lab Network Topology](#10-lab-network-topology)
-11. [Essential Toolchain Installation](#11-essential-toolchain-installation)
-12. [Troubleshooting Common Issues](#12-troubleshooting-common-issues)
-13. [Knowledge Check](#13-knowledge-check)
+7. [TX Power & Regulatory Domains](#7-tx-power--regulatory-domains)
+8. [Identifying & Managing Interfaces](#8-identifying--managing-interfaces)
+9. [Killing Interfering Processes](#9-killing-interfering-processes)
+10. [Verifying Your Setup](#10-verifying-your-setup)
+11. [Dual-Adapter Setup](#11-dual-adapter-setup)
+12. [Lab Network Topology](#12-lab-network-topology)
+13. [Essential Toolchain Installation](#13-essential-toolchain-installation)
+14. [Troubleshooting Common Issues](#14-troubleshooting-common-issues)
+15. [Knowledge Check](#15-knowledge-check)
 
 ---
 
@@ -69,8 +71,8 @@ These capabilities depend on the **chipset**, not the brand name on the box.
 
 | Adapter | Chipset | Band | Injection | Notes |
 |---------|---------|------|-----------|-------|
-| **Alfa AWUS036ACH** | RTL8812AU | 2.4/5 GHz | Yes | Best all-rounder; dual-band; high power |
-| **Alfa AWUS036ACM** | MT7612U | 2.4/5 GHz | Yes | Excellent Linux support; stable |
+| **Alfa AWUS036ACH** | RTL8812AU | 2.4/5 GHz | Yes | Best all-rounder; dual-band; high power; USB 3.0 |
+| **Alfa AWUS036ACM** | MT7612U | 2.4/5 GHz | Yes | Excellent Linux support; mainline kernel driver |
 | **Alfa AWUS036NHA** | AR9271 | 2.4 GHz | Yes | Native kernel support; most stable |
 | **Alfa AWUS036NH** | RT3070 | 2.4 GHz | Yes | Budget option; reliable |
 | **Panda PAU09** | RT5572 | 2.4/5 GHz | Yes | Good value dual-band |
@@ -93,6 +95,9 @@ Bus 001 Device 004: ID 0bda:8812 Realtek Semiconductor Corp. RTL8812AU 802.11a/b
 # Cross-reference the USB ID (0bda:8812) against chipset databases
 # 0bda = Realtek Vendor ID
 # 8812 = RTL8812AU product ID
+
+# For PCI/PCIe adapters:
+lspci | grep -i wireless
 ```
 
 ---
@@ -134,7 +139,7 @@ sudo apt update && sudo apt full-upgrade -y
 # Install any missing wireless tools
 sudo apt install -y aircrack-ng hashcat hcxdumptool hcxtools \
     wireshark-qt tshark hostapd dnsmasq reaver bully mdk4 \
-    macchanger iw wireless-tools net-tools
+    macchanger iw wireless-tools net-tools wifite kismet
 
 # Verify aircrack-ng version
 aircrack-ng --version
@@ -210,7 +215,6 @@ The RTL8812AU chipset requires an out-of-tree driver. Kali includes it but may n
 ```bash
 # Method 1: Kali package (recommended)
 sudo apt install -y realtek-rtl88xxau-dkms
-
 # DKMS (Dynamic Kernel Module Support) auto-rebuilds the module
 # when the kernel updates
 
@@ -252,24 +256,22 @@ When the packaged version is outdated:
 ```bash
 # Example: RTL8812AU from GitHub
 sudo apt install -y dkms git build-essential linux-headers-$(uname -r)
+# linux-headers-$(uname -r)  ← installs headers matching your RUNNING kernel version
 
 git clone https://github.com/aircrack-ng/rtl8812au.git
 cd rtl8812au
 
 # Install via DKMS (persists across kernel upgrades)
 sudo make dkms_install
+# make dkms_install  ← registers the module with DKMS framework;
+#                       auto-rebuilds when 'apt upgrade' updates the kernel
 
 # Or manual (does not persist):
 make
 sudo make install
 sudo modprobe 88XXau
+# modprobe 88XXau  ← loads the compiled .ko module into the running kernel
 ```
-
-**Line-by-line explanation:**
-- `sudo apt install dkms git build-essential linux-headers-$(uname -r)` — installs DKMS framework, git, C compiler, and current kernel headers
-- `git clone` — downloads the driver source from the aircrack-ng maintained fork
-- `sudo make dkms_install` — registers module with DKMS; automatically rebuilds after `apt upgrade` kernel updates
-- `sudo modprobe 88XXau` — loads the compiled module into the running kernel
 
 ---
 
@@ -297,9 +299,8 @@ iw dev
 
 # Show detailed capabilities of a physical radio (phy#0)
 iw phy phy0 info
-
-# This shows: supported bands, supported frequencies, monitor mode capability,
-# injection capability, antenna count, max TX power
+# Shows: supported bands, frequencies, monitor mode support, injection,
+#        antenna count, supported interface modes, max TX power
 
 # Show information about a specific interface
 iw dev wlan0 info
@@ -314,9 +315,6 @@ sudo iw dev wlan0 scan | grep -E 'SSID|signal|freq'
 # Show all wireless interfaces
 iwconfig
 
-# Show a specific interface
-iwconfig wlan0
-
 # Sample output:
 # wlan0     IEEE 802.11  ESSID:off/any
 #           Mode:Managed  Frequency:2.412 GHz  Access Point: Not-Associated
@@ -326,7 +324,7 @@ iwconfig wlan0
 #           Power Management:on
 ```
 
-**Key fields to understand:**
+**Key fields:**
 - `Mode:Managed` — normal client mode
 - `Mode:Monitor` — monitor mode (capture all frames)
 - `Mode:Master` — AP mode
@@ -378,7 +376,83 @@ sudo rfkill unblock all
 
 ---
 
-## 7. Identifying & Managing Interfaces
+## 7. TX Power & Regulatory Domains
+
+### Why This Matters
+
+Your adapter's maximum transmit power (TX power) is governed by:
+1. **Hardware capability** — the chipset's physical maximum (typically 20–30 dBm)
+2. **Regulatory domain** — the legal limit for your country (enforced by `CRDA` and `iw`)
+
+Higher TX power = better signal range for injection and capture. Many adapters ship with conservative defaults.
+
+### Checking Your Regulatory Domain
+
+```bash
+# See current regulatory domain
+iw reg get
+
+# Sample output:
+# global
+# country US: DFS-FCC
+#     (2400 - 2483.5 @ 40), (N/A, 30), (N/A)
+#     (5150 - 5250 @ 80), (N/A, 23), (N/A), NO-OUTDOOR, AUTO-BW
+#     (5250 - 5350 @ 80), (N/A, 24), (0), DFS, AUTO-BW
+
+# country US → limited to 30 dBm on 2.4 GHz
+# country BO (Bolivia) → unconstrained in older kernels (common pentesting trick)
+```
+
+### Changing Regulatory Domain
+
+```bash
+# Set to a region with higher allowed TX power
+# WARNING: Only do this in your isolated lab; illegal on public spectrum
+sudo iw reg set BO
+# BO = Bolivia — historically unrestricted domain in many driver implementations
+
+# Verify change took effect
+iw reg get
+```
+
+### Setting TX Power
+
+```bash
+# Check current TX power
+iwconfig wlan0 | grep Tx-Power
+# or
+iw dev wlan0 info | grep txpower
+
+# Set TX power manually (interface must be up, monitor mode preferred)
+sudo iw dev wlan0mon set txpower fixed 3000
+# 3000 = 30 dBm (value is in mBm = dBm × 100)
+# Fixed means do not let the driver override this
+
+# Alternative via iwconfig (deprecated but still works on some drivers)
+sudo iwconfig wlan0mon txpower 30
+
+# Verify
+iwconfig wlan0mon | grep Tx-Power
+# Tx-Power=30 dBm
+```
+
+### CRDA and the cfg80211 Subsystem
+
+The **Central Regulatory Domain Agent (CRDA)** enforces country-specific power limits at the kernel level. Even with `iw reg set`, some drivers (especially mainline ones like `ath9k`) strictly enforce these limits. Out-of-tree drivers like RTL8812AU are generally less strict.
+
+```bash
+# Check if CRDA is installed and functional
+which crda
+iw reg get | head -3
+
+# If regulatory enforcement is causing issues:
+# Some operators set 'regdomain 00' in /etc/default/crda for unrestricted lab use
+# This is for isolated lab environments ONLY
+```
+
+---
+
+## 8. Identifying & Managing Interfaces
 
 ### Finding Interface Names
 
@@ -435,7 +509,7 @@ sudo ip link set wlan0 down
 sudo macchanger -r wlan0    # -r = random MAC
 sudo ip link set wlan0 up
 
-# Set a specific MAC
+# Set a specific MAC (useful for impersonating a legitimate client)
 sudo macchanger -m AA:BB:CC:DD:EE:FF wlan0
 
 # Reset to hardware MAC
@@ -445,16 +519,20 @@ sudo macchanger -p wlan0
 sudo ip link set wlan0 down
 sudo ip link set wlan0 address AA:BB:CC:DD:EE:FF
 sudo ip link set wlan0 up
+
+# Verify the change
+ip link show wlan0 | grep ether
 ```
 
 **Why spoof MAC?**
 - Prevents your real hardware ID from appearing in target AP's association logs
 - Bypass MAC-based access control lists
-- Impersonate a legitimate client during certain attacks
+- Impersonate a legitimate client during deauth + reconnect attacks
+- Anonymity during reconnaissance
 
 ---
 
-## 8. Killing Interfering Processes
+## 9. Killing Interfering Processes
 
 The most common reason `airmon-ng` fails is that NetworkManager, wpa_supplicant, or DHCP clients are actively managing the interface — preventing monitor mode from working correctly.
 
@@ -482,9 +560,13 @@ sudo airmon-ng check kill
 sudo systemctl stop NetworkManager
 sudo systemctl stop wpa_supplicant
 sudo killall dhclient 2>/dev/null
+sudo killall dhcpcd 2>/dev/null
 
 # Verify nothing is holding the interface
 sudo fuser -v /dev/rfkill
+
+# Confirm processes are gone
+ps aux | grep -E 'NetworkManager|wpa_supplicant'
 ```
 
 ### Restarting After Your Session
@@ -497,15 +579,15 @@ sudo systemctl start NetworkManager
 
 ### Why These Processes Interfere
 
-**NetworkManager:** Continuously scans for networks and will switch channels on your interface, destroying your targeted capture. It also reconfigures the interface mode.
+**NetworkManager:** Continuously scans for networks and will switch channels on your interface, destroying your targeted capture. It also reconfigures the interface mode when it detects a mode change.
 
-**wpa_supplicant:** Handles WPA authentication for client connections. While in monitor mode you don't want a running wpa_supplicant taking control of the adapter.
+**wpa_supplicant:** Handles WPA authentication for client connections. While in monitor mode you don't want a running wpa_supplicant taking control of the adapter and sending association frames.
 
-**dhclient/dhcpcd:** DHCP clients will attempt to obtain an IP address, generating management frames that can corrupt your captures.
+**dhclient/dhcpcd:** DHCP clients will attempt to obtain an IP address when they detect link state changes, generating management frames that corrupt your captures.
 
 ---
 
-## 9. Verifying Your Setup
+## 10. Verifying Your Setup
 
 A complete pre-flight checklist before starting any attack module.
 
@@ -540,6 +622,8 @@ sudo airmon-ng start wlan0
 
 # Run injection test
 sudo aireplay-ng --test wlan0mon
+# or the shorthand:
+sudo aireplay-ng -9 wlan0mon
 
 # Successful output:
 # 12:00:00  Trying broadcast probe requests...
@@ -556,9 +640,63 @@ iwconfig wlan0mon
 # Mode must show: Monitor
 ```
 
+### Step 6: Verify hcxdumptool (newer API)
+
+```bash
+# hcxdumptool >= 6.x requires explicit status flags
+sudo hcxdumptool --help | grep enable_status
+# If present, you need: --enable_status=1 in capture commands
+
+# Quick capability check
+sudo hcxdumptool -i wlan0mon --do_rcascan
+# Lists nearby APs — confirms interface is working in monitor mode
+```
+
 ---
 
-## 10. Lab Network Topology
+## 11. Dual-Adapter Setup
+
+Several attack scenarios require **two wireless interfaces simultaneously**:
+
+| Attack | Interface 1 | Interface 2 |
+|--------|-------------|-------------|
+| Evil Twin (Module 09) | Monitor mode — deauth clients | AP mode (hostapd) — fake AP |
+| Captive Portal (Module 10) | Monitor mode — recon | AP mode — rogue AP |
+| MITM with internet relay | AP mode — client connects | Managed mode — upstream relay |
+
+### Setting Up Two Adapters
+
+```bash
+# Plug in both adapters
+lsusb   # confirm both are visible
+
+# List both interfaces
+iw dev
+# phy#0  Interface wlan0  (built-in or first adapter)
+# phy#1  Interface wlan1  (second USB adapter)
+
+# Put one in monitor mode
+sudo airmon-ng start wlan1
+# → creates wlan1mon
+
+# Leave the other in managed/AP mode
+iw dev wlan0 info   # should still show type: managed
+
+# Verify both are available simultaneously
+iw dev
+# phy#0  Interface wlan0     type managed
+# phy#1  Interface wlan1mon  type monitor
+```
+
+### Which Adapter for Which Role
+
+- **Monitor mode:** Use the adapter with higher TX power (Alfa AWUS036ACH) for better range
+- **AP mode (hostapd):** Either adapter works; must support AP mode (`iw phy info | grep AP`)
+- **Never put the same physical adapter (`phy`) in both roles simultaneously**
+
+---
+
+## 12. Lab Network Topology
 
 A well-designed lab protects both legality and learning quality. Here is the recommended setup:
 
@@ -584,7 +722,7 @@ A well-designed lab protects both legality and learning quality. Here is the rec
 | Setting | Value | Purpose |
 |---------|-------|---------|
 | SSID | `TestNet` (or anything) | Target for scanning practice |
-| Password | Weak (in wordlist) | Enables successful WPA2 cracking practice |
+| Password | Weak (in wordlist, e.g. `password123`) | Enables successful WPA2 cracking practice |
 | Security | WPA2-PSK CCMP | Primary attack protocol |
 | WPS | Enabled | For Module 11 practice |
 | WEP mode | Enable on old router | For Module 05 practice |
@@ -599,11 +737,22 @@ For complete coverage of all modules, maintain:
 - **Router C:** WPA2-Enterprise (requires FreeRADIUS setup — Module 13)
 - **Router D:** WPA3-SAE (Wi-Fi 6 router)
 
+### Setting Up WEP on DD-WRT
+
+```
+DD-WRT Admin Panel → Wireless → Wireless Security
+  Security Mode: WEP
+  Default Transmission Key: 1
+  WEP Encryption: 64-bit or 128-bit
+  Passphrase: (leave blank)
+  Key 1: 1234567890 (64-bit) or 12345678901234567890123456 (128-bit hex)
+```
+
 ---
 
-## 11. Essential Toolchain Installation
+## 13. Essential Toolchain Installation
 
-Complete installation command for all tools used in this course:
+Complete installation script for all tools used in this course:
 
 ```bash
 #!/bin/bash
@@ -617,68 +766,116 @@ sudo apt update
 
 echo "[*] Installing aircrack-ng suite..."
 sudo apt install -y aircrack-ng
+# aircrack-ng   ← meta-package: installs airmon-ng, airodump-ng,
+#                 aireplay-ng, airdecap-ng, airbase-ng, etc.
 
 echo "[*] Installing cracking tools..."
 sudo apt install -y hashcat john
+# hashcat       ← GPU-accelerated hash cracker (-m 22000 for WPA2)
+# john          ← CPU-based cracker; useful for rule-based attacks
 
 echo "[*] Installing capture tools..."
 sudo apt install -y hcxdumptool hcxtools
+# hcxdumptool   ← Advanced capture tool: PMKID + EAPOL frames passively
+# hcxtools       ← Converts .pcapng captures to hashcat formats (.hc22000)
 
 echo "[*] Installing packet analysis..."
-sudo apt install -y wireshark-qt tshark scapy
+sudo apt install -y wireshark-qt tshark python3-scapy
+# wireshark-qt  ← GUI packet analyzer; open .cap files from airodump-ng
+# tshark        ← Command-line Wireshark; scriptable analysis
+# python3-scapy ← Python framework for crafting/sending arbitrary 802.11 frames
 
 echo "[*] Installing AP/DHCP tools..."
 sudo apt install -y hostapd hostapd-wpe dnsmasq
+# hostapd       ← Creates rogue APs; used in Evil Twin (Module 09)
+# hostapd-wpe   ← WPE fork: captures MSCHAPv2 credentials from Enterprise clients
+# dnsmasq       ← Lightweight DHCP+DNS; serves IPs to clients on rogue AP
 
 echo "[*] Installing WPS attack tools..."
 sudo apt install -y reaver bully pixiewps
+# reaver        ← WPS PIN brute force (online attack)
+# bully         ← Alternative WPS PIN attack tool
+# pixiewps      ← Offline Pixie Dust attack (exploits weak E-S1/E-S2 nonces)
 
 echo "[*] Installing DoS tools..."
 sudo apt install -y mdk3 mdk4
+# mdk4          ← Wireless DoS: beacon flooding, deauth storms, EAPOL flooding
+# mdk3          ← Older version; still useful for some attacks
 
 echo "[*] Installing MITM framework..."
 sudo apt install -y bettercap
+# bettercap     ← Full network MITM framework with Wi-Fi modules:
+#                 wifi.recon, wifi.deauth, wifi.ap, wifi.probe
+
+echo "[*] Installing automated attack tool..."
+sudo apt install -y wifite
+# wifite        ← Automated wireless auditing: scans, deauths, captures,
+#                 and cracks in sequence; good for quick assessments
+
+echo "[*] Installing passive scanner..."
+sudo apt install -y kismet
+# kismet        ← Passive wireless IDS/scanner; detects hidden SSIDs,
+#                 rogue APs, and anomalous frames without transmitting
 
 echo "[*] Installing wordlist tools..."
 sudo apt install -y crunch wordlists
+# crunch        ← Generates custom wordlists by charset/pattern
+# wordlists     ← Installs rockyou.txt and other standard wordlists
 
-echo "[*] Installing misc tools..."
-sudo apt install -y macchanger net-tools wireless-tools rfkill \
-    iw curl wget git build-essential python3-pip
+echo "[*] Installing network tools..."
+sudo apt install -y nmap netdiscover macchanger net-tools wireless-tools rfkill \
+    iw curl wget git build-essential python3-pip python3-venv
+# nmap          ← Network scanner; enumerate hosts after gaining AP access
+# netdiscover   ← ARP-based host discovery on the local network
+# macchanger    ← MAC address spoofing utility
+# python3-pip   ← For installing Python-based tools (impacket, etc.)
 
 echo "[*] Installing RTL8812AU driver..."
 sudo apt install -y realtek-rtl88xxau-dkms
+# DKMS driver for RTL8812AU; auto-rebuilds on kernel upgrade
 
 echo "[*] Extracting rockyou wordlist..."
 sudo gzip -dk /usr/share/wordlists/rockyou.txt.gz 2>/dev/null || true
+# rockyou.txt   ← 14.3M common passwords; primary wordlist for WPA2 attacks
 
 echo ""
 echo "[+] Installation complete!"
-echo "[+] Verify aircrack-ng: $(aircrack-ng --version | head -1)"
-echo "[+] Verify hashcat: $(hashcat --version)"
-echo "[+] Verify hcxdumptool: $(hcxdumptool --version 2>&1 | head -1)"
+echo "[+] Verify aircrack-ng:    $(aircrack-ng --version 2>&1 | head -1)"
+echo "[+] Verify hashcat:        $(hashcat --version)"
+echo "[+] Verify hcxdumptool:   $(hcxdumptool --version 2>&1 | head -1)"
+echo "[+] Verify wifite:         $(wifite --version 2>&1 | head -1)"
+echo "[+] Verify bettercap:      $(bettercap --version 2>&1 | head -1)"
 ```
 
-**Line-by-line explanations for key packages:**
+### Tool Reference Table
 
-| Package | Purpose |
-|---------|---------|
-| `aircrack-ng` | Meta-package installing the full aircrack-ng suite |
-| `hashcat` | GPU-accelerated hash cracker; faster than aircrack-ng for WPA2 |
-| `hcxdumptool` | Advanced passive capture tool; captures PMKID and EAPOL frames |
-| `hcxtools` | Converts capture files to hashcat-compatible formats |
-| `hostapd-wpe` | Wireless Profile Editor fork — creates rogue WPA-Enterprise AP |
-| `reaver` | WPS PIN brute force tool |
-| `pixiewps` | Offline Pixie Dust WPS attack tool |
-| `mdk4` | Wireless denial-of-service and fuzzing tool |
-| `bettercap` | Network MITM framework with Wi-Fi capabilities |
-| `crunch` | Wordlist generator with pattern/charset rules |
-| `macchanger` | MAC address spoofing utility |
-| `realtek-rtl88xxau-dkms` | RTL8812AU driver with DKMS auto-rebuild |
+| Tool | Module(s) | Primary Use |
+|------|-----------|-------------|
+| `airmon-ng` | 02+ | Enable/disable monitor mode |
+| `airodump-ng` | 03+ | Passive packet capture and AP listing |
+| `aireplay-ng` | 05–08 | Frame injection: deauth, fake auth, ARP replay |
+| `aircrack-ng` | 05, 07 | WEP key cracking and WPA2 handshake cracking |
+| `hashcat` | 07, 12 | GPU-accelerated WPA2/PMKID cracking |
+| `hcxdumptool` | 12 | Clientless PMKID capture |
+| `hcxtools` | 12 | Convert captures to hashcat format |
+| `wireshark` / `tshark` | 04+ | Frame-level packet analysis |
+| `hostapd` | 09, 10, 13 | Rogue AP creation |
+| `hostapd-wpe` | 13 | Enterprise rogue AP with credential capture |
+| `dnsmasq` | 09, 10 | DHCP + DNS for rogue AP clients |
+| `reaver` | 11 | WPS PIN brute force |
+| `pixiewps` | 11 | Offline Pixie Dust WPS attack |
+| `bully` | 11 | Alternative WPS attack tool |
+| `mdk4` | 08 | Wireless DoS attacks |
+| `bettercap` | 09, 10 | MITM framework, KARMA attacks |
+| `wifite` | — | Automated multi-attack auditing |
+| `kismet` | 03 | Passive monitoring, hidden SSID discovery |
+| `scapy` | Advanced | Custom frame crafting in Python |
+| `macchanger` | 01+ | MAC address spoofing |
+| `crunch` | 07 | Custom wordlist generation |
 
 ---
 
-## 12. Troubleshooting Common Issues
+## 14. Troubleshooting Common Issues
 
 ### Issue: Interface Not Appearing After Plugging In Adapter
 
@@ -697,6 +894,9 @@ sudo modprobe mt76x2u     # MT7612U
 
 # If still nothing, try a different USB port (USB 3.0 vs 2.0)
 # RTL8812AU is USB 3.0; using USB 2.0 port can cause issues
+
+# Force kernel to re-scan USB bus
+echo "1" | sudo tee /sys/bus/usb/devices/usb1/authorized
 ```
 
 ### Issue: `airmon-ng start wlan0` Shows No Monitor Interface
@@ -729,7 +929,9 @@ sudo iw dev wlan0mon set channel 6
 iw phy phy0 info | grep "Supported interface modes" -A 20
 
 # 3. Try a different USB port or powered USB hub
-# 4. RTL8812AU may need: sudo ifconfig wlan0mon txpower 30
+# 4. Increase TX power
+sudo iw reg set BO
+sudo iw dev wlan0mon set txpower fixed 3000
 ```
 
 ### Issue: `ERROR: Failed to set wlan0 to monitor mode`
@@ -747,9 +949,9 @@ sudo airmon-ng start wlan0
 # Check TX power
 iwconfig wlan0mon | grep Tx-Power
 
-# Increase TX power (use with caution — respect local regulations)
-sudo iw dev wlan0 set txpower fixed 3000   # 30 dBm = max for most adapters
-# Note: mW value = dBm * 100 in this command
+# Increase TX power (lab use only)
+sudo iw reg set BO
+sudo iw dev wlan0mon set txpower fixed 3000
 
 # Make sure you're scanning all channels
 sudo airodump-ng --band abg wlan0mon   # scan both 2.4 and 5 GHz
@@ -765,9 +967,33 @@ sudo usermod -aG netdev $USER
 # Then log out and back in
 ```
 
+### Issue: `hcxdumptool` Immediately Exits / No Output
+
+```bash
+# hcxdumptool >= 6.x requires --enable_status flag
+sudo hcxdumptool -i wlan0mon -o capture.pcapng --enable_status=1
+
+# Flags breakdown:
+# -i wlan0mon         ← interface in monitor mode
+# -o capture.pcapng   ← output file (pcapng format required)
+# --enable_status=1   ← enable status output (REQUIRED in new versions)
+```
+
+### Issue: `/etc/network/interfaces` Conflict with NetworkManager
+
+```bash
+# If you have entries for wlan0 in /etc/network/interfaces,
+# NetworkManager ignores them by default but can conflict:
+sudo nano /etc/NetworkManager/NetworkManager.conf
+# Add under [main]:
+# plugins=ifupdown,keyfile
+# [ifupdown]
+# managed=false   ← set to true to let NM manage interfaces defined in /etc/network/interfaces
+```
+
 ---
 
-## 13. Knowledge Check
+## 15. Knowledge Check
 
 Before proceeding to Module 02, you should be able to:
 
@@ -781,6 +1007,11 @@ Before proceeding to Module 02, you should be able to:
 8. What is MAC address spoofing and how do you perform it with `macchanger`?
 9. Why should your lab router have no internet connectivity?
 10. What flag does `aireplay-ng` use to test packet injection, and what does a successful test look like?
+11. What is a regulatory domain and how does it affect your adapter's TX power? Which command sets it?
+12. What is the difference between `hcxdumptool` and `airodump-ng` for packet capture?
+13. Name two scenarios that require two wireless adapters simultaneously and explain which mode each adapter needs.
+14. What tool provides automated wireless auditing (scanning + deauth + capture + crack in sequence)?
+15. What does `wifite` do that `aircrack-ng` alone cannot?
 
 ---
 
