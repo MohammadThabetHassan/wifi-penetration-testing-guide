@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 540" width="860" height="540" font-family="'Cascadia Code','Fira Code','Consolas',monospace">
+
+  <!-- Background -->
+  <rect width="860" height="540" fill="#0d1117"/>
+
+  <!-- Title -->
+  <text x="430" y="36" text-anchor="middle" fill="#e6edf3" font-size="16" font-weight="700" letter-spacing="0.5">802.11 MAC Frame Structure</text>
+  <text x="430" y="56" text-anchor="middle" fill="#8b949e" font-size="11">IEEE 802.11-2020 — Layer 2 MAC Header</text>
+
+  <!-- ── Header Row Labels ── -->
+  <text x="20" y="90" fill="#8b949e" font-size="10">FIELD</text>
+  <text x="580" y="90" fill="#8b949e" font-size="10">SIZE</text>
+  <text x="660" y="90" fill="#8b949e" font-size="10">ATTACK RELEVANCE</text>
+
+  <!-- ── Frame Control ── -->
+  <rect x="14" y="98" width="550" height="42" rx="4" fill="#161b22" stroke="#58a6ff" stroke-width="1.2"/>
+  <rect x="14" y="98" width="160" height="42" rx="4" fill="rgba(88,166,255,0.12)" stroke="none"/>
+  <text x="94" y="115" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="700">Frame Control</text>
+  <text x="94" y="131" text-anchor="middle" fill="#8b949e" font-size="10">Type | Subtype | Flags</text>
+  <text x="220" y="115" fill="#c9d1d9" font-size="11">Ver[2] Type[2] Subtype[4] ToDS FrDS</text>
+  <text x="220" y="130" fill="#c9d1d9" font-size="11">MoreFrag Retry PwrMgmt MoreData <tspan fill="#f78166" font-weight="700">Protected</tspan> Order</text>
+  <text x="572" y="112" fill="#8b949e" font-size="11">2 bytes</text>
+  <rect x="648" y="101" width="196" height="36" rx="3" fill="rgba(247,129,102,0.08)" stroke="rgba(247,129,102,0.3)" stroke-width="1"/>
+  <text x="746" y="116" text-anchor="middle" fill="#f78166" font-size="10" font-weight="700">ATTACK SURFACE</text>
+  <text x="746" y="130" text-anchor="middle" fill="#f78166" font-size="9">Protected bit → is frame encrypted?</text>
+
+  <!-- ── Duration/ID ── -->
+  <rect x="14" y="147" width="550" height="36" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="14" y="147" width="160" height="36" rx="4" fill="rgba(88,166,255,0.06)" stroke="none"/>
+  <text x="94" y="162" text-anchor="middle" fill="#79c0ff" font-size="12" font-weight="700">Duration / ID</text>
+  <text x="94" y="176" text-anchor="middle" fill="#8b949e" font-size="10">NAV timer</text>
+  <text x="220" y="162" fill="#c9d1d9" font-size="11">Network Allocation Vector — how long medium is reserved</text>
+  <text x="220" y="176" fill="#8b949e" font-size="10">Large value = NAV-based DoS (forces all STAs to defer)</text>
+  <text x="572" y="169" fill="#8b949e" font-size="11">2 bytes</text>
+  <text x="746" y="169" text-anchor="middle" fill="#d29922" font-size="9">DoS via max Duration value</text>
+
+  <!-- ── Address 1 ── -->
+  <rect x="14" y="190" width="550" height="36" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="14" y="190" width="160" height="36" rx="4" fill="rgba(88,166,255,0.06)" stroke="none"/>
+  <text x="94" y="205" text-anchor="middle" fill="#79c0ff" font-size="12" font-weight="700">Address 1</text>
+  <text x="94" y="219" text-anchor="middle" fill="#8b949e" font-size="10">Receiver / Destination</text>
+  <text x="220" y="205" fill="#c9d1d9" font-size="11">Immediate recipient MAC address</text>
+  <text x="220" y="219" fill="#8b949e" font-size="10">FF:FF:FF:FF:FF:FF = broadcast deauth → kicks ALL clients</text>
+  <text x="572" y="205" fill="#8b949e" font-size="11">6 bytes</text>
+  <text x="746" y="212" text-anchor="middle" fill="#d29922" font-size="9">Broadcast = mass disconnect</text>
+
+  <!-- ── Address 2 ── -->
+  <rect x="14" y="233" width="550" height="36" rx="4" fill="#161b22" stroke="#f78166" stroke-width="1.2"/>
+  <rect x="14" y="233" width="160" height="36" rx="4" fill="rgba(247,129,102,0.1)" stroke="none"/>
+  <text x="94" y="248" text-anchor="middle" fill="#f78166" font-size="12" font-weight="700">Address 2</text>
+  <text x="94" y="262" text-anchor="middle" fill="#f78166" font-size="10">Transmitter — SPOOFABLE</text>
+  <text x="220" y="248" fill="#c9d1d9" font-size="11">Immediate transmitter MAC — no source authentication</text>
+  <text x="220" y="262" fill="#f78166" font-size="10">aireplay-ng spoofs this → forged deauth appears to come from AP</text>
+  <text x="572" y="248" fill="#8b949e" font-size="11">6 bytes</text>
+  <rect x="648" y="236" width="196" height="30" rx="3" fill="rgba(247,129,102,0.1)" stroke="rgba(247,129,102,0.4)" stroke-width="1"/>
+  <text x="746" y="253" text-anchor="middle" fill="#f78166" font-size="10" font-weight="700">FREELY SPOOFED</text>
+  <text x="746" y="265" text-anchor="middle" fill="#f78166" font-size="9">Root cause of deauth attacks</text>
+
+  <!-- ── Address 3 ── -->
+  <rect x="14" y="276" width="550" height="36" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="14" y="276" width="160" height="36" rx="4" fill="rgba(88,166,255,0.06)" stroke="none"/>
+  <text x="94" y="291" text-anchor="middle" fill="#79c0ff" font-size="12" font-weight="700">Address 3</text>
+  <text x="94" y="305" text-anchor="middle" fill="#8b949e" font-size="10">BSSID / Filter</text>
+  <text x="220" y="291" fill="#c9d1d9" font-size="11">AP's BSSID — clients filter frames by this field</text>
+  <text x="220" y="305" fill="#8b949e" font-size="10">Must match associated AP; used in Evil Twin cloning</text>
+  <text x="572" y="291" fill="#8b949e" font-size="11">6 bytes</text>
+  <text x="746" y="298" text-anchor="middle" fill="#8b949e" font-size="9">Cloned in Evil Twin attacks</text>
+
+  <!-- ── Sequence Control ── -->
+  <rect x="14" y="319" width="550" height="36" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="14" y="319" width="160" height="36" rx="4" fill="rgba(88,166,255,0.06)" stroke="none"/>
+  <text x="94" y="334" text-anchor="middle" fill="#79c0ff" font-size="12" font-weight="700">Sequence Control</text>
+  <text x="94" y="348" text-anchor="middle" fill="#8b949e" font-size="10">Frag[4] + SeqNum[12]</text>
+  <text x="220" y="334" fill="#c9d1d9" font-size="11">Fragment number (4 bits) + Sequence number (12 bits, 0–4095)</text>
+  <text x="220" y="348" fill="#8b949e" font-size="10">Injection must use valid incrementing seq numbers or frames dropped</text>
+  <text x="572" y="334" fill="#8b949e" font-size="11">2 bytes</text>
+  <text x="746" y="341" text-anchor="middle" fill="#8b949e" font-size="9">Replay detection bypass</text>
+
+  <!-- ── Address 4 (optional) ── -->
+  <rect x="14" y="362" width="550" height="30" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1" stroke-dasharray="5,3"/>
+  <rect x="14" y="362" width="160" height="30" rx="4" fill="rgba(48,54,61,0.5)" stroke="none"/>
+  <text x="94" y="381" text-anchor="middle" fill="#8b949e" font-size="11" font-style="italic">Address 4 (optional)</text>
+  <text x="220" y="381" fill="#8b949e" font-size="10" font-style="italic">WDS bridge only — present when ToDS=1 and FromDS=1</text>
+  <text x="572" y="381" fill="#8b949e" font-size="10" font-style="italic">6 bytes</text>
+
+  <!-- ── QoS Control (optional) ── -->
+  <rect x="14" y="399" width="550" height="30" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1" stroke-dasharray="5,3"/>
+  <rect x="14" y="399" width="160" height="30" rx="4" fill="rgba(48,54,61,0.5)" stroke="none"/>
+  <text x="94" y="418" text-anchor="middle" fill="#8b949e" font-size="11" font-style="italic">QoS Control (optional)</text>
+  <text x="220" y="418" fill="#8b949e" font-size="10" font-style="italic">802.11e QoS — TID, TXOP, A-MSDU flag</text>
+  <text x="572" y="418" fill="#8b949e" font-size="10" font-style="italic">2 bytes</text>
+
+  <!-- ── Frame Body ── -->
+  <rect x="14" y="436" width="550" height="42" rx="4" fill="#161b22" stroke="#3fb950" stroke-width="1.2"/>
+  <rect x="14" y="436" width="160" height="42" rx="4" fill="rgba(63,185,80,0.08)" stroke="none"/>
+  <text x="94" y="453" text-anchor="middle" fill="#3fb950" font-size="12" font-weight="700">Frame Body</text>
+  <text x="94" y="467" text-anchor="middle" fill="#8b949e" font-size="10">0–7951 bytes</text>
+  <text x="220" y="453" fill="#c9d1d9" font-size="11">Beacon: SSID IE + RSN IE + rates + TIM + Country</text>
+  <text x="220" y="467" fill="#c9d1d9" font-size="11">Data: LLC/SNAP + IP  |  EAPOL: 4-way handshake msgs</text>
+  <text x="572" y="448" fill="#8b949e" font-size="11">Variable</text>
+  <text x="572" y="462" fill="#8b949e" font-size="10">0–7951 B</text>
+  <rect x="648" y="438" width="196" height="36" rx="3" fill="rgba(63,185,80,0.08)" stroke="rgba(63,185,80,0.3)" stroke-width="1"/>
+  <text x="746" y="453" text-anchor="middle" fill="#3fb950" font-size="10" font-weight="700">RSN IE here</text>
+  <text x="746" y="466" text-anchor="middle" fill="#3fb950" font-size="9">→ ENC/CIPHER/AUTH in airodump-ng</text>
+
+  <!-- ── FCS ── -->
+  <rect x="14" y="485" width="550" height="36" rx="4" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="14" y="485" width="160" height="36" rx="4" fill="rgba(88,166,255,0.06)" stroke="none"/>
+  <text x="94" y="500" text-anchor="middle" fill="#79c0ff" font-size="12" font-weight="700">FCS</text>
+  <text x="94" y="514" text-anchor="middle" fill="#8b949e" font-size="10">Frame Check Sequence</text>
+  <text x="220" y="500" fill="#c9d1d9" font-size="11">CRC-32 over entire frame — detects bit errors</text>
+  <text x="220" y="514" fill="#8b949e" font-size="10">NOT authentication — aireplay-ng recalculates FCS after frame modification</text>
+  <text x="572" y="500" fill="#8b949e" font-size="11">4 bytes</text>
+  <text x="746" y="500" text-anchor="middle" fill="#8b949e" font-size="9">Auto-recalculated by tools</text>
+
+  <!-- ── Legend ── -->
+  <rect x="14" y="527" width="12" height="8" rx="2" fill="rgba(247,129,102,0.3)" stroke="#f78166" stroke-width="1"/>
+  <text x="30" y="535" fill="#8b949e" font-size="10">High attack relevance</text>
+  <rect x="150" y="527" width="12" height="8" rx="2" fill="rgba(63,185,80,0.15)" stroke="#3fb950" stroke-width="1"/>
+  <text x="166" y="535" fill="#8b949e" font-size="10">Payload / data</text>
+  <rect x="280" y="527" width="12" height="8" rx="2" fill="rgba(48,54,61,0.5)" stroke="#30363d" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="296" y="535" fill="#8b949e" font-size="10">Optional field</text>
+  <text x="700" y="535" fill="#30363d" font-size="9">IEEE 802.11-2020 §9.3</text>
+
+</svg>
