@@ -36,215 +36,77 @@
     }
 
     /* ── Layout ───────────────────────────────────────────────── */
-    .page-wrapper {
-      display: flex;
-      min-height: 100vh;
-    }
+    .page-wrapper { display: flex; min-height: 100vh; }
 
     aside.sidebar {
-      width: 260px;
-      min-width: 260px;
+      width: 260px; min-width: 260px;
       background: var(--bg-card);
       border-right: 1px solid var(--border);
       padding: 24px 0;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      overflow-y: auto;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
     }
 
-    main {
-      flex: 1;
-      padding: 48px 64px;
-      max-width: 900px;
-    }
+    main { flex: 1; padding: 48px 64px; max-width: 960px; }
 
     /* ── Sidebar ──────────────────────────────────────────────── */
-    .sidebar-logo {
-      padding: 0 20px 24px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .sidebar-logo .course-title {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--text-dim);
-      margin-bottom: 6px;
-    }
-
-    .sidebar-logo h2 {
-      font-size: 14px;
-      color: var(--accent);
-      font-weight: 600;
-    }
-
+    .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); }
+    .sidebar-logo .course-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 6px; }
+    .sidebar-logo h2 { font-size: 14px; color: var(--accent); font-weight: 600; }
     .sidebar-nav { padding: 16px 0; }
-
-    .sidebar-section-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--text-dim);
-      padding: 12px 20px 6px;
-    }
-
+    .sidebar-section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); padding: 12px 20px 6px; }
     .sidebar-nav a {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 7px 20px;
-      color: var(--text-dim);
-      text-decoration: none;
-      font-size: 13px;
-      transition: all 0.15s;
-      border-left: 2px solid transparent;
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 20px; color: var(--text-dim); text-decoration: none;
+      font-size: 13px; transition: all 0.15s; border-left: 2px solid transparent;
     }
-
     .sidebar-nav a:hover { color: var(--text); background: rgba(88,166,255,0.05); }
     .sidebar-nav a.active { color: var(--accent); border-left-color: var(--accent); background: rgba(88,166,255,0.08); }
-    .sidebar-nav a .mod-num {
-      font-size: 10px;
-      background: var(--border);
-      border-radius: 4px;
-      padding: 2px 6px;
-      font-family: var(--font-mono);
-      min-width: 28px;
-      text-align: center;
-    }
+    .sidebar-nav a .mod-num { font-size: 10px; background: var(--border); border-radius: 4px; padding: 2px 6px; font-family: var(--font-mono); min-width: 28px; text-align: center; }
     .sidebar-nav a.active .mod-num { background: rgba(88,166,255,0.2); color: var(--accent); }
 
     /* ── Header ───────────────────────────────────────────────── */
-    .module-header {
-      margin-bottom: 40px;
-    }
-
-    .breadcrumb {
-      font-size: 12px;
-      color: var(--text-dim);
-      margin-bottom: 12px;
-    }
+    .module-header { margin-bottom: 40px; }
+    .breadcrumb { font-size: 12px; color: var(--text-dim); margin-bottom: 12px; }
     .breadcrumb a { color: var(--accent); text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
-
-    .module-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(63,185,80,0.12);
-      border: 1px solid rgba(63,185,80,0.3);
-      border-radius: 20px;
-      padding: 4px 14px;
-      font-size: 12px;
-      color: var(--accent2);
-      margin-bottom: 16px;
-    }
-
-    .module-header h1 {
-      font-size: 2.2rem;
-      color: var(--text-head);
-      line-height: 1.2;
-      margin-bottom: 12px;
-    }
-
-    .module-header .subtitle {
-      font-size: 16px;
-      color: var(--text-dim);
-      max-width: 640px;
-    }
-
-    .meta-row {
-      display: flex;
-      gap: 24px;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
-
-    .meta-pill {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
-    .meta-pill .dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-    }
+    .module-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(63,185,80,0.12); border: 1px solid rgba(63,185,80,0.3); border-radius: 20px; padding: 4px 14px; font-size: 12px; color: var(--accent2); margin-bottom: 16px; }
+    .module-header h1 { font-size: 2.2rem; color: var(--text-head); line-height: 1.2; margin-bottom: 12px; }
+    .module-header .subtitle { font-size: 16px; color: var(--text-dim); max-width: 640px; }
+    .meta-row { display: flex; gap: 24px; margin-top: 20px; flex-wrap: wrap; }
+    .meta-pill { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); }
+    .meta-pill .dot { width: 8px; height: 8px; border-radius: 50%; }
 
     /* ── Legal Warning ────────────────────────────────────────── */
     .warning-box {
-      background: rgba(210,153,34,0.08);
-      border: 1px solid rgba(210,153,34,0.4);
-      border-radius: var(--radius);
-      padding: 16px 20px;
-      margin-bottom: 36px;
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
+      background: rgba(210,153,34,0.08); border: 1px solid rgba(210,153,34,0.4);
+      border-radius: var(--radius); padding: 16px 20px; margin-bottom: 36px;
+      display: flex; gap: 12px; align-items: flex-start;
     }
-
     .warning-box .icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
     .warning-box p { font-size: 13px; color: var(--warn); line-height: 1.6; }
     .warning-box strong { color: #e3b341; }
 
     /* ── Sections ─────────────────────────────────────────────── */
-    section { margin-bottom: 48px; }
-
+    section { margin-bottom: 52px; }
     section h2 {
-      font-size: 1.35rem;
-      color: var(--text-head);
-      margin-bottom: 16px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      font-size: 1.35rem; color: var(--text-head); margin-bottom: 16px;
+      padding-bottom: 8px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
     }
-
-    section h2 .section-num {
-      font-size: 12px;
-      color: var(--accent);
-      font-family: var(--font-mono);
-      background: rgba(88,166,255,0.1);
-      border-radius: 4px;
-      padding: 2px 8px;
-    }
-
-    section h3 {
-      font-size: 1.05rem;
-      color: var(--text-head);
-      margin: 24px 0 10px;
-    }
-
+    section h2 .section-num { font-size: 12px; color: var(--accent); font-family: var(--font-mono); background: rgba(88,166,255,0.1); border-radius: 4px; padding: 2px 8px; }
+    section h3 { font-size: 1.05rem; color: var(--text-head); margin: 24px 0 10px; }
     p { margin-bottom: 12px; }
 
     /* ── Cards ────────────────────────────────────────────────── */
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 16px;
-      margin: 20px 0;
-    }
-
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px;
-      transition: border-color 0.2s;
-    }
-
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin: 20px 0; }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; transition: border-color 0.2s; }
     .card:hover { border-color: var(--accent); }
-
     .card .card-icon { font-size: 24px; margin-bottom: 10px; }
     .card .card-title { font-size: 13px; font-weight: 600; color: var(--text-head); margin-bottom: 6px; }
     .card .card-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
 
     /* ── Tables ───────────────────────────────────────────────── */
     .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius); border: 1px solid var(--border); }
-
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     thead tr { background: rgba(88,166,255,0.06); }
     th { padding: 10px 14px; text-align: left; color: var(--accent); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border); }
@@ -256,45 +118,58 @@
     .tag-ok { color: var(--accent2); }
 
     /* ── Code & Terminal ──────────────────────────────────────── */
-    code {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      background: rgba(110,118,129,0.15);
-      padding: 2px 6px;
-      border-radius: 4px;
-      color: #79c0ff;
-    }
-
-    pre {
-      background: var(--bg-code);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      overflow-x: auto;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      line-height: 1.7;
-      margin: 16px 0;
-      color: var(--text);
-    }
-
+    code { font-family: var(--font-mono); font-size: 12px; background: rgba(110,118,129,0.15); padding: 2px 6px; border-radius: 4px; color: #79c0ff; }
+    pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; overflow-x: auto; font-family: var(--font-mono); font-size: 12px; line-height: 1.7; margin: 16px 0; color: var(--text); }
     pre .kw  { color: #ff7b72; }
     pre .str { color: #a5d6ff; }
     pre .cmt { color: var(--text-dim); font-style: italic; }
     pre .num { color: #79c0ff; }
     pre .hdr { color: var(--accent2); font-weight: bold; }
-    pre .sep { color: var(--border); }
 
     /* ── Diagram boxes ────────────────────────────────────────── */
-    .diagram-box {
+    .diagram-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 24px 0; }
+    .diagram-box .diagram-title { background: rgba(88,166,255,0.06); border-bottom: 1px solid var(--border); padding: 10px 16px; font-size: 12px; color: var(--text-dim); display: flex; align-items: center; gap: 8px; }
+    .diagram-box pre { border: none; border-radius: 0; margin: 0; padding: 20px; }
+    .diagram-placeholder { background: var(--bg-card); border: 1px dashed var(--border); border-radius: var(--radius); padding: 32px; text-align: center; margin: 20px 0; color: var(--text-dim); font-size: 13px; }
+    .diagram-placeholder img { max-width: 100%; opacity: 0.6; }
+    .diagram-placeholder p { margin-top: 8px; font-style: italic; }
+
+    /* ── OSI Visual ───────────────────────────────────────────── */
+    .osi-stack { display: flex; flex-direction: column; gap: 4px; margin: 20px 0; }
+    .osi-layer { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 6px; background: var(--bg-card); border: 1px solid var(--border); font-size: 13px; transition: all 0.2s; cursor: default; }
+    .osi-layer:hover { border-color: var(--accent); transform: translateX(4px); }
+    .osi-layer.highlight-attack { border-color: var(--accent3); background: rgba(247,129,102,0.06); }
+    .osi-layer.highlight-wifi { border-color: var(--accent); background: rgba(88,166,255,0.06); }
+    .osi-num { font-family: var(--font-mono); font-size: 11px; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--border); color: var(--text-dim); flex-shrink: 0; }
+    .osi-layer.highlight-attack .osi-num { background: rgba(247,129,102,0.3); color: var(--accent3); }
+    .osi-layer.highlight-wifi .osi-num { background: rgba(88,166,255,0.2); color: var(--accent); }
+    .osi-name { font-weight: 600; color: var(--text-head); width: 160px; }
+    .osi-detail { color: var(--text-dim); font-size: 12px; }
+    .osi-tag { margin-left: auto; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+    .tag-attack { background: rgba(247,129,102,0.2); color: var(--accent3); }
+    .tag-wifi { background: rgba(88,166,255,0.15); color: var(--accent); }
+
+    /* ── State Machine ────────────────────────────────────────── */
+    .state-machine { display: flex; align-items: center; justify-content: center; gap: 0; margin: 28px 0; flex-wrap: wrap; }
+    .state-box { background: var(--bg-card); border: 2px solid var(--border); border-radius: var(--radius); padding: 16px 20px; text-align: center; min-width: 140px; cursor: default; transition: all 0.2s; }
+    .state-box:hover { border-color: var(--accent); }
+    .state-box.state-danger:hover { border-color: var(--accent3); }
+    .state-box .state-num { font-size: 11px; color: var(--text-dim); font-family: var(--font-mono); margin-bottom: 4px; }
+    .state-box .state-name { font-size: 13px; font-weight: 600; color: var(--text-head); margin-bottom: 6px; }
+    .state-box .state-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
+    .state-arrow { display: flex; flex-direction: column; align-items: center; padding: 0 8px; gap: 4px; font-size: 11px; color: var(--text-dim); }
+    .state-arrow .arrow-label { font-size: 10px; max-width: 80px; text-align: center; }
+    .state-arrow .arrow-sym { font-size: 18px; color: var(--accent); }
+
+    /* ── 4-way Handshake Diagram ──────────────────────────────── */
+    .handshake-diagram {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
-      margin: 24px 0;
+      margin: 20px 0;
     }
-
-    .diagram-box .diagram-title {
+    .hs-header {
       background: rgba(88,166,255,0.06);
       border-bottom: 1px solid var(--border);
       padding: 10px 16px;
@@ -304,403 +179,192 @@
       align-items: center;
       gap: 8px;
     }
-
-    .diagram-box pre {
-      border: none;
-      border-radius: 0;
-      margin: 0;
-      padding: 20px;
-    }
-
-    .diagram-placeholder {
-      background: var(--bg-card);
-      border: 1px dashed var(--border);
-      border-radius: var(--radius);
-      padding: 32px;
-      text-align: center;
-      margin: 20px 0;
-      color: var(--text-dim);
-      font-size: 13px;
-    }
-
-    .diagram-placeholder img { max-width: 100%; opacity: 0.6; }
-    .diagram-placeholder p { margin-top: 8px; font-style: italic; }
-
-    /* ── OSI Visual ───────────────────────────────────────────── */
-    .osi-stack {
+    .hs-body { padding: 20px 24px; }
+    .hs-participants {
       display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin: 20px 0;
+      justify-content: space-between;
+      margin-bottom: 12px;
     }
-
-    .osi-layer {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 16px;
+    .hs-party {
+      background: rgba(88,166,255,0.08);
+      border: 1px solid rgba(88,166,255,0.3);
       border-radius: 6px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
+      padding: 8px 20px;
       font-size: 13px;
-      transition: all 0.2s;
-      cursor: default;
+      font-weight: 600;
+      color: var(--accent);
+      font-family: var(--font-mono);
     }
-
-    .osi-layer:hover { border-color: var(--accent); transform: translateX(4px); }
-
-    .osi-layer.highlight-attack {
-      border-color: var(--accent3);
-      background: rgba(247,129,102,0.06);
+    .hs-party.ap-party {
+      background: rgba(63,185,80,0.08);
+      border-color: rgba(63,185,80,0.3);
+      color: var(--accent2);
     }
-
-    .osi-layer.highlight-wifi {
-      border-color: var(--accent);
-      background: rgba(88,166,255,0.06);
+    .hs-msg {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(48,54,61,0.4);
+      cursor: pointer;
+      transition: background 0.15s;
+      border-radius: 4px;
+      padding: 10px 8px;
+      margin: 2px -8px;
     }
-
-    .osi-num {
+    .hs-msg:hover { background: rgba(88,166,255,0.04); }
+    .hs-msg:last-child { border-bottom: none; }
+    .hs-msg-num {
       font-family: var(--font-mono);
       font-size: 11px;
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--border);
-      color: var(--text-dim);
+      background: rgba(88,166,255,0.15);
+      color: var(--accent);
       flex-shrink: 0;
+      font-weight: 700;
     }
+    .hs-msg-content { flex: 1; }
+    .hs-msg-title { font-size: 13px; font-weight: 600; color: var(--text-head); margin-bottom: 3px; }
+    .hs-msg-detail { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+    .hs-arrow { font-size: 11px; color: var(--text-dim); display: flex; align-items: center; gap: 6px; margin: 2px 0 4px; }
+    .hs-arrow-line { height: 1px; flex: 1; background: var(--border); }
+    .hs-arrow-head { color: var(--accent); }
 
-    .osi-layer.highlight-attack .osi-num { background: rgba(247,129,102,0.3); color: var(--accent3); }
-    .osi-layer.highlight-wifi .osi-num { background: rgba(88,166,255,0.2); color: var(--accent); }
-
-    .osi-name { font-weight: 600; color: var(--text-head); width: 160px; }
-    .osi-detail { color: var(--text-dim); font-size: 12px; }
-    .osi-tag {
-      margin-left: auto;
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-weight: 600;
-    }
-
-    .tag-attack { background: rgba(247,129,102,0.2); color: var(--accent3); }
-    .tag-wifi { background: rgba(88,166,255,0.15); color: var(--accent); }
-
-    /* ── State Machine ────────────────────────────────────────── */
-    .state-machine {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0;
-      margin: 28px 0;
-      flex-wrap: wrap;
-    }
-
-    .state-box {
-      background: var(--bg-card);
-      border: 2px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px 20px;
-      text-align: center;
-      min-width: 140px;
-      cursor: default;
-      transition: all 0.2s;
-    }
-
-    .state-box:hover { border-color: var(--accent); }
-    .state-box.state-danger:hover { border-color: var(--accent3); }
-
-    .state-box .state-num {
-      font-size: 11px;
-      color: var(--text-dim);
-      font-family: var(--font-mono);
-      margin-bottom: 4px;
-    }
-
-    .state-box .state-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-head);
-      margin-bottom: 6px;
-    }
-
-    .state-box .state-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
-
-    .state-arrow {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 0 8px;
-      gap: 4px;
-      font-size: 11px;
-      color: var(--text-dim);
-    }
-
-    .state-arrow .arrow-label { font-size: 10px; max-width: 80px; text-align: center; }
-    .state-arrow .arrow-sym { font-size: 18px; color: var(--accent); }
-    .state-arrow .arrow-sym.danger { color: var(--accent3); }
-
-    /* ── Interactive Quiz ─────────────────────────────────────── */
-    .quiz-container {
+    /* ── RSN IE Block ─────────────────────────────────────────── */
+    .rsn-block {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 28px;
-      margin: 24px 0;
+      overflow: hidden;
+      margin: 20px 0;
     }
-
-    .quiz-container h3 {
-      font-size: 14px;
-      color: var(--accent);
-      margin-bottom: 20px;
+    .rsn-header {
+      background: rgba(63,185,80,0.06);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      font-size: 12px;
+      color: var(--text-dim);
       display: flex;
       align-items: center;
       gap: 8px;
     }
-
-    .quiz-question {
-      margin-bottom: 28px;
+    .rsn-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      border-bottom: 1px solid rgba(48,54,61,0.5);
     }
-
-    .quiz-question .q-text {
-      font-size: 14px;
-      color: var(--text-head);
-      margin-bottom: 14px;
-      line-height: 1.5;
-    }
-
-    .quiz-question .q-num {
+    .rsn-row:last-child { border-bottom: none; }
+    .rsn-field {
+      padding: 10px 14px;
       font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--accent);
-      margin-bottom: 6px;
+      font-size: 12px;
+      color: var(--accent2);
+      min-width: 200px;
+      border-right: 1px solid var(--border);
+      flex-shrink: 0;
     }
+    .rsn-val { padding: 10px 14px; font-size: 12px; color: var(--text); flex: 1; }
+    .rsn-val code { font-size: 11px; }
 
+    /* ── KARMA Flow ───────────────────────────────────────────── */
+    .karma-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 20px 0;
+    }
+    .karma-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(48,54,61,0.5);
+    }
+    .karma-step:last-child { border-bottom: none; }
+    .karma-step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+    }
+    .karma-step-num.client { background: rgba(88,166,255,0.15); color: var(--accent); }
+    .karma-step-num.attacker { background: rgba(247,129,102,0.15); color: var(--accent3); }
+    .karma-step-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 3px; }
+    .karma-step-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+    /* ── Interactive Quiz ─────────────────────────────────────── */
+    .quiz-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin: 24px 0; }
+    .quiz-container h3 { font-size: 14px; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question .q-text { font-size: 14px; color: var(--text-head); margin-bottom: 14px; line-height: 1.5; }
+    .quiz-question .q-num { font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-bottom: 6px; }
     .option-list { display: flex; flex-direction: column; gap: 8px; }
-
-    .option-btn {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 10px 16px;
-      color: var(--text);
-      text-align: left;
-      cursor: pointer;
-      font-size: 13px;
-      transition: all 0.15s;
-      font-family: var(--font-body);
-    }
-
+    .option-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 16px; color: var(--text); text-align: left; cursor: pointer; font-size: 13px; transition: all 0.15s; font-family: var(--font-body); }
     .option-btn:hover { border-color: var(--accent); color: var(--text-head); }
     .option-btn.correct { border-color: var(--accent2); background: rgba(63,185,80,0.08); color: var(--accent2); }
     .option-btn.wrong { border-color: var(--accent3); background: rgba(247,129,102,0.08); color: var(--accent3); }
     .option-btn:disabled { cursor: default; }
-
-    .quiz-feedback {
-      margin-top: 10px;
-      font-size: 13px;
-      padding: 10px 14px;
-      border-radius: 6px;
-      display: none;
-      line-height: 1.5;
-    }
-
+    .quiz-feedback { margin-top: 10px; font-size: 13px; padding: 10px 14px; border-radius: 6px; display: none; line-height: 1.5; }
     .quiz-feedback.show { display: block; }
     .quiz-feedback.correct-fb { background: rgba(63,185,80,0.08); border: 1px solid rgba(63,185,80,0.3); color: var(--accent2); }
     .quiz-feedback.wrong-fb { background: rgba(247,129,102,0.08); border: 1px solid rgba(247,129,102,0.3); color: var(--accent3); }
-
-    .quiz-score {
-      display: none;
-      text-align: center;
-      padding: 20px;
-      border-top: 1px solid var(--border);
-      margin-top: 20px;
-    }
-
+    .quiz-score { display: none; text-align: center; padding: 20px; border-top: 1px solid var(--border); margin-top: 20px; }
     .quiz-score.show { display: block; }
     .score-num { font-size: 3rem; font-weight: 700; color: var(--accent); font-family: var(--font-mono); }
     .score-label { font-size: 14px; color: var(--text-dim); margin-top: 4px; }
 
     /* ── Protocol Timeline ────────────────────────────────────── */
-    .timeline {
-      position: relative;
-      padding-left: 28px;
-      margin: 20px 0;
-    }
-
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 10px;
-      top: 0; bottom: 0;
-      width: 2px;
-      background: var(--border);
-    }
-
-    .timeline-item {
-      position: relative;
-      margin-bottom: 20px;
-    }
-
-    .timeline-item::before {
-      content: '';
-      position: absolute;
-      left: -22px;
-      top: 6px;
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      border: 2px solid var(--border);
-      background: var(--bg);
-    }
-
+    .timeline { position: relative; padding-left: 28px; margin: 20px 0; }
+    .timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+    .timeline-item { position: relative; margin-bottom: 20px; }
+    .timeline-item::before { content: ''; position: absolute; left: -22px; top: 6px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg); }
     .timeline-item.broken::before { border-color: var(--accent3); background: rgba(247,129,102,0.2); }
     .timeline-item.deprecated::before { border-color: var(--warn); background: rgba(210,153,34,0.2); }
     .timeline-item.ok::before { border-color: var(--accent2); background: rgba(63,185,80,0.2); }
-
-    .timeline-year {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-dim);
-      margin-bottom: 3px;
-    }
-
-    .timeline-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-head);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
-
-    .tl-badge {
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-weight: 600;
-    }
-
+    .timeline-year { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); margin-bottom: 3px; }
+    .timeline-title { font-size: 14px; font-weight: 600; color: var(--text-head); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .tl-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
     .tl-badge.broken { background: rgba(247,129,102,0.15); color: var(--accent3); }
     .tl-badge.deprecated { background: rgba(210,153,34,0.15); color: var(--warn); }
     .tl-badge.current { background: rgba(63,185,80,0.15); color: var(--accent2); }
-
+    .tl-badge.info { background: rgba(88,166,255,0.15); color: var(--accent); }
     .timeline-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
 
     /* ── Frame diagram ────────────────────────────────────────── */
-    .frame-diagram {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      margin: 20px 0;
-      font-family: var(--font-mono);
-      font-size: 12px;
-    }
-
-    .frame-field {
-      display: flex;
-      align-items: center;
-      border-radius: 4px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
+    .frame-diagram { display: flex; flex-direction: column; gap: 3px; margin: 20px 0; font-family: var(--font-mono); font-size: 12px; }
+    .frame-field { display: flex; align-items: center; border-radius: 4px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; flex-wrap: wrap; }
     .frame-field:hover { border-color: var(--accent); }
     .frame-field.active { border-color: var(--accent); background: rgba(88,166,255,0.05); }
-
-    .ff-name {
-      background: rgba(88,166,255,0.08);
-      padding: 8px 14px;
-      color: var(--accent);
-      font-weight: 600;
-      min-width: 220px;
-      border-right: 1px solid var(--border);
-    }
-
-    .ff-size {
-      padding: 8px 12px;
-      color: var(--text-dim);
-      min-width: 100px;
-      border-right: 1px solid var(--border);
-    }
-
-    .ff-desc {
-      padding: 8px 16px;
-      color: var(--text);
-      flex: 1;
-      font-family: var(--font-body);
-    }
-
-    .ff-detail {
-      display: none;
-      padding: 10px 14px;
-      background: var(--bg);
-      border-top: 1px solid var(--border);
-      font-family: var(--font-body);
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
+    .ff-name { background: rgba(88,166,255,0.08); padding: 8px 14px; color: var(--accent); font-weight: 600; min-width: 220px; border-right: 1px solid var(--border); }
+    .ff-size { padding: 8px 12px; color: var(--text-dim); min-width: 100px; border-right: 1px solid var(--border); }
+    .ff-desc { padding: 8px 16px; color: var(--text); flex: 1; font-family: var(--font-body); }
+    .ff-detail { display: none; padding: 10px 14px; background: var(--bg); border-top: 1px solid var(--border); font-family: var(--font-body); font-size: 12px; color: var(--text-dim); width: 100%; }
     .ff-detail.show { display: block; }
 
-    /* ── Nav footer ───────────────────────────────────────────── */
-    .nav-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 32px 0 0;
-      border-top: 1px solid var(--border);
-      margin-top: 48px;
-    }
-
-    .nav-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      border-radius: var(--radius);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-
-    .nav-btn.next {
-      background: var(--accent);
-      color: #0d1117;
-    }
-
-    .nav-btn.next:hover { background: #79c0ff; }
-
-    .nav-btn.prev {
-      border: 1px solid var(--border);
-      color: var(--text-dim);
-    }
-
-    .nav-btn.prev:hover { border-color: var(--accent); color: var(--accent); }
-
     /* ── Callout ──────────────────────────────────────────────── */
-    .callout {
-      border-radius: var(--radius);
-      padding: 14px 18px;
-      margin: 16px 0;
-      display: flex;
-      gap: 12px;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
+    .callout { border-radius: var(--radius); padding: 14px 18px; margin: 16px 0; display: flex; gap: 12px; font-size: 13px; line-height: 1.6; }
     .callout.info { background: rgba(88,166,255,0.07); border-left: 3px solid var(--accent); }
     .callout.attack { background: rgba(247,129,102,0.07); border-left: 3px solid var(--accent3); }
     .callout.tip { background: rgba(63,185,80,0.07); border-left: 3px solid var(--accent2); }
-
+    .callout.warn { background: rgba(210,153,34,0.07); border-left: 3px solid var(--warn); }
     .callout .ci { flex-shrink: 0; font-size: 16px; }
     .callout strong { color: var(--text-head); }
+
+    /* ── Nav footer ───────────────────────────────────────────── */
+    .nav-footer { display: flex; justify-content: space-between; align-items: center; padding: 32px 0 0; border-top: 1px solid var(--border); margin-top: 48px; }
+    .nav-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius); text-decoration: none; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+    .nav-btn.next { background: var(--accent); color: #0d1117; }
+    .nav-btn.next:hover { background: #79c0ff; }
+    .nav-btn.prev { border: 1px solid var(--border); color: var(--text-dim); }
+    .nav-btn.prev:hover { border-color: var(--accent); color: var(--accent); }
 
     /* ── Scrollbar ────────────────────────────────────────────── */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -773,11 +437,11 @@
       <p class="subtitle">
         Master the protocol fundamentals that underpin every wireless attack.
         Without this knowledge, you are guessing. With it, you understand
-        exactly <em>why</em> each exploit works.
+        exactly <em>why</em> each exploit works — from deauth to KRACK.
       </p>
       <div class="meta-row">
         <div class="meta-pill"><span class="dot" style="background:#3fb950"></span> Beginner</div>
-        <div class="meta-pill"><span class="dot" style="background:#58a6ff"></span> ~90 min read</div>
+        <div class="meta-pill"><span class="dot" style="background:#58a6ff"></span> ~120 min read</div>
         <div class="meta-pill"><span class="dot" style="background:#d29922"></span> No tools required</div>
       </div>
     </div>
@@ -803,13 +467,13 @@
       </p>
 
       <div class="osi-stack">
-        <div class="osi-layer"><span class="osi-num">7</span><span class="osi-name">Application</span><span class="osi-detail">HTTP, DNS, FTP, SMTP</span></div>
-        <div class="osi-layer"><span class="osi-num">6</span><span class="osi-name">Presentation</span><span class="osi-detail">TLS/SSL, encoding, compression</span></div>
-        <div class="osi-layer"><span class="osi-num">5</span><span class="osi-name">Session</span><span class="osi-detail">Session management, RPC</span></div>
-        <div class="osi-layer"><span class="osi-num">4</span><span class="osi-name">Transport</span><span class="osi-detail">TCP, UDP, port numbers</span></div>
-        <div class="osi-layer"><span class="osi-num">3</span><span class="osi-name">Network</span><span class="osi-detail">IP addressing, routing</span></div>
+        <div class="osi-layer"><span class="osi-num">7</span><span class="osi-name">Application</span><span class="osi-detail">HTTP, DNS, FTP, SMTP — captured in MITM attacks</span></div>
+        <div class="osi-layer"><span class="osi-num">6</span><span class="osi-name">Presentation</span><span class="osi-detail">TLS/SSL — bypassed via SSL stripping in captive portals</span></div>
+        <div class="osi-layer"><span class="osi-num">5</span><span class="osi-name">Session</span><span class="osi-detail">Session management — hijacked after successful MITM</span></div>
+        <div class="osi-layer"><span class="osi-num">4</span><span class="osi-name">Transport</span><span class="osi-detail">TCP, UDP — port numbers, connection tracking</span></div>
+        <div class="osi-layer"><span class="osi-num">3</span><span class="osi-name">Network</span><span class="osi-detail">IP addressing, routing — ARP poisoning at this layer</span></div>
         <div class="osi-layer highlight-attack highlight-wifi"><span class="osi-num">2</span><span class="osi-name">Data Link</span><span class="osi-detail">MAC frames, 802.11 management/control/data</span><span class="osi-tag tag-attack">PRIMARY ATTACK SURFACE</span></div>
-        <div class="osi-layer highlight-wifi"><span class="osi-num">1</span><span class="osi-name">Physical</span><span class="osi-detail">RF signal, modulation (OFDM, MIMO), channels</span><span class="osi-tag tag-wifi">802.11 PHY</span></div>
+        <div class="osi-layer highlight-wifi"><span class="osi-num">1</span><span class="osi-name">Physical</span><span class="osi-detail">RF signal, modulation (OFDM, MIMO), channels, dBm</span><span class="osi-tag tag-wifi">802.11 PHY</span></div>
       </div>
 
       <div class="callout attack">
@@ -846,6 +510,16 @@
           <div class="card-title">ESSID</div>
           <div class="card-desc">Extended SSID — same as SSID in modern usage. Multiple APs (BSSIDs) can share one ESSID forming an ESS (campus network).</div>
         </div>
+        <div class="card">
+          <div class="card-icon">&#127981;</div>
+          <div class="card-title">OUI</div>
+          <div class="card-desc">First 3 bytes of a MAC address = manufacturer ID. Useful for identifying AP vendor from a BSSID. <code>00:50:F2</code> = Microsoft, <code>D8:B1:90</code> = TP-Link.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">&#128272;</div>
+          <div class="card-title">PMKID</div>
+          <div class="card-desc">Pairwise Master Key Identifier — cached in EAPOL frames. Enables clientless WPA2 cracking without a full handshake. See Module 12.</div>
+        </div>
       </div>
     </section>
 
@@ -857,30 +531,26 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr>
-              <th>Amendment</th>
-              <th>Name</th>
-              <th>Frequency</th>
-              <th>Max Speed</th>
-              <th>Era</th>
-            </tr>
+            <tr><th>Amendment</th><th>Name</th><th>Frequency</th><th>Max Speed</th><th>Era / Status</th></tr>
           </thead>
           <tbody>
-            <tr><td><code>802.11b</code></td><td>Wi-Fi 1</td><td>2.4 GHz</td><td>11 Mbps</td><td><span class="tag-broken">WEP era</span></td></tr>
+            <tr><td><code>802.11b</code></td><td>Wi-Fi 1</td><td>2.4 GHz</td><td>11 Mbps</td><td><span class="tag-broken">WEP era — Module 05</span></td></tr>
             <tr><td><code>802.11a</code></td><td>Wi-Fi 2</td><td>5 GHz</td><td>54 Mbps</td><td><span class="tag-broken">WEP era</span></td></tr>
             <tr><td><code>802.11g</code></td><td>Wi-Fi 3</td><td>2.4 GHz</td><td>54 Mbps</td><td><span class="tag-warn">WEP/WPA era</span></td></tr>
-            <tr><td><code>802.11n</code></td><td>Wi-Fi 4</td><td>2.4/5 GHz</td><td>600 Mbps</td><td><span class="tag-warn">WPA2 era</span></td></tr>
+            <tr><td><code>802.11n</code></td><td>Wi-Fi 4</td><td>2.4/5 GHz</td><td>600 Mbps</td><td><span class="tag-warn">WPA2 era — Modules 06–07</span></td></tr>
             <tr><td><code>802.11ac</code></td><td>Wi-Fi 5</td><td>5 GHz</td><td>3.5 Gbps</td><td><span class="tag-warn">WPA2/WPA3</span></td></tr>
-            <tr><td><code>802.11ax</code></td><td>Wi-Fi 6/6E</td><td>2.4/5/6 GHz</td><td>9.6 Gbps</td><td><span class="tag-ok">WPA3 era</span></td></tr>
+            <tr><td><code>802.11ax</code></td><td>Wi-Fi 6/6E</td><td>2.4/5/6 GHz</td><td>9.6 Gbps</td><td><span class="tag-ok">WPA3 era — Module 13</span></td></tr>
+            <tr><td><code>802.11w</code></td><td>PMF</td><td>—</td><td>—</td><td><span class="tag-ok">Management Frame Protection</span></td></tr>
+            <tr><td><code>802.11i</code></td><td>WPA2/RSN</td><td>—</td><td>—</td><td><span class="tag-warn">Defines AES-CCMP + 4-way handshake</span></td></tr>
           </tbody>
         </table>
       </div>
 
       <div class="callout tip">
         <span class="ci">&#128161;</span>
-        <div><strong>Tip:</strong> When scanning with <code>airodump-ng</code>, the <code>ENC</code> and <code>CIPHER</code>
-        columns immediately tell you the target's protocol. <code>WEP</code> targets go to Module 05;
-        <code>WPA2 CCMP</code> targets go to Modules 06–07.</div>
+        <div><strong>Tip:</strong> When scanning with <code>airodump-ng</code>, the <code>ENC</code>, <code>CIPHER</code>, and <code>AUTH</code>
+        columns immediately tell you the target's attack surface. <code>WEP</code> → Module 05;
+        <code>WPA2 CCMP PSK</code> → Modules 06–07 or 12; <code>WPA2 CCMP MGT</code> → Module 13 (Enterprise).</div>
       </div>
     </section>
 
@@ -899,56 +569,113 @@
           <span class="ff-name">Frame Control</span>
           <span class="ff-size">2 bytes</span>
           <span class="ff-desc">Type, subtype, flags (ToDS, FromDS, Protected, Retry...)</span>
-          <div class="ff-detail">Contains the frame type (Management/Control/Data), subtype (Beacon=8, Deauth=12...), and the <strong>Protected bit</strong> (bit 14). If Protected=0 on a data frame, the payload is unencrypted. The ToDS/FromDS bits determine frame direction and how the four address fields are interpreted.</div>
+          <div class="ff-detail">Contains the frame type (Management/Control/Data), subtype (Beacon=8, Deauth=12...), and the <strong>Protected bit</strong> (bit 14). If Protected=0 on a data frame, the payload is unencrypted. The ToDS/FromDS bits determine frame direction and how the four address fields are interpreted. The <strong>Retry bit</strong> (bit 11) indicates retransmissions — important for sequence number tracking during injection.</div>
         </div>
         <div class="frame-field" onclick="toggleField(this)">
           <span class="ff-name">Duration/ID</span>
           <span class="ff-size">2 bytes</span>
           <span class="ff-desc">NAV (Network Allocation Vector) — how long the medium is reserved</span>
-          <div class="ff-detail">Used by CSMA/CA to prevent collisions. Other stations set their NAV timer to this value and defer transmission. In PS-Poll frames, this field carries the Association ID instead.</div>
+          <div class="ff-detail">Used by CSMA/CA to prevent collisions. Other stations set their NAV timer to this value and defer transmission. <strong>DoS attack vector:</strong> Transmitting frames with maximum Duration (32,767 μs) forces all other stations into a virtual carrier sense hold — known as a NAV-based DoS. In PS-Poll frames, this field carries the Association ID instead.</div>
         </div>
         <div class="frame-field" onclick="toggleField(this)">
           <span class="ff-name">Address 1 (Receiver)</span>
           <span class="ff-size">6 bytes</span>
           <span class="ff-desc">Destination MAC — always the immediate receiver</span>
-          <div class="ff-detail">The immediate recipient of the frame. In a deauth attack, this is the client's MAC address (or FF:FF:FF:FF:FF:FF for broadcast deauth targeting all clients simultaneously).</div>
+          <div class="ff-detail">The immediate recipient of the frame. In a <strong>unicast deauth attack</strong>, this is the client's MAC address. Using <code>FF:FF:FF:FF:FF:FF</code> sends a <strong>broadcast deauth</strong> — disconnects ALL clients simultaneously. Broadcast deauth is faster but noisier.</div>
         </div>
         <div class="frame-field" onclick="toggleField(this)">
           <span class="ff-name">Address 2 (Transmitter)</span>
           <span class="ff-size">6 bytes</span>
-          <span class="ff-desc">Source MAC — the immediate transmitter. <strong>Can be spoofed.</strong></span>
-          <div class="ff-detail"><strong>Critical for attacks:</strong> In a deauth attack, this field is set to the BSSID of the AP being impersonated. Since 802.11 has no source authentication, the client accepts this frame as legitimate. This field is also what <code>aireplay-ng</code> spoofs during fake authentication.</div>
+          <span class="ff-desc">Source MAC — the immediate transmitter. <strong>Can be spoofed freely.</strong></span>
+          <div class="ff-detail"><strong>Critical for attacks:</strong> In a deauth attack, this field is set to the BSSID of the AP being impersonated. Since 802.11 has no source authentication (without PMF), the client accepts this frame as legitimate. <code>aireplay-ng</code> spoofs this field automatically. During fake authentication (Module 05), the attacker sets this to their own (possibly spoofed) MAC.</div>
         </div>
         <div class="frame-field" onclick="toggleField(this)">
           <span class="ff-name">Address 3 (BSSID)</span>
           <span class="ff-size">6 bytes</span>
           <span class="ff-desc">Filtering address — AP's BSSID in infrastructure mode</span>
-          <div class="ff-detail">Used for filtering at the MAC layer. Clients only process frames where Address 3 matches their associated AP's BSSID. In IBSS (ad-hoc) mode, this is the IBSS BSSID.</div>
+          <div class="ff-detail">Used for filtering at the MAC layer. Clients only process frames where Address 3 matches their associated AP's BSSID. In IBSS (ad-hoc) mode, this is the IBSS BSSID. In WDS bridge mode, Address 4 is added and this field carries the original source.</div>
         </div>
         <div class="frame-field" onclick="toggleField(this)">
           <span class="ff-name">Sequence Control</span>
           <span class="ff-size">2 bytes</span>
-          <span class="ff-desc">Fragment number (4 bits) + Sequence number (12 bits)</span>
-          <div class="ff-detail">Enables fragment reassembly and duplicate detection. The <code>Retry</code> bit in Frame Control is set when a frame is retransmitted. Sequence numbers also help correlate frames within the 4-way handshake.</div>
+          <span class="ff-desc">Fragment number (4 bits) + Sequence number (12 bits, 0–4095)</span>
+          <div class="ff-detail">Enables fragment reassembly and duplicate detection. Sequence numbers increment with each transmitted frame and wrap around at 4095. <strong>Injection note:</strong> <code>aireplay-ng</code> must use valid, incrementing sequence numbers for injected frames to be accepted. Mismatched sequence numbers cause injection failures. The CCMP Packet Number (PN) in the frame body is a separate, stronger replay counter.</div>
         </div>
         <div class="frame-field" onclick="toggleField(this)">
           <span class="ff-name">Frame Body</span>
           <span class="ff-size">0–7951 bytes</span>
-          <span class="ff-desc">Payload — varies by frame type</span>
-          <div class="ff-detail">For Beacon frames: contains SSID, supported rates, RSN IE (cipher suite info). For Data frames: contains the LLC/SNAP header + IP packet (encrypted if Protected bit is set). For EAPOL frames: contains the 4-way handshake messages used to derive the PTK.</div>
+          <span class="ff-desc">Payload — varies by frame type (Beacon IE fields, EAPOL, data...)</span>
+          <div class="ff-detail">For <strong>Beacon frames</strong>: contains SSID IE, Supported Rates IE, RSN IE (cipher suite info), TIM, Country IE. For <strong>Data frames</strong>: contains LLC/SNAP header + IP packet (encrypted if Protected bit set). For <strong>EAPOL frames</strong>: contains the 4-way handshake messages (ANonce, SNonce, MIC, GTK). The RSN IE in Beacon frames is what <code>airodump-ng</code> parses to display ENC/CIPHER/AUTH columns.</div>
         </div>
         <div class="frame-field" onclick="toggleField(this)">
           <span class="ff-name">FCS (Frame Check Sequence)</span>
           <span class="ff-size">4 bytes</span>
           <span class="ff-desc">CRC-32 integrity check over the entire frame</span>
-          <div class="ff-detail">Detects transmission errors (bit flips). Does <em>not</em> provide authentication — a crafted frame with a valid FCS will be accepted. <code>aireplay-ng</code> recalculates the FCS after modifying frames.</div>
+          <div class="ff-detail">Detects transmission errors (bit flips). Does <em>not</em> provide authentication — a crafted frame with a valid FCS will be accepted. <code>aireplay-ng</code> recalculates the FCS after modifying frames. Wireshark shows FCS errors as red frames — useful for diagnosing injection and capture problems. Monitor mode adapters can optionally include FCS in captures (Radiotap header flag).</div>
         </div>
       </div>
     </section>
 
-    <!-- Section 5: Station State Machine -->
+    <!-- Section 5: CSMA/CA -->
+    <section id="csma">
+      <h2><span class="section-num">05</span> CSMA/CA — How the Wireless Medium Is Shared</h2>
+      <p>
+        Understanding CSMA/CA is essential for understanding why monitor mode works, why injection sometimes fails,
+        and how wireless DoS attacks saturate a channel.
+      </p>
+
+      <div class="diagram-box">
+        <div class="diagram-title">&#9654; DCF (Distributed Coordination Function) Flow</div>
+        <pre>Station wants to transmit:
+  │
+  ├─ Sense channel ──► Busy?
+  │                       │
+  │                       └─► Wait + draw random backoff from CW
+  │                             (CW = Contention Window, 0–CWmin slots)
+  │                             Each slot = ~9μs (802.11n)
+  │                       ┌────────────────────────────────────┐
+  │                       │ Decrement counter while idle       │
+  │                       │ Pause counter while channel busy   │
+  │                       │ When counter reaches 0 → transmit  │
+  │                       └────────────────────────────────────┘
+  └─ Channel idle for DIFS (~34μs)?
+         │
+         └─► Transmit frame
+               │
+               └─► Wait SIFS (~16μs) for ACK
+                     │
+                     ├─ ACK received? → Success
+                     └─ No ACK? → Exponential backoff (CW doubles) + retry</pre>
+      </div>
+
+      <h3>Attack Implications of CSMA/CA</h3>
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon">&#128065;</div>
+          <div class="card-title">Monitor Mode Bypass</div>
+          <div class="card-desc">Monitor mode bypasses CSMA/CA entirely. Your NIC captures all frames without waiting for DIFS or sending ACKs — pure passive capture.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">&#9889;</div>
+          <div class="card-title">Injection &amp; Channel Contention</div>
+          <div class="card-desc">Injected frames still compete via CSMA/CA. On a busy channel, injection is less reliable. Use <code>aireplay-ng --ignore-negative-one</code> on noisy channels.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">&#128721;</div>
+          <div class="card-title">NAV-based DoS</div>
+          <div class="card-desc">Frames with maximum Duration/ID (32,767μs) force all stations into NAV hold — no one else can transmit. No injection needed, just timing.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">&#128293;</div>
+          <div class="card-title">Channel Saturation</div>
+          <div class="card-desc"><code>mdk4</code> beacon flooding saturates the channel. Legitimate clients cannot win the CSMA/CA backoff race → effective DoS. Module 08.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: Station State Machine -->
     <section id="states">
-      <h2><span class="section-num">05</span> Station State Machine</h2>
+      <h2><span class="section-num">06</span> Station State Machine</h2>
       <p>
         802.11 defines three states for client-AP relationships.
         A <strong>Deauthentication frame</strong> (subtype 12) drops a client
@@ -960,45 +687,241 @@
         <div class="state-box">
           <div class="state-num">STATE 1</div>
           <div class="state-name">Unauthenticated</div>
-          <div class="state-desc">Unassociated<br/>Client is aware of the AP</div>
+          <div class="state-desc">Unassociated<br/>Aware of AP<br/>No data passes</div>
         </div>
         <div class="state-arrow">
-          <div class="arrow-label">Authenticate</div>
-          <div class="arrow-sym">&#8594;</div>
+          <div class="arrow-label" style="color:var(--accent2)">Authenticate &#8594;</div>
+          <div style="height:8px"></div>
           <div class="arrow-label" style="color:var(--accent3)">&#8592; Deauth</div>
         </div>
         <div class="state-box">
           <div class="state-num">STATE 2</div>
           <div class="state-name">Authenticated</div>
-          <div class="state-desc">Unassociated<br/>Cannot pass data yet</div>
+          <div class="state-desc">Unassociated<br/>Auth complete<br/>No data yet</div>
         </div>
         <div class="state-arrow">
-          <div class="arrow-label">Associate</div>
-          <div class="arrow-sym">&#8594;</div>
+          <div class="arrow-label" style="color:var(--accent2)">Associate &#8594;</div>
+          <div style="height:8px"></div>
           <div class="arrow-label" style="color:var(--warn)">&#8592; Disassoc</div>
         </div>
         <div class="state-box state-danger">
           <div class="state-num">STATE 3</div>
           <div class="state-name">Authenticated</div>
-          <div class="state-desc">Associated<br/>4-way handshake here<br/>Data flows</div>
+          <div class="state-desc">Associated<br/>4-way HS here<br/>&#9654; Data flows</div>
         </div>
       </div>
 
       <div class="callout attack">
         <span class="ci">&#9889;</span>
         <div>
-          <strong>Attack Vector:</strong> A forged Deauth frame drops the client to State 1.
+          <strong>Attack Vector:</strong> A forged Deauth frame drops the client to State 1 from <em>any</em> state.
           The client immediately begins re-association, performing the 4-way handshake again.
           An attacker captures this handshake for offline cracking (Module 06).
           The client has <em>no way to verify</em> the deauth frame is genuine unless
           802.11w (Management Frame Protection) is enabled.
+          <br/><br/>
+          <strong>Deauth vs. Disassoc:</strong> Deauth returns to State 1 (must re-authenticate + re-associate).
+          Disassoc returns to State 2 (must re-associate only). Both are equally exploitable. Deauth is more disruptive.
         </div>
       </div>
     </section>
 
-    <!-- Section 6: Security Protocol Timeline -->
+    <!-- Section 7: 4-Way Handshake -->
+    <section id="handshake">
+      <h2><span class="section-num">07</span> The WPA2 4-Way Handshake</h2>
+      <p>
+        When a WPA2 client associates to an AP, they exchange four EAPOL frames to derive the
+        <strong>PTK (Pairwise Transient Key)</strong>. Capturing this exchange is the foundation of
+        Modules 06 and 07. Click each message to expand details.
+      </p>
+
+      <div class="handshake-diagram">
+        <div class="hs-header">&#9654; WPA2 4-Way EAPOL Handshake &nbsp;&nbsp; <span style="margin-left:auto;color:var(--accent3)">Capture messages 2+3 to enable offline cracking</span></div>
+        <div class="hs-body">
+          <div class="hs-participants">
+            <div class="hs-party">Client (Supplicant)</div>
+            <div class="hs-party ap-party">AP (Authenticator)</div>
+          </div>
+
+          <div class="hs-msg" onclick="toggleHsMsg(this)">
+            <div class="hs-msg-num">1</div>
+            <div class="hs-msg-content">
+              <div class="hs-arrow">AP &nbsp;<div class="hs-arrow-line"></div><div class="hs-arrow-head">&#8594;</div>&nbsp; Client</div>
+              <div class="hs-msg-title">EAPOL Message 1 — AP sends ANonce</div>
+              <div class="hs-msg-detail">AP generates a random 256-bit ANonce (Authenticator Nonce) and sends it to the client. No MIC yet. Client now has enough to compute the full PTK: <code>PTK = PRF(PMK, ANonce, SNonce, AP_MAC, Client_MAC)</code>. At this stage, the client also generates its own SNonce.</div>
+            </div>
+          </div>
+
+          <div class="hs-msg" onclick="toggleHsMsg(this)">
+            <div class="hs-msg-num">2</div>
+            <div class="hs-msg-content">
+              <div class="hs-arrow">Client &nbsp;<div class="hs-arrow-line"></div><div class="hs-arrow-head">&#8594;</div>&nbsp; AP</div>
+              <div class="hs-msg-title">EAPOL Message 2 — Client sends SNonce + MIC &#x26A0; <span style="color:var(--accent3);font-size:11px">CAPTURE TARGET</span></div>
+              <div class="hs-msg-detail">Client sends its SNonce and a MIC (Message Integrity Code) computed with the derived PTK. <strong>This message + Message 1 is sufficient for offline cracking</strong> — it contains the SNonce, ANonce (inferred from msg 1), and a verifiable MIC. <code>aircrack-ng</code> and <code>hashcat -m 22000</code> use this.</div>
+            </div>
+          </div>
+
+          <div class="hs-msg" onclick="toggleHsMsg(this)">
+            <div class="hs-msg-num">3</div>
+            <div class="hs-msg-content">
+              <div class="hs-arrow">AP &nbsp;<div class="hs-arrow-line"></div><div class="hs-arrow-head">&#8594;</div>&nbsp; Client</div>
+              <div class="hs-msg-title">EAPOL Message 3 — AP sends encrypted GTK + MIC &#x26A0; <span style="color:var(--accent3);font-size:11px">CAPTURE TARGET</span></div>
+              <div class="hs-msg-detail">AP confirms it derived the same PTK. Sends the GTK (Group Temporal Key — for broadcast/multicast) encrypted under the PTK. Contains another MIC for verification. Capturing messages 2 <em>and</em> 3 provides redundant confirmation and is used by tools like <code>hcxdumptool</code>.</div>
+            </div>
+          </div>
+
+          <div class="hs-msg" onclick="toggleHsMsg(this)">
+            <div class="hs-msg-num">4</div>
+            <div class="hs-msg-content">
+              <div class="hs-arrow">Client &nbsp;<div class="hs-arrow-line"></div><div class="hs-arrow-head">&#8594;</div>&nbsp; AP</div>
+              <div class="hs-msg-title">EAPOL Message 4 — Client ACKs, session begins</div>
+              <div class="hs-msg-detail">Client acknowledges receipt of the GTK. Both parties now install the PTK and GTK. Encrypted data traffic begins. The handshake is complete. Not strictly needed for cracking, but confirms the full exchange was captured.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Key Derivation Reference</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Key</th><th>Derived From</th><th>Purpose</th><th>Hashcat Mode</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>PMK</code></td><td>PBKDF2-SHA1(passphrase, SSID, 4096 iters)</td><td>Root key — never transmitted</td><td>—</td></tr>
+            <tr><td><code>PTK</code></td><td>PRF(PMK, ANonce, SNonce, AP_MAC, STA_MAC)</td><td>Unicast session encryption + MIC</td><td>—</td></tr>
+            <tr><td><code>GTK</code></td><td>Derived by AP, distributed in EAPOL-3</td><td>Broadcast/multicast encryption</td><td>—</td></tr>
+            <tr><td><code>PMKID</code></td><td>HMAC-SHA1-128(PMK, "PMK Name"‖AP_MAC‖STA_MAC)</td><td>Cached key ID — enables clientless attack</td><td><code>-m 22000</code> / <code>-m 16800</code></td></tr>
+            <tr><td>EAPOL Handshake</td><td>Captured frames 2+3</td><td>Offline dictionary/brute force</td><td><code>-m 22000</code> (recommended)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout info">
+        <span class="ci">&#128279;</span>
+        <div><strong>PMKID Preview:</strong> The PMKID is embedded in the first EAPOL frame (Association Response RSNIE). An attacker can extract it <strong>without deauthenticating any client</strong> — no handshake needed. This is the PMKID attack covered in Module 12 using <code>hcxdumptool</code> + <code>hashcat -m 22000</code>.</div>
+      </div>
+    </section>
+
+    <!-- Section 8: RSN IE -->
+    <section id="rsn">
+      <h2><span class="section-num">08</span> RSN IE — Reading Cipher Suite Advertisements</h2>
+      <p>
+        The <strong>RSN Information Element</strong> is embedded in every Beacon and Association Request frame.
+        It tells you exactly what the AP supports — and therefore which attacks apply.
+        This is what <code>airodump-ng</code> parses for its <code>ENC / CIPHER / AUTH</code> columns.
+      </p>
+
+      <div class="rsn-block">
+        <div class="rsn-header">&#9654; RSN IE Structure (parsed from Beacon frame body)</div>
+        <div class="rsn-row">
+          <div class="rsn-field">Version</div>
+          <div class="rsn-val">Always <code>1</code></div>
+        </div>
+        <div class="rsn-row">
+          <div class="rsn-field">Group Cipher Suite</div>
+          <div class="rsn-val"><code>00-0F-AC:02</code> = TKIP &nbsp;|&nbsp; <code>00-0F-AC:04</code> = CCMP-128 (AES) &nbsp;|&nbsp; <code>00-0F-AC:06</code> = GCMP-128 (WPA3)</div>
+        </div>
+        <div class="rsn-row">
+          <div class="rsn-field">Pairwise Cipher(s)</div>
+          <div class="rsn-val">One or more unicast cipher suites. Best available is used for the session. CCMP = AES. TKIP = legacy RC4.</div>
+        </div>
+        <div class="rsn-row">
+          <div class="rsn-field">AKM Suite</div>
+          <div class="rsn-val">
+            <code>00-0F-AC:01</code> = 802.1X (Enterprise/MGT)<br/>
+            <code>00-0F-AC:02</code> = PSK (WPA2-Personal)<br/>
+            <code>00-0F-AC:06</code> = SAE (WPA3-Personal)<br/>
+            <code>00-0F-AC:18</code> = OWE (Enhanced Open)
+          </div>
+        </div>
+        <div class="rsn-row">
+          <div class="rsn-field">RSN Capabilities</div>
+          <div class="rsn-val">
+            Bit 6: PMF Required (MFP mandatory)<br/>
+            Bit 7: PMF Capable (MFP optional)
+          </div>
+        </div>
+      </div>
+
+      <h3>Reading airodump-ng Output</h3>
+      <div class="diagram-box">
+        <div class="diagram-title">&#9654; Sample airodump-ng AP list — annotated</div>
+        <pre><span class="hdr"> BSSID              PWR  Beacons  #Data   CH  MB   ENC   CIPHER  AUTH  ESSID</span>
+<span class="str"> AA:BB:CC:DD:EE:FF  -55  120      48      6   130  WPA2  CCMP    PSK   HomeNet</span>
+<span class="cmt"> └── WPA2-CCMP-PSK: Target for handshake (Module 06) or PMKID (Module 12)</span>
+
+<span class="str"> AA:BB:CC:11:22:33  -70  80       5       1   54   WPA2  CCMP    MGT   CorpNet</span>
+<span class="cmt"> └── WPA2-CCMP-Enterprise: Target for rogue RADIUS (Module 13) — AUTH=MGT</span>
+
+<span class="str"> AA:BB:CC:44:55:66  -80  200      0       11  54   WEP   WEP     WEP   Old_AP</span>
+<span class="cmt"> └── WEP: Target for IV collection + PTW crack (Module 05)</span>
+
+<span class="str"> AA:BB:CC:77:88:99  -60  150      20      6   130  WPA3  CCMP    SAE   NewNet</span>
+<span class="cmt"> └── WPA3-SAE: Resistant to handshake cracking. Dragonblood side-channel (Module 13)</span>
+
+<span class="str"> AA:BB:CC:AB:CD:EF  -65  90       12      6   130  OPN   OPN     OPN   FreeWifi</span>
+<span class="cmt"> └── Open network: No encryption. MITM/Evil Twin prime target (Modules 09–10)</span></pre>
+      </div>
+    </section>
+
+    <!-- Section 9: Probe Requests & KARMA -->
+    <section id="karma">
+      <h2><span class="section-num">09</span> Probe Requests &amp; the PNL — KARMA Attack Preview</h2>
+      <p>
+        Every Wi-Fi device maintains a <strong>Preferred Network List (PNL)</strong> — a stored list of previously
+        connected SSIDs. When not connected, the device broadcasts <strong>Probe Requests</strong> searching for
+        each saved network. These frames are unencrypted and broadcast on every channel.
+      </p>
+
+      <div class="callout attack">
+        <span class="ci">&#128270;</span>
+        <div><strong>Privacy Leak:</strong> Passive Probe Request capture reveals the device owner's network history, travel patterns, workplace identity, and home ISP — without any active interaction.</div>
+      </div>
+
+      <h3>The KARMA / MANA Attack</h3>
+      <p>A rogue AP responds to <em>every</em> Probe Request with a fabricated Probe Response claiming to be the requested SSID:</p>
+
+      <div class="karma-flow">
+        <div class="karma-step">
+          <div class="karma-step-num client">C</div>
+          <div>
+            <div class="karma-step-label">Client broadcasts</div>
+            <div class="karma-step-text">Probe Request: <code>"Is SSID 'HomeNetwork' here?"</code> (broadcast, all channels)</div>
+          </div>
+        </div>
+        <div class="karma-step">
+          <div class="karma-step-num attacker">A</div>
+          <div>
+            <div class="karma-step-label">Rogue AP (KARMA mode) responds</div>
+            <div class="karma-step-text">Probe Response: <code>"Yes! I am 'HomeNetwork'. My BSSID: [spoofed AP MAC]"</code></div>
+          </div>
+        </div>
+        <div class="karma-step">
+          <div class="karma-step-num client">C</div>
+          <div>
+            <div class="karma-step-label">Client auto-connects</div>
+            <div class="karma-step-text">Client authenticates + associates to the rogue AP. <strong>All traffic now flows through attacker.</strong> No user interaction required.</div>
+          </div>
+        </div>
+        <div class="karma-step">
+          <div class="karma-step-num attacker">A</div>
+          <div>
+            <div class="karma-step-label">Attacker captures &amp; proxies</div>
+            <div class="karma-step-text">Tools: <code>hostapd-wpe</code>, <code>bettercap wifi.ap</code>, <code>mana-toolkit</code>. Modules 09–10 cover full implementation.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <span class="ci">&#128241;</span>
+        <div><strong>Modern Mitigations:</strong> iOS 14+, Android 10+ randomize Probe Request source MACs. iOS 15+ suppresses PNL in directed Probe Requests. This reduces KARMA effectiveness against modern devices but does not eliminate it — devices still probe when actively scanning.</div>
+      </div>
+    </section>
+
+    <!-- Section 10: Security Protocol Timeline -->
     <section id="protocols">
-      <h2><span class="section-num">06</span> Wireless Security Protocol Timeline</h2>
+      <h2><span class="section-num">10</span> Wireless Security Protocol Timeline</h2>
 
       <div class="timeline">
         <div class="timeline-item broken">
@@ -1009,102 +932,151 @@
         <div class="timeline-item deprecated">
           <div class="timeline-year">2003</div>
           <div class="timeline-title">WPA-TKIP <span class="tl-badge deprecated">DEPRECATED</span></div>
-          <div class="timeline-desc">RC4 + TKIP per-packet key mixing. Michael MIC vulnerable to forgery attack. Deprecated in 802.11-2012. Treat as broken.</div>
+          <div class="timeline-desc">RC4 + TKIP per-packet key mixing. Michael MIC vulnerable to forgery attack (inject arbitrary frames with known MIC). Deprecated in 802.11-2012.</div>
         </div>
         <div class="timeline-item deprecated">
           <div class="timeline-year">2004</div>
           <div class="timeline-title">WPA2-CCMP (802.11i) <span class="tl-badge deprecated">VULNERABLE</span></div>
-          <div class="timeline-desc">AES-CCM cipher — cryptographically sound. Weakness: PSK derived from passphrase exposed in the 4-way handshake. Modules 06–07.</div>
+          <div class="timeline-desc">AES-CCM cipher — cryptographically sound. Weakness: PSK derived from passphrase exposed in the 4-way handshake. Modules 06–07, 12.</div>
+        </div>
+        <div class="timeline-item broken">
+          <div class="timeline-year">2017</div>
+          <div class="timeline-title">KRACK — Key Reinstallation Attack <span class="tl-badge broken">CVE-2017-13077+</span></div>
+          <div class="timeline-desc">Replay of EAPOL Message 3 forces nonce reuse in PTK, breaking CCMP/TKIP confidentiality. All WPA2 implementations affected. Patched by 2018 — but unpatched embedded devices remain vulnerable. Module 06.</div>
         </div>
         <div class="timeline-item ok">
           <div class="timeline-year">2018</div>
           <div class="timeline-title">WPA3-SAE (Dragonfly) <span class="tl-badge current">CURRENT</span></div>
-          <div class="timeline-desc">Replaces PSK with Simultaneous Authentication of Equals. Forward secrecy. Partial Dragonblood side-channel attacks exist. Module 13.</div>
+          <div class="timeline-desc">Replaces PSK with Simultaneous Authentication of Equals. Forward secrecy — captured handshake cannot be dictionary attacked. Module 13.</div>
+        </div>
+        <div class="timeline-item deprecated">
+          <div class="timeline-year">2019</div>
+          <div class="timeline-title">Dragonblood <span class="tl-badge info">CVE-2019-9494</span></div>
+          <div class="timeline-desc">Timing and cache side-channel attacks on the WPA3-SAE commit phase. Enable partial offline dictionary attacks. Partially mitigated in updated implementations. Module 13.</div>
         </div>
         <div class="timeline-item ok">
           <div class="timeline-year">2022</div>
           <div class="timeline-title">WPA3 Release 3 <span class="tl-badge current">BEST AVAILABLE</span></div>
-          <div class="timeline-desc">Mandatory PMF, 192-bit security mode for enterprise, enhanced WPA3-Personal. Hardest target in this course.</div>
+          <div class="timeline-desc">Mandatory PMF, 192-bit GCMP-256 security mode for enterprise, hardened SAE. Hardest target in this course.</div>
         </div>
       </div>
     </section>
 
-    <!-- Section 7: Knowledge Check Quiz -->
+    <!-- Section 11: Knowledge Check Quiz -->
     <section id="quiz">
-      <h2><span class="section-num">07</span> Knowledge Check</h2>
-      <p>Test your understanding before moving on. All questions draw from the material above.</p>
+      <h2><span class="section-num">11</span> Knowledge Check</h2>
+      <p>Test your understanding before moving on. All 8 questions draw from the material above.</p>
 
       <div class="quiz-container">
-        <h3>&#127358; Module 00 Quiz</h3>
+        <h3>&#127358; Module 00 Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions</span></h3>
 
         <!-- Q1 -->
         <div class="quiz-question" id="q1">
-          <div class="q-num">Question 1 of 5</div>
+          <div class="q-num">Question 1 of 8</div>
           <div class="q-text">A deauthentication frame is which 802.11 frame type and subtype?</div>
           <div class="option-list">
-            <button class="option-btn" onclick="answer(this, 'q1', false)">Data frame, subtype 0 (Data)</button>
-            <button class="option-btn" onclick="answer(this, 'q1', true)">Management frame, subtype 12 (0x0C)</button>
-            <button class="option-btn" onclick="answer(this, 'q1', false)">Control frame, subtype 13 (ACK)</button>
-            <button class="option-btn" onclick="answer(this, 'q1', false)">Management frame, subtype 8 (Beacon)</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">Data frame, subtype 0</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)">Management frame, subtype 12 (0x0C)</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">Control frame, subtype 13</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">Management frame, subtype 8 (Beacon)</button>
           </div>
           <div class="quiz-feedback" id="fb-q1"></div>
         </div>
 
         <!-- Q2 -->
         <div class="quiz-question" id="q2">
-          <div class="q-num">Question 2 of 5</div>
-          <div class="q-text">Which field in the 802.11 MAC header indicates that the frame body is encrypted?</div>
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">Which field in the 802.11 Frame Control byte indicates that the frame body is encrypted?</div>
           <div class="option-list">
-            <button class="option-btn" onclick="answer(this, 'q2', false)">The FCS field</button>
-            <button class="option-btn" onclick="answer(this, 'q2', false)">Address 3 (BSSID)</button>
-            <button class="option-btn" onclick="answer(this, 'q2', true)">The Protected bit (bit 14) in Frame Control</button>
-            <button class="option-btn" onclick="answer(this, 'q2', false)">The Duration/ID field</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">The FCS field</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">Address 3 (BSSID)</button>
+            <button class="option-btn" onclick="answer(this,'q2',true)">The Protected bit (bit 14) in Frame Control</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">The Duration/ID field</button>
           </div>
           <div class="quiz-feedback" id="fb-q2"></div>
         </div>
 
         <!-- Q3 -->
         <div class="quiz-question" id="q3">
-          <div class="q-num">Question 3 of 5</div>
+          <div class="q-num">Question 3 of 8</div>
           <div class="q-text">Why does a hidden SSID provide no real security?</div>
           <div class="option-list">
-            <button class="option-btn" onclick="answer(this, 'q3', false)">Because the BSSID is still visible in beacon frames</button>
-            <button class="option-btn" onclick="answer(this, 'q3', true)">Because the SSID is still transmitted in Probe Responses and Association Requests</button>
-            <button class="option-btn" onclick="answer(this, 'q3', false)">Because WEP can decrypt the hidden SSID</button>
-            <button class="option-btn" onclick="answer(this, 'q3', false)">Because airodump-ng brute-forces the SSID length</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">Because the BSSID is still visible in beacon frames</button>
+            <button class="option-btn" onclick="answer(this,'q3',true)">Because the SSID is still transmitted in Probe Responses and Association Requests</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">Because WEP can decrypt the hidden SSID</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">Because airodump-ng brute-forces the SSID length</button>
           </div>
           <div class="quiz-feedback" id="fb-q3"></div>
         </div>
 
         <!-- Q4 -->
         <div class="quiz-question" id="q4">
-          <div class="q-num">Question 4 of 5</div>
+          <div class="q-num">Question 4 of 8</div>
           <div class="q-text">The WPA2 PMK (Pairwise Master Key) is derived from which inputs?</div>
           <div class="option-list">
-            <button class="option-btn" onclick="answer(this, 'q4', false)">ANonce + SNonce + AP MAC + Client MAC</button>
-            <button class="option-btn" onclick="answer(this, 'q4', false)">The PTK and the session MIC key</button>
-            <button class="option-btn" onclick="answer(this, 'q4', true)">The passphrase and the SSID via PBKDF2-SHA1 (4096 iterations)</button>
-            <button class="option-btn" onclick="answer(this, 'q4', false)">The RC4 keystream and the IV</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">ANonce + SNonce + AP MAC + Client MAC</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">The PTK and the session MIC key</button>
+            <button class="option-btn" onclick="answer(this,'q4',true)">The passphrase and the SSID via PBKDF2-SHA1 (4096 iterations)</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">The RC4 keystream and the IV</button>
           </div>
           <div class="quiz-feedback" id="fb-q4"></div>
         </div>
 
         <!-- Q5 -->
         <div class="quiz-question" id="q5">
-          <div class="q-num">Question 5 of 5</div>
-          <div class="q-text">Which IEEE standard introduced Management Frame Protection (MFP/PMF) to defend against forged deauthentication attacks?</div>
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">Which IEEE standard introduced Management Frame Protection (PMF) to defend against forged deauth attacks?</div>
           <div class="option-list">
-            <button class="option-btn" onclick="answer(this, 'q5', false)">802.11i</button>
-            <button class="option-btn" onclick="answer(this, 'q5', false)">802.11n</button>
-            <button class="option-btn" onclick="answer(this, 'q5', true)">802.11w</button>
-            <button class="option-btn" onclick="answer(this, 'q5', false)">802.11r</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">802.11i</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">802.11n</button>
+            <button class="option-btn" onclick="answer(this,'q5',true)">802.11w</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">802.11r</button>
           </div>
           <div class="quiz-feedback" id="fb-q5"></div>
         </div>
 
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">In airodump-ng output, a network shows: ENC=WPA2, CIPHER=CCMP, AUTH=MGT. What does AUTH=MGT indicate?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)">The network uses a pre-shared key (WPA2-Personal)</button>
+            <button class="option-btn" onclick="answer(this,'q6',true)">The network uses 802.1X/RADIUS authentication (WPA2-Enterprise)</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">Management Frame Protection is enabled</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">The network uses WPA3-SAE</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text">What is the KARMA attack and what protocol vulnerability does it exploit?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">A brute-force attack on WPS PINs using weak IV generation</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">A replay attack on EAPOL message 3 causing nonce reuse</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">A rogue AP responding to all Probe Requests to auto-associate clients, exploiting unauthenticated PNL probing</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">A cache side-channel attack on the WPA3 SAE commit phase</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">The PMKID attack (Module 12) enables WPA2 cracking without capturing a 4-way handshake. How is the PMKID derived?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)">PBKDF2-SHA1(passphrase, SSID, 4096 iters)</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">RC4(IV, WEP_key) XOR plaintext</button>
+            <button class="option-btn" onclick="answer(this,'q8',true)">HMAC-SHA1-128(PMK, "PMK Name" ‖ AP_MAC ‖ STA_MAC)</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">PRF(PMK, ANonce, SNonce, AP_MAC, Client_MAC)</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
         <!-- Score -->
         <div class="quiz-score" id="quizScore">
-          <div class="score-num" id="scoreNum">0/5</div>
+          <div class="score-num" id="scoreNum">0/8</div>
           <div class="score-label" id="scoreLabel"></div>
         </div>
       </div>
@@ -1136,38 +1108,61 @@
     }
   }
 
+  // ── Handshake message toggle ───────────────────────────────────
+  function toggleHsMsg(el) {
+    el.classList.toggle('active');
+    if (el.classList.contains('active')) {
+      el.style.background = 'rgba(88,166,255,0.06)';
+    } else {
+      el.style.background = '';
+    }
+  }
+
   // ── Quiz logic ─────────────────────────────────────────────────
-  const answers = { q1: false, q2: false, q3: false, q4: false, q5: false };
+  const TOTAL_Q = 8;
+  const answered = {};
   const feedbacks = {
     q1: {
       correct: "Correct. Deauthentication (subtype 12, 0x0C) is a Management frame. Because management frames are unauthenticated by default, an attacker can forge one with the AP's BSSID as the source.",
       wrong: "Incorrect. Deauthentication is a Management frame (type=00) with subtype 1100 (decimal 12). Beacons are subtype 8; ACKs are Control frames."
     },
     q2: {
-      correct: "Correct. Bit 14 of the Frame Control field is the Protected bit (also called the Privacy bit in older docs). When set, the frame body is encrypted by WEP, TKIP, or CCMP.",
-      wrong: "Incorrect. The Protected/Privacy bit (bit 14) in the Frame Control field signals an encrypted frame body. FCS is only a CRC integrity check, not an encryption indicator."
+      correct: "Correct. Bit 14 of the Frame Control field is the Protected bit. When set, the frame body is encrypted by WEP, TKIP, or CCMP. An unset Protected bit on a data frame means the payload is cleartext.",
+      wrong: "Incorrect. The Protected/Privacy bit (bit 14) in the Frame Control field signals an encrypted frame body. The FCS is only a CRC integrity check."
     },
     q3: {
       correct: "Correct. While the SSID is removed from Beacon frames, it is still broadcast in Probe Response frames (when clients actively scan) and in Association Requests. airodump-ng captures it as soon as a client connects.",
-      wrong: "Incorrect. The key issue is that the SSID is still transmitted in Probe Responses and Association Requests — captured passively by any monitor-mode adapter."
+      wrong: "Incorrect. The SSID is still transmitted in Probe Responses and Association Requests — captured passively by any monitor-mode adapter. The BSSID being visible is true but not the security issue."
     },
     q4: {
-      correct: "Correct. PMK = PBKDF2(HMAC-SHA1, passphrase, SSID, 4096 iterations, 256 bits). Both the passphrase AND the SSID are inputs, which is why rainbow tables are SSID-specific.",
-      wrong: "Incorrect. The PMK is derived from the passphrase + SSID using PBKDF2-SHA1 with 4096 iterations. The nonces and MACs are used to derive the PTK from the PMK — a separate step."
+      correct: "Correct. PMK = PBKDF2(HMAC-SHA1, passphrase, SSID, 4096 iterations, 256 bits). Both passphrase AND SSID are inputs — WPA2 rainbow tables are SSID-specific for this reason.",
+      wrong: "Incorrect. The PMK is derived from passphrase + SSID using PBKDF2-SHA1 with 4096 iterations. The nonces and MACs are used to derive the PTK from the PMK — a separate, subsequent step."
     },
     q5: {
-      correct: "Correct. 802.11w (2009) introduced PMF/MFP, cryptographically protecting deauth and disassoc frames. WPA3 mandates 802.11w. Note: even with PMF, some limitations exist — covered in Module 08.",
-      wrong: "Incorrect. 802.11w introduced Management Frame Protection. 802.11i is WPA2/RSN, 802.11r is fast BSS transition (roaming), and 802.11n introduced MIMO/HT."
+      correct: "Correct. 802.11w (2009) introduced PMF/MFP, cryptographically protecting deauth and disassoc frames using the session PTK. WPA3 mandates 802.11w.",
+      wrong: "Incorrect. 802.11w introduced Management Frame Protection. 802.11i = WPA2/RSN; 802.11r = fast BSS transition (roaming); 802.11n = MIMO/HT throughput."
+    },
+    q6: {
+      correct: "Correct. AUTH=MGT in airodump-ng means the network uses 802.1X management-frame-level authentication — i.e., WPA-Enterprise backed by a RADIUS server. This is the target of Module 13.",
+      wrong: "Incorrect. MGT = Management/802.1X authentication (Enterprise). PSK = Pre-Shared Key (Personal). SAE = WPA3. PMF capability appears in the CIPHER/ENC column differently."
+    },
+    q7: {
+      correct: "Correct. KARMA exploits the fact that clients broadcast directed Probe Requests for every SSID in their PNL. A rogue AP in KARMA mode responds to ALL probes claiming to be the requested network — triggering automatic association.",
+      wrong: "Incorrect. KARMA is a rogue AP attack exploiting unauthenticated PNL probing. KRACK is the EAPOL replay attack; WPS brute force is Reaver/Pixie Dust; Dragonblood targets WPA3-SAE."
+    },
+    q8: {
+      correct: "Correct. PMKID = HMAC-SHA1-128(PMK, 'PMK Name' ‖ AP_MAC ‖ STA_MAC). It is embedded in EAPOL frame 1 / Association Response. An attacker extracts it passively — no client deauth needed.",
+      wrong: "Incorrect. The PMKID formula is HMAC-SHA1-128(PMK, 'PMK Name' || AP_MAC || STA_MAC). PBKDF2 derives the PMK; the PRF formula derives the PTK; RC4+IV is WEP — completely different."
     }
   };
 
   let score = 0;
-  let answered = 0;
+  let answeredCount = 0;
 
   function answer(btn, qId, isCorrect) {
-    if (answers[qId]) return; // already answered
-    answers[qId] = true;
-    answered++;
+    if (answered[qId]) return;
+    answered[qId] = true;
+    answeredCount++;
 
     const qEl = document.getElementById(qId);
     const buttons = qEl.querySelectorAll('.option-btn');
@@ -1183,28 +1178,30 @@
       btn.classList.add('wrong');
       fb.textContent = '✗ ' + feedbacks[qId].wrong;
       fb.className = 'quiz-feedback wrong-fb show';
-      // highlight correct button
       buttons.forEach(b => {
-        if (b.onclick.toString().includes('true')) b.classList.add('correct');
+        if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct');
       });
     }
 
-    if (answered === 5) showScore();
+    if (answeredCount === TOTAL_Q) showScore();
   }
 
   function showScore() {
     const scoreEl = document.getElementById('quizScore');
     const numEl = document.getElementById('scoreNum');
     const labelEl = document.getElementById('scoreLabel');
-    numEl.textContent = score + '/5';
-    const msgs = ['Keep studying — re-read the sections above.', 'Getting there — review the missed questions.', 'Good work! A few gaps to address.', 'Strong understanding!', 'Perfect score — ready for Module 01!'];
-    labelEl.textContent = msgs[score] || msgs[4];
-    numEl.style.color = score >= 4 ? 'var(--accent2)' : score >= 2 ? 'var(--warn)' : 'var(--accent3)';
+    numEl.textContent = score + '/' + TOTAL_Q;
+    const pct = score / TOTAL_Q;
+    const msgs = {
+      low:  'Re-read the sections on Frame Architecture, State Machine, and the 4-Way Handshake.',
+      mid:  'Good progress — revisit the RSN IE, KARMA, and PMKID sections.',
+      high: 'Strong foundation. A few gaps — check the questions you missed.',
+      full: 'Perfect score. You are fully prepared for Module 01.'
+    };
+    labelEl.textContent = pct === 1 ? msgs.full : pct >= 0.75 ? msgs.high : pct >= 0.5 ? msgs.mid : msgs.low;
+    numEl.style.color = pct === 1 ? 'var(--accent2)' : pct >= 0.625 ? 'var(--warn)' : 'var(--accent3)';
     scoreEl.classList.add('show');
   }
-
-  // ── Sidebar active link ────────────────────────────────────────
-  // Already set by class in HTML for module 00
 </script>
 
 </body>
