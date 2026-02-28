@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WiFi Command Builder — Wireless Exploitation Course</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d1117; --bg-card:#161b22; --bg-code:#010409; --border:#30363d;
+      --accent:#58a6ff; --accent2:#3fb950; --accent3:#f78166; --warn:#d29922;
+      --text:#c9d1d9; --text-dim:#8b949e; --text-head:#e6edf3;
+      --radius:8px; --font-mono:'Cascadia Code','Fira Code','Consolas',monospace;
+      --font-body:'Segoe UI',system-ui,sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font-body); line-height:1.7; font-size:15px; min-height:100vh; }
+
+    /* Nav */
+    .top-nav { background:var(--bg-card); border-bottom:1px solid var(--border); padding:0 40px; display:flex; align-items:center; gap:32px; height:56px; position:sticky; top:0; z-index:100; }
+    .nav-logo { font-size:13px; font-weight:700; color:var(--accent); font-family:var(--font-mono); white-space:nowrap; text-decoration:none; }
+    .nav-links { display:flex; gap:24px; margin-left:auto; }
+    .nav-links a { font-size:13px; color:var(--text-dim); text-decoration:none; transition:color 0.15s; }
+    .nav-links a:hover { color:var(--text); }
+
+    /* Hero */
+    .hero { background:linear-gradient(160deg,#0d1117 0%,#161b22 50%,#0d1117 100%); border-bottom:1px solid var(--border); padding:52px 40px 44px; text-align:center; position:relative; overflow:hidden; }
+    .hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(88,166,255,0.07) 0%,transparent 70%); pointer-events:none; }
+    .hero-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(88,166,255,0.1); border:1px solid rgba(88,166,255,0.3); border-radius:20px; padding:5px 16px; font-size:12px; color:var(--accent); margin-bottom:20px; }
+    .hero h1 { font-size:clamp(1.8rem,4vw,2.6rem); color:var(--text-head); line-height:1.2; margin-bottom:12px; }
+    .hero h1 span { color:var(--accent); }
+    .hero p { font-size:15px; color:var(--text-dim); max-width:560px; margin:0 auto; }
+    .legal { background:rgba(210,153,34,0.06); border:1px solid rgba(210,153,34,0.3); border-radius:var(--radius); padding:12px 18px; margin:20px auto 0; max-width:700px; font-size:11px; color:var(--warn); line-height:1.6; }
+    .legal strong { color:#e3b341; }
+
+    /* Layout */
+    .builder-wrap { max-width:1100px; margin:0 auto; padding:48px 40px; display:grid; grid-template-columns:260px 1fr; gap:32px; align-items:start; }
+
+    /* Tool Sidebar */
+    .tool-sidebar { position:sticky; top:72px; }
+    .sidebar-label { font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim); margin-bottom:12px; }
+    .tool-btn { display:flex; align-items:center; gap:10px; width:100%; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px; cursor:pointer; text-align:left; color:var(--text); font-size:13px; font-family:var(--font-mono); transition:border-color 0.15s,background 0.15s; margin-bottom:6px; }
+    .tool-btn:hover { border-color:var(--accent); background:rgba(88,166,255,0.05); }
+    .tool-btn.active { border-color:var(--accent); background:rgba(88,166,255,0.1); color:var(--accent); }
+    .tool-btn .tb-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .tool-btn .tb-desc { font-size:10px; color:var(--text-dim); font-family:var(--font-body); display:block; margin-top:1px; }
+
+    /* Builder Panel */
+    .builder-panel { display:flex; flex-direction:column; gap:24px; }
+    .panel-header { display:flex; align-items:center; gap:12px; }
+    .panel-header h2 { font-size:1.3rem; color:var(--text-head); }
+    .panel-header .ph-badge { font-size:11px; padding:3px 10px; border-radius:10px; font-family:var(--font-mono); }
+
+    /* Form */
+    .form-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+    .form-group { display:flex; flex-direction:column; gap:6px; }
+    .form-group label { font-size:12px; color:var(--text-dim); font-weight:600; letter-spacing:0.3px; }
+    .form-group label .req { color:var(--accent3); margin-left:2px; }
+    .form-group label .tip { font-size:10px; color:var(--text-dim); font-weight:400; margin-left:6px; opacity:0.7; }
+    .form-group input, .form-group select { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:8px 12px; color:var(--text); font-size:13px; font-family:var(--font-mono); outline:none; transition:border-color 0.15s; width:100%; }
+    .form-group input:focus, .form-group select:focus { border-color:var(--accent); }
+    .form-group input::placeholder { color:var(--text-dim); opacity:0.5; }
+    .form-group select option { background:var(--bg-card); }
+    .form-group .hint { font-size:11px; color:var(--text-dim); opacity:0.7; }
+
+    .checkbox-row { display:flex; align-items:center; gap:8px; }
+    .checkbox-row input[type=checkbox] { width:15px; height:15px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
+    .checkbox-row label { font-size:12px; color:var(--text-dim); cursor:pointer; }
+
+    /* Output */
+    .output-box { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+    .output-header { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid var(--border); background:var(--bg-card); }
+    .output-header span { font-size:12px; color:var(--text-dim); font-family:var(--font-mono); }
+    .output-actions { display:flex; gap:8px; }
+    .btn-copy, .btn-clear { background:rgba(88,166,255,0.1); border:1px solid rgba(88,166,255,0.3); border-radius:5px; padding:4px 12px; font-size:11px; color:var(--accent); cursor:pointer; font-family:var(--font-mono); transition:background 0.15s; }
+    .btn-copy:hover { background:rgba(88,166,255,0.2); }
+    .btn-clear { background:rgba(247,129,102,0.08); border-color:rgba(247,129,102,0.3); color:var(--accent3); }
+    .btn-clear:hover { background:rgba(247,129,102,0.18); }
+    .output-pre { padding:18px 20px; font-family:var(--font-mono); font-size:13px; color:var(--accent2); white-space:pre-wrap; word-break:break-all; min-height:64px; line-height:1.7; }
+    .output-pre.empty { color:var(--text-dim); font-style:italic; font-family:var(--font-body); font-size:13px; }
+
+    /* Generate btn */
+    .btn-generate { background:linear-gradient(135deg,rgba(88,166,255,0.2),rgba(88,166,255,0.1)); border:1px solid var(--accent); border-radius:var(--radius); padding:12px 28px; font-size:14px; color:var(--accent); cursor:pointer; font-family:var(--font-mono); font-weight:600; transition:background 0.15s,transform 0.1s; align-self:flex-start; }
+    .btn-generate:hover { background:rgba(88,166,255,0.25); transform:translateY(-1px); }
+    .btn-generate:active { transform:translateY(0); }
+
+    /* History */
+    .history-section { margin-top:8px; }
+    .history-label { font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim); margin-bottom:10px; display:flex; align-items:center; gap:12px; }
+    .history-label::after { content:''; flex:1; height:1px; background:var(--border); }
+    .history-list { display:flex; flex-direction:column; gap:6px; }
+    .history-item { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:10px 14px; font-family:var(--font-mono); font-size:12px; color:var(--text-dim); display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; transition:border-color 0.15s; }
+    .history-item:hover { border-color:var(--accent); color:var(--text); }
+    .history-item .hi-cmd { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .history-item .hi-tool { font-size:10px; padding:2px 8px; border-radius:8px; background:rgba(88,166,255,0.08); color:var(--accent); flex-shrink:0; }
+    .history-empty { font-size:12px; color:var(--text-dim); opacity:0.6; font-style:italic; }
+
+    /* Tabs for sub-modes */
+    .mode-tabs { display:flex; gap:6px; flex-wrap:wrap; }
+    .mode-tab { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:6px 14px; font-size:12px; color:var(--text-dim); cursor:pointer; font-family:var(--font-mono); transition:all 0.15s; }
+    .mode-tab:hover { border-color:var(--accent); color:var(--text); }
+    .mode-tab.active { border-color:var(--accent); background:rgba(88,166,255,0.1); color:var(--accent); }
+
+    /* Divider */
+    .divider { height:1px; background:var(--border); margin:4px 0; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+    @media (max-width:800px) {
+      .builder-wrap { grid-template-columns:1fr; padding:32px 20px; }
+      .tool-sidebar { position:static; display:flex; flex-wrap:wrap; gap:6px; }
+      .tool-sidebar .sidebar-label { width:100%; }
+      .tool-btn { width:auto; flex:1; min-width:120px; }
+      .top-nav { padding:0 20px; }
+      .nav-links { display:none; }
+      .hero { padding:40px 20px 32px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <a href="../" class="nav-logo">← WiFi Exploitation Course</a>
+  <div class="nav-links">
+    <a href="../#curriculum">Curriculum</a>
+    <a href="../#tools">Tools</a>
+    <a href="#">Command Builder</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">&#9881; Interactive WiFi Command Builder</div>
+  <h1>WiFi <span>Command Builder</span></h1>
+  <p>Fill in the fields and instantly generate ready-to-run commands for the most common wireless security tools — like nmap/Zenmap but for Wi-Fi.</p>
+  <div class="legal">
+    <strong>Legal Disclaimer:</strong> Use only on networks you own or have explicit written permission to test. Unauthorized use is illegal.
+  </div>
+</div>
+
+<div class="builder-wrap">
+
+  <!-- Sidebar: Tool Selector -->
+  <div class="tool-sidebar">
+    <div class="sidebar-label">Select Tool</div>
+
+    <button class="tool-btn active" data-tool="airodump" onclick="selectTool('airodump',this)">
+      <span class="tb-dot" style="background:var(--accent)"></span>
+      <span>
+        airodump-ng
+        <span class="tb-desc">Wireless scanner / capture</span>
+      </span>
+    </button>
+
+    <button class="tool-btn" data-tool="aireplay" onclick="selectTool('aireplay',this)">
+      <span class="tb-dot" style="background:var(--accent)"></span>
+      <span>
+        aireplay-ng
+        <span class="tb-desc">Packet injection / deauth</span>
+      </span>
+    </button>
+
+    <button class="tool-btn" data-tool="aircrack" onclick="selectTool('aircrack',this)">
+      <span class="tb-dot" style="background:var(--accent)"></span>
+      <span>
+        aircrack-ng
+        <span class="tb-desc">WEP/WPA key cracking</span>
+      </span>
+    </button>
+
+    <button class="tool-btn" data-tool="airmon" onclick="selectTool('airmon',this)">
+      <span class="tb-dot" style="background:var(--accent)"></span>
+      <span>
+        airmon-ng
+        <span class="tb-desc">Monitor mode management</span>
+      </span>
+    </button>
+
+    <button class="tool-btn" data-tool="hcxdumptool" onclick="selectTool('hcxdumptool',this)">
+      <span class="tb-dot" style="background:var(--accent2)"></span>
+      <span>
+        hcxdumptool
+        <span class="tb-desc">PMKID / EAPOL capture</span>
+      </span>
+    </button>
+
+    <button class="tool-btn" data-tool="hcxpcapngtool" onclick="selectTool('hcxpcapngtool',this)">
+      <span class="tb-dot" style="background:var(--accent2)"></span>
+      <span>
+        hcxpcapngtool
+        <span class="tb-desc">Convert pcapng → hashcat</span>
+      </span>
+    </button>
+
+    <button class="tool-btn" data-tool="hashcat" onclick="selectTool('hashcat',this)">
+      <span class="tb-dot" style="background:var(--accent2)"></span>
+      <span>
+        hashcat
+        <span class="tb-desc">GPU hash cracking</span>
+      </span>
+    </button>
+
+    <button class="tool-btn" data-tool="reaver" onclick="selectTool('reaver',this)">
+      <span class="tb-dot" style="background:var(--accent3)"></span>
+      <span>
+        reaver
+        <span class="tb-desc">WPS PIN brute-force</span>
+      </span>
+    </button>
+
+    <button class="tool-btn" data-tool="pixiewps" onclick="selectTool('pixiewps',this)">
+      <span class="tb-dot" style="background:var(--accent3)"></span>
+      <span>
+        pixiewps
+        <span class="tb-desc">WPS Pixie Dust offline</span>
+      </span>
+    </button>
+
+    <button class="tool-btn" data-tool="mdk4" onclick="selectTool('mdk4',this)">
+      <span class="tb-dot" style="background:var(--accent3)"></span>
+      <span>
+        mdk4
+        <span class="tb-desc">Wireless DoS / flooding</span>
+      </span>
+    </button>
+
+    <button class="tool-btn" data-tool="bettercap" onclick="selectTool('bettercap',this)">
+      <span class="tb-dot" style="background:var(--warn)"></span>
+      <span>
+        bettercap
+        <span class="tb-desc">MITM / rogue AP / sniff</span>
+      </span>
+    </button>
+
+    <button class="tool-btn" data-tool="tshark" onclick="selectTool('tshark',this)">
+      <span class="tb-dot" style="background:var(--warn)"></span>
+      <span>
+        tshark
+        <span class="tb-desc">CLI packet analysis</span>
+      </span>
+    </button>
+  </div>
+
+  <!-- Main Builder Panel -->
+  <div class="builder-panel" id="builderPanel">
+    <!-- Dynamically rendered by JS -->
+  </div>
+
+</div>
+
+<script>
+// ─── Tool Definitions ────────────────────────────────────────────────────────
+const TOOLS = {
+
+  airodump: {
+    name: 'airodump-ng',
+    color: 'var(--accent)',
+    tier: 'Recon',
+    tierColor: 'rgba(88,166,255,0.1)',
+    desc: 'Scan for nearby access points and clients, or capture targeted traffic for handshake collection.',
+    modes: ['Scan All', 'Targeted Capture'],
+    fields: {
+      'Scan All': [
+        { id:'iface',    label:'Interface',      type:'text',   placeholder:'wlan0mon',  required:true,  hint:'Monitor-mode interface (e.g. wlan0mon)' },
+        { id:'band',     label:'Band',           type:'select', options:['2.4 GHz (--band bg)','5 GHz (--band a)','Both (--band abg)'], hint:'Frequency band to scan' },
+        { id:'channel',  label:'Channel(s)',     type:'text',   placeholder:'1,6,11 or leave blank', hint:'Comma-separated channels, blank = hop all' },
+        { id:'outfile',  label:'Output File Prefix', type:'text', placeholder:'scan_output', hint:'Saves .cap, .csv, .kismet.csv' },
+        { id:'wps',      label:'Show WPS Info',  type:'checkbox', hint:'Add --wps flag' },
+        { id:'uptime',   label:'Show Uptime',    type:'checkbox', hint:'Add --uptime flag' },
+      ],
+      'Targeted Capture': [
+        { id:'iface',    label:'Interface',      type:'text',   placeholder:'wlan0mon',  required:true },
+        { id:'bssid',    label:'Target BSSID',   type:'text',   placeholder:'AA:BB:CC:DD:EE:FF', required:true, hint:'MAC address of target AP' },
+        { id:'channel',  label:'Channel',        type:'text',   placeholder:'6', required:true, hint:'AP channel (from scan)' },
+        { id:'outfile',  label:'Output File Prefix', type:'text', placeholder:'capture', required:true },
+        { id:'client',   label:'Filter Client MAC', type:'text', placeholder:'(optional)', hint:'--station to filter one client' },
+        { id:'ivs',      label:'IVs Only (WEP)', type:'checkbox', hint:'--ivs — save only IVs for WEP cracking' },
+      ]
+    },
+    build(mode, v) {
+      let cmd = `airodump-ng`;
+      if (mode === 'Scan All') {
+        if (v.band) {
+          const bmap = {'2.4 GHz (--band bg)':'bg','5 GHz (--band a)':'a','Both (--band abg)':'abg'};
+          cmd += ` --band ${bmap[v.band]||'bg'}`;
+        }
+        if (v.channel) cmd += ` --channel ${v.channel}`;
+        if (v.wps)     cmd += ` --wps`;
+        if (v.uptime)  cmd += ` --uptime`;
+        if (v.outfile) cmd += ` -w ${v.outfile}`;
+        cmd += ` ${v.iface||'<interface>'}`;
+      } else {
+        cmd += ` --bssid ${v.bssid||'<BSSID>'}`;
+        cmd += ` --channel ${v.channel||'<ch>'}`;
+        if (v.client) cmd += ` --station ${v.client}`;
+        if (v.ivs)    cmd += ` --ivs`;
+        if (v.outfile) cmd += ` -w ${v.outfile}`;
+        cmd += ` ${v.iface||'<interface>'}`;
+      }
+      return cmd;
+    }
+  },
+
+  aireplay: {
+    name: 'aireplay-ng',
+    color: 'var(--accent)',
+    tier: 'Injection',
+    tierColor: 'rgba(88,166,255,0.1)',
+    desc: 'Inject packets to force re-authentication, replay ARP, or perform deauthentication attacks.',
+    modes: ['Deauth Attack', 'ARP Replay (WEP)', 'Fake Auth', 'PMKID / Chopchop'],
+    fields: {
+      'Deauth Attack': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0mon', required:true },
+        { id:'bssid',   label:'AP BSSID',        type:'text',   placeholder:'AA:BB:CC:DD:EE:FF', required:true },
+        { id:'client',  label:'Client MAC',      type:'text',   placeholder:'FF:EE:DD:CC:BB:AA', hint:'Leave blank to broadcast deauth' },
+        { id:'count',   label:'Packet Count',    type:'text',   placeholder:'0', hint:'0 = continuous' },
+      ],
+      'ARP Replay (WEP)': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0mon', required:true },
+        { id:'bssid',   label:'AP BSSID',        type:'text',   placeholder:'AA:BB:CC:DD:EE:FF', required:true },
+        { id:'smac',    label:'Source MAC',      type:'text',   placeholder:'(spoof or leave blank)' },
+        { id:'dmac',    label:'Dest MAC',        type:'text',   placeholder:'FF:FF:FF:FF:FF:FF' },
+      ],
+      'Fake Auth': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0mon', required:true },
+        { id:'bssid',   label:'AP BSSID',        type:'text',   placeholder:'AA:BB:CC:DD:EE:FF', required:true },
+        { id:'smac',    label:'Your MAC',        type:'text',   placeholder:'(adapter MAC)' },
+        { id:'delay',   label:'Re-assoc Delay',  type:'text',   placeholder:'30', hint:'Seconds between keep-alive' },
+      ],
+      'PMKID / Chopchop': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0mon', required:true },
+        { id:'bssid',   label:'AP BSSID',        type:'text',   placeholder:'AA:BB:CC:DD:EE:FF', required:true },
+        { id:'client',  label:'Client MAC',      type:'text',   placeholder:'FF:EE:DD:CC:BB:AA' },
+      ]
+    },
+    build(mode, v) {
+      const iface = v.iface||'<interface>';
+      const bssid = v.bssid||'<BSSID>';
+      if (mode === 'Deauth Attack') {
+        let cmd = `aireplay-ng --deauth ${v.count||'0'} -a ${bssid}`;
+        if (v.client) cmd += ` -c ${v.client}`;
+        cmd += ` ${iface}`;
+        return cmd;
+      }
+      if (mode === 'ARP Replay (WEP)') {
+        let cmd = `aireplay-ng --arpreplay -b ${bssid}`;
+        if (v.smac) cmd += ` -h ${v.smac}`;
+        if (v.dmac) cmd += ` -k ${v.dmac}`;
+        cmd += ` ${iface}`;
+        return cmd;
+      }
+      if (mode === 'Fake Auth') {
+        let cmd = `aireplay-ng --fakeauth ${v.delay||'30'} -a ${bssid}`;
+        if (v.smac) cmd += ` -h ${v.smac}`;
+        cmd += ` ${iface}`;
+        return cmd;
+      }
+      if (mode === 'PMKID / Chopchop') {
+        let cmd = `aireplay-ng --chopchop -b ${bssid}`;
+        if (v.client) cmd += ` -h ${v.client}`;
+        cmd += ` ${iface}`;
+        return cmd;
+      }
+    }
+  },
+
+  aircrack: {
+    name: 'aircrack-ng',
+    color: 'var(--accent)',
+    tier: 'Cracking',
+    tierColor: 'rgba(88,166,255,0.1)',
+    desc: 'Crack WEP keys from captured IVs or perform dictionary attacks against WPA/WPA2 handshakes.',
+    modes: ['WPA/WPA2 Dictionary', 'WEP Crack'],
+    fields: {
+      'WPA/WPA2 Dictionary': [
+        { id:'capfile',  label:'Capture File (.cap)',  type:'text', placeholder:'capture-01.cap', required:true },
+        { id:'wordlist', label:'Wordlist Path',        type:'text', placeholder:'/usr/share/wordlists/rockyou.txt', required:true },
+        { id:'bssid',   label:'Target BSSID',         type:'text', placeholder:'AA:BB:CC:DD:EE:FF', hint:'Filter to one AP' },
+        { id:'essid',   label:'ESSID (SSID)',         type:'text', placeholder:'MyNetwork', hint:'Optional: filter by name' },
+        { id:'rules',   label:'Enable Rules (-r)',    type:'checkbox', hint:'Use with John rules file' },
+        { id:'rulesfile',label:'Rules File',          type:'text', placeholder:'/etc/john/john.conf', hint:'Only if rules enabled' },
+      ],
+      'WEP Crack': [
+        { id:'capfile',  label:'Capture File (.cap/.ivs)', type:'text', placeholder:'wep-01.cap', required:true },
+        { id:'bssid',   label:'Target BSSID',         type:'text', placeholder:'AA:BB:CC:DD:EE:FF' },
+        { id:'keylen',  label:'Key Length',           type:'select', options:['64-bit (40-bit key)','128-bit (104-bit key)','152-bit','256-bit'] },
+        { id:'fms',     label:'Force FMS/KoreK',      type:'checkbox', hint:'-K flag' },
+        { id:'ptw',     label:'PTW Attack',           type:'checkbox', hint:'-z flag (default for WEP)' },
+      ]
+    },
+    build(mode, v) {
+      if (mode === 'WPA/WPA2 Dictionary') {
+        let cmd = `aircrack-ng`;
+        if (v.bssid)  cmd += ` -b ${v.bssid}`;
+        if (v.essid)  cmd += ` -e "${v.essid}"`;
+        cmd += ` -w ${v.wordlist||'<wordlist>'}`;
+        if (v.rules && v.rulesfile) cmd += ` -r ${v.rulesfile}`;
+        cmd += ` ${v.capfile||'<capture.cap>'}`;
+        return cmd;
+      }
+      if (mode === 'WEP Crack') {
+        let cmd = `aircrack-ng`;
+        if (v.bssid)  cmd += ` -b ${v.bssid}`;
+        const kmap = {'64-bit (40-bit key)':'64','128-bit (104-bit key)':'128','152-bit':'152','256-bit':'256'};
+        if (v.keylen) cmd += ` -n ${kmap[v.keylen]||'128'}`;
+        if (v.fms)    cmd += ` -K`;
+        if (v.ptw)    cmd += ` -z`;
+        cmd += ` ${v.capfile||'<capture.cap>'}`;
+        return cmd;
+      }
+    }
+  },
+
+  airmon: {
+    name: 'airmon-ng',
+    color: 'var(--accent)',
+    tier: 'Setup',
+    tierColor: 'rgba(88,166,255,0.1)',
+    desc: 'Enable or disable monitor mode on a wireless interface, and check for interfering processes.',
+    modes: ['Start Monitor Mode', 'Stop Monitor Mode', 'Check Processes'],
+    fields: {
+      'Start Monitor Mode': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0', required:true },
+        { id:'channel', label:'Channel (optional)', type:'text', placeholder:'6', hint:'Lock to channel on start' },
+      ],
+      'Stop Monitor Mode': [
+        { id:'iface',   label:'Monitor Interface', type:'text', placeholder:'wlan0mon', required:true },
+      ],
+      'Check Processes': []
+    },
+    build(mode, v) {
+      if (mode === 'Start Monitor Mode') {
+        let cmd = `airmon-ng start ${v.iface||'<interface>'}`;
+        if (v.channel) cmd += ` ${v.channel}`;
+        return cmd;
+      }
+      if (mode === 'Stop Monitor Mode') {
+        return `airmon-ng stop ${v.iface||'<interface>'}`;
+      }
+      if (mode === 'Check Processes') {
+        return `airmon-ng check kill`;
+      }
+    }
+  },
+
+  hcxdumptool: {
+    name: 'hcxdumptool',
+    color: 'var(--accent2)',
+    tier: 'PMKID',
+    tierColor: 'rgba(63,185,80,0.1)',
+    desc: 'Capture PMKID and EAPOL frames without requiring a connected client — clientless WPA2 attack.',
+    modes: ['PMKID Capture', 'Targeted PMKID'],
+    fields: {
+      'PMKID Capture': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0', required:true, hint:'Will be put into monitor mode automatically' },
+        { id:'outfile', label:'Output File (.pcapng)', type:'text', placeholder:'pmkid.pcapng', required:true },
+        { id:'timeout', label:'Timeout (seconds)', type:'text', placeholder:'60', hint:'Stop after N seconds' },
+        { id:'rcascan', label:'Active Scan (--rcascan)', type:'checkbox', hint:'Send probe requests to speed up discovery' },
+      ],
+      'Targeted PMKID': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0', required:true },
+        { id:'outfile', label:'Output File (.pcapng)', type:'text', placeholder:'target.pcapng', required:true },
+        { id:'bssid',   label:'Target BSSID',   type:'text',   placeholder:'AA:BB:CC:DD:EE:FF', required:true },
+        { id:'timeout', label:'Timeout (seconds)', type:'text', placeholder:'30' },
+      ]
+    },
+    build(mode, v) {
+      if (mode === 'PMKID Capture') {
+        let cmd = `hcxdumptool -i ${v.iface||'<interface>'} -o ${v.outfile||'pmkid.pcapng'}`;
+        if (v.timeout) cmd += ` --timeout=${v.timeout}`;
+        if (v.rcascan) cmd += ` --rcascan`;
+        return cmd;
+      }
+      if (mode === 'Targeted PMKID') {
+        let cmd = `hcxdumptool -i ${v.iface||'<interface>'} -o ${v.outfile||'target.pcapng'}`;
+        cmd += ` --filterlist_ap=${v.bssid||'<BSSID>'} --filtermode=2`;
+        if (v.timeout) cmd += ` --timeout=${v.timeout}`;
+        return cmd;
+      }
+    }
+  },
+
+  hcxpcapngtool: {
+    name: 'hcxpcapngtool',
+    color: 'var(--accent2)',
+    tier: 'Conversion',
+    tierColor: 'rgba(63,185,80,0.1)',
+    desc: 'Convert hcxdumptool pcapng captures into hashcat-compatible hash files (mode 22000).',
+    modes: ['Convert to Hashcat'],
+    fields: {
+      'Convert to Hashcat': [
+        { id:'infile',  label:'Input File (.pcapng)', type:'text', placeholder:'pmkid.pcapng', required:true },
+        { id:'outfile', label:'Output Hash File',    type:'text', placeholder:'hashes.hc22000', required:true },
+        { id:'csv',     label:'Export CSV Summary',  type:'checkbox', hint:'--csv=summary.csv' },
+        { id:'csvfile', label:'CSV Filename',        type:'text', placeholder:'summary.csv' },
+      ]
+    },
+    build(mode, v) {
+      let cmd = `hcxpcapngtool -o ${v.outfile||'hashes.hc22000'} ${v.infile||'<input.pcapng>'}`;
+      if (v.csv && v.csvfile) cmd += ` --csv=${v.csvfile}`;
+      return cmd;
+    }
+  },
+
+  hashcat: {
+    name: 'hashcat',
+    color: 'var(--accent2)',
+    tier: 'Cracking',
+    tierColor: 'rgba(63,185,80,0.1)',
+    desc: 'GPU-accelerated hash cracking. Supports WPA2 (22000), WPA-PMKID, and many other modes.',
+    modes: ['WPA2/PMKID (22000)', 'WPA-PMKID Only (22001)', 'Dictionary Attack', 'Mask (Brute-force)', 'Rule-based'],
+    fields: {
+      'WPA2/PMKID (22000)': [
+        { id:'hashfile', label:'Hash File (.hc22000)', type:'text', placeholder:'hashes.hc22000', required:true },
+        { id:'wordlist', label:'Wordlist',             type:'text', placeholder:'/usr/share/wordlists/rockyou.txt', required:true },
+        { id:'rules',    label:'Rules File',           type:'text', placeholder:'/usr/share/hashcat/rules/best64.rule', hint:'Optional' },
+        { id:'device',   label:'Device (-d)',          type:'text', placeholder:'1', hint:'GPU device ID' },
+        { id:'status',   label:'Status Updates',       type:'checkbox', hint:'--status --status-timer=10' },
+        { id:'potfile',  label:'Potfile Path',         type:'text', placeholder:'~/.hashcat/hashcat.potfile', hint:'Optional custom potfile' },
+      ],
+      'WPA-PMKID Only (22001)': [
+        { id:'hashfile', label:'Hash File',            type:'text', placeholder:'pmkid.hc22001', required:true },
+        { id:'wordlist', label:'Wordlist',             type:'text', placeholder:'/usr/share/wordlists/rockyou.txt', required:true },
+        { id:'device',   label:'Device (-d)',          type:'text', placeholder:'1' },
+      ],
+      'Dictionary Attack': [
+        { id:'mode',     label:'Hash Mode (-m)',       type:'text', placeholder:'22000', required:true, hint:'e.g. 22000=WPA2, 0=MD5, 1000=NTLM' },
+        { id:'hashfile', label:'Hash File',            type:'text', placeholder:'hashes.txt', required:true },
+        { id:'wordlist', label:'Wordlist',             type:'text', placeholder:'/usr/share/wordlists/rockyou.txt', required:true },
+        { id:'device',   label:'Device (-d)',          type:'text', placeholder:'1' },
+      ],
+      'Mask (Brute-force)': [
+        { id:'mode',     label:'Hash Mode (-m)',       type:'text', placeholder:'22000', required:true },
+        { id:'hashfile', label:'Hash File',            type:'text', placeholder:'hashes.txt', required:true },
+        { id:'mask',     label:'Mask',                 type:'text', placeholder:'?d?d?d?d?d?d?d?d', required:true, hint:'?l=lower ?u=upper ?d=digit ?s=special' },
+        { id:'device',   label:'Device (-d)',          type:'text', placeholder:'1' },
+        { id:'increment',label:'Increment Mode',       type:'checkbox', hint:'--increment (try all lengths up to mask)' },
+      ],
+      'Rule-based': [
+        { id:'mode',     label:'Hash Mode (-m)',       type:'text', placeholder:'22000', required:true },
+        { id:'hashfile', label:'Hash File',            type:'text', placeholder:'hashes.txt', required:true },
+        { id:'wordlist', label:'Wordlist',             type:'text', placeholder:'/usr/share/wordlists/rockyou.txt', required:true },
+        { id:'rules',    label:'Rules File',           type:'text', placeholder:'/usr/share/hashcat/rules/best64.rule', required:true },
+        { id:'device',   label:'Device (-d)',          type:'text', placeholder:'1' },
+      ]
+    },
+    build(mode, v) {
+      if (mode === 'WPA2/PMKID (22000)') {
+        let cmd = `hashcat -m 22000 ${v.hashfile||'<hashfile>'} ${v.wordlist||'<wordlist>'}`;
+        if (v.rules)   cmd += ` -r ${v.rules}`;
+        if (v.device)  cmd += ` -d ${v.device}`;
+        if (v.status)  cmd += ` --status --status-timer=10`;
+        if (v.potfile) cmd += ` --potfile-path=${v.potfile}`;
+        return cmd;
+      }
+      if (mode === 'WPA-PMKID Only (22001)') {
+        let cmd = `hashcat -m 22001 ${v.hashfile||'<hashfile>'} ${v.wordlist||'<wordlist>'}`;
+        if (v.device) cmd += ` -d ${v.device}`;
+        return cmd;
+      }
+      if (mode === 'Dictionary Attack') {
+        let cmd = `hashcat -m ${v.mode||'22000'} -a 0 ${v.hashfile||'<hashfile>'} ${v.wordlist||'<wordlist>'}`;
+        if (v.device) cmd += ` -d ${v.device}`;
+        return cmd;
+      }
+      if (mode === 'Mask (Brute-force)') {
+        let cmd = `hashcat -m ${v.mode||'22000'} -a 3 ${v.hashfile||'<hashfile>'} "${v.mask||'?d?d?d?d?d?d?d?d'}"`;
+        if (v.increment) cmd += ` --increment`;
+        if (v.device)    cmd += ` -d ${v.device}`;
+        return cmd;
+      }
+      if (mode === 'Rule-based') {
+        let cmd = `hashcat -m ${v.mode||'22000'} -a 0 ${v.hashfile||'<hashfile>'} ${v.wordlist||'<wordlist>'} -r ${v.rules||'<rules>'}`;
+        if (v.device) cmd += ` -d ${v.device}`;
+        return cmd;
+      }
+    }
+  },
+
+  reaver: {
+    name: 'reaver',
+    color: 'var(--accent3)',
+    tier: 'WPS',
+    tierColor: 'rgba(247,129,102,0.1)',
+    desc: 'Brute-force WPS PIN to recover WPA/WPA2 passphrase. Exploits the split-half PIN vulnerability.',
+    modes: ['Standard PIN Attack', 'Pixie Dust Mode'],
+    fields: {
+      'Standard PIN Attack': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0mon', required:true },
+        { id:'bssid',   label:'AP BSSID',        type:'text',   placeholder:'AA:BB:CC:DD:EE:FF', required:true },
+        { id:'channel', label:'Channel',         type:'text',   placeholder:'6', required:true },
+        { id:'delay',   label:'Delay (seconds)', type:'text',   placeholder:'1', hint:'Between PIN attempts' },
+        { id:'timeout', label:'Timeout',         type:'text',   placeholder:'10', hint:'Per attempt timeout' },
+        { id:'verbose', label:'Verbose (-v)',    type:'checkbox' },
+        { id:'nacks',   label:'Ignore NACKs (-N)', type:'checkbox', hint:'Useful for some APs' },
+        { id:'eap',     label:'EAP Terminate (-E)', type:'checkbox', hint:'Terminate each session' },
+        { id:'pin',     label:'Start PIN',       type:'text',   placeholder:'12345670', hint:'Resume from specific PIN' },
+      ],
+      'Pixie Dust Mode': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0mon', required:true },
+        { id:'bssid',   label:'AP BSSID',        type:'text',   placeholder:'AA:BB:CC:DD:EE:FF', required:true },
+        { id:'channel', label:'Channel',         type:'text',   placeholder:'6', required:true },
+        { id:'verbose', label:'Verbose (-v)',    type:'checkbox' },
+      ]
+    },
+    build(mode, v) {
+      const iface = v.iface||'<interface>';
+      const bssid = v.bssid||'<BSSID>';
+      const ch    = v.channel||'<ch>';
+      if (mode === 'Standard PIN Attack') {
+        let cmd = `reaver -i ${iface} -b ${bssid} -c ${ch}`;
+        if (v.delay)   cmd += ` -d ${v.delay}`;
+        if (v.timeout) cmd += ` -t ${v.timeout}`;
+        if (v.verbose) cmd += ` -v`;
+        if (v.nacks)   cmd += ` -N`;
+        if (v.eap)     cmd += ` -E`;
+        if (v.pin)     cmd += ` -p ${v.pin}`;
+        return cmd;
+      }
+      if (mode === 'Pixie Dust Mode') {
+        let cmd = `reaver -i ${iface} -b ${bssid} -c ${ch} -K 1`;
+        if (v.verbose) cmd += ` -v`;
+        return cmd;
+      }
+    }
+  },
+
+  pixiewps: {
+    name: 'pixiewps',
+    color: 'var(--accent3)',
+    tier: 'WPS',
+    tierColor: 'rgba(247,129,102,0.1)',
+    desc: 'Offline WPS Pixie Dust attack using captured E-S1, E-S2, E-Hash1, E-Hash2, PKe, PKr values.',
+    modes: ['Pixie Dust Attack'],
+    fields: {
+      'Pixie Dust Attack': [
+        { id:'pke',    label:'PKe (Enrollee Public Key)', type:'text', placeholder:'hex string', required:true },
+        { id:'pkr',    label:'PKr (Registrar Public Key)', type:'text', placeholder:'hex string', required:true },
+        { id:'e_hash1',label:'E-Hash1',                  type:'text', placeholder:'hex string', required:true },
+        { id:'e_hash2',label:'E-Hash2',                  type:'text', placeholder:'hex string', required:true },
+        { id:'authkey',label:'AuthKey',                  type:'text', placeholder:'hex string', required:true },
+        { id:'e_nonce',label:'E-Nonce',                  type:'text', placeholder:'hex string', hint:'Enrollee nonce' },
+        { id:'r_nonce',label:'R-Nonce',                  type:'text', placeholder:'hex string', hint:'Registrar nonce' },
+        { id:'verbose',label:'Verbose',                  type:'checkbox' },
+      ]
+    },
+    build(mode, v) {
+      let cmd = `pixiewps`;
+      cmd += ` -e ${v.pke||'<PKe>'}`;
+      cmd += ` -r ${v.pkr||'<PKr>'}`;
+      cmd += ` -s ${v.e_hash1||'<E-Hash1>'}`;
+      cmd += ` -z ${v.e_hash2||'<E-Hash2>'}`;
+      cmd += ` -a ${v.authkey||'<AuthKey>'}`;
+      if (v.e_nonce) cmd += ` -n ${v.e_nonce}`;
+      if (v.r_nonce) cmd += ` -R ${v.r_nonce}`;
+      if (v.verbose) cmd += ` -v`;
+      return cmd;
+    }
+  },
+
+  mdk4: {
+    name: 'mdk4',
+    color: 'var(--accent3)',
+    tier: 'DoS',
+    tierColor: 'rgba(247,129,102,0.1)',
+    desc: 'Wireless denial-of-service and flooding tool. Supports beacon flooding, deauth storms, and more.',
+    modes: ['Beacon Flood (b)', 'Deauth / Disassoc (d)', 'Auth Flood (f)', 'SSID Probe (p)'],
+    fields: {
+      'Beacon Flood (b)': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0mon', required:true },
+        { id:'ssid',    label:'SSID to Flood',   type:'text',   placeholder:'FakeNetwork', hint:'Leave blank for random SSIDs' },
+        { id:'channel', label:'Channel',         type:'text',   placeholder:'6' },
+        { id:'wpa',     label:'WPA Beacons',     type:'checkbox', hint:'-w flag' },
+        { id:'speed',   label:'Speed (pkts/s)',  type:'text',   placeholder:'100' },
+      ],
+      'Deauth / Disassoc (d)': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0mon', required:true },
+        { id:'bssid',   label:'Target BSSID',   type:'text',   placeholder:'AA:BB:CC:DD:EE:FF', hint:'Leave blank for all APs' },
+        { id:'client',  label:'Target Client',  type:'text',   placeholder:'FF:EE:DD:CC:BB:AA', hint:'Leave blank for all clients' },
+        { id:'channel', label:'Channel',        type:'text',   placeholder:'6' },
+      ],
+      'Auth Flood (f)': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0mon', required:true },
+        { id:'bssid',   label:'Target BSSID',   type:'text',   placeholder:'AA:BB:CC:DD:EE:FF', required:true },
+        { id:'speed',   label:'Speed (pkts/s)', type:'text',   placeholder:'50' },
+      ],
+      'SSID Probe (p)': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0mon', required:true },
+        { id:'ssid',    label:'SSID to Probe',  type:'text',   placeholder:'TargetNetwork', required:true },
+        { id:'channel', label:'Channel',        type:'text',   placeholder:'6' },
+      ]
+    },
+    build(mode, v) {
+      const iface = v.iface||'<interface>';
+      if (mode === 'Beacon Flood (b)') {
+        let cmd = `mdk4 ${iface} b`;
+        if (v.ssid)    cmd += ` -s "${v.ssid}"`;
+        if (v.channel) cmd += ` -c ${v.channel}`;
+        if (v.wpa)     cmd += ` -w`;
+        if (v.speed)   cmd += ` -p ${v.speed}`;
+        return cmd;
+      }
+      if (mode === 'Deauth / Disassoc (d)') {
+        let cmd = `mdk4 ${iface} d`;
+        if (v.bssid)   cmd += ` -B ${v.bssid}`;
+        if (v.client)  cmd += ` -S ${v.client}`;
+        if (v.channel) cmd += ` -c ${v.channel}`;
+        return cmd;
+      }
+      if (mode === 'Auth Flood (f)') {
+        let cmd = `mdk4 ${iface} f -a ${v.bssid||'<BSSID>'}`;
+        if (v.speed) cmd += ` -s ${v.speed}`;
+        return cmd;
+      }
+      if (mode === 'SSID Probe (p)') {
+        let cmd = `mdk4 ${iface} p -t "${v.ssid||'<SSID>'}"`;
+        if (v.channel) cmd += ` -c ${v.channel}`;
+        return cmd;
+      }
+    }
+  },
+
+  bettercap: {
+    name: 'bettercap',
+    color: 'var(--warn)',
+    tier: 'MITM',
+    tierColor: 'rgba(210,153,34,0.1)',
+    desc: 'Swiss-army MITM framework. WiFi scanning, rogue AP, KARMA, and network sniffing.',
+    modes: ['WiFi Recon', 'Deauth via bettercap', 'Rogue AP (KARMA)', 'Probe Sniff'],
+    fields: {
+      'WiFi Recon': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0', required:true },
+        { id:'timeout', label:'Recon Duration (s)', type:'text', placeholder:'30' },
+      ],
+      'Deauth via bettercap': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0', required:true },
+        { id:'bssid',   label:'Target BSSID',   type:'text',   placeholder:'AA:BB:CC:DD:EE:FF', required:true },
+        { id:'skip',    label:'Skip Recon',      type:'checkbox', hint:'wifi.recon off before deauth' },
+      ],
+      'Rogue AP (KARMA)': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0', required:true },
+        { id:'ssid',    label:'AP SSID',         type:'text',   placeholder:'FreeWiFi', required:true },
+        { id:'channel', label:'Channel',         type:'text',   placeholder:'6' },
+        { id:'karma',   label:'Enable KARMA',    type:'checkbox', hint:'Respond to all probe requests' },
+      ],
+      'Probe Sniff': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0', required:true },
+      ]
+    },
+    build(mode, v) {
+      const iface = v.iface||'<interface>';
+      if (mode === 'WiFi Recon') {
+        let lines = [
+          `sudo bettercap -iface ${iface}`,
+          `# In bettercap interactive shell:`,
+          `wifi.recon on`,
+        ];
+        if (v.timeout) lines.push(`sleep ${v.timeout}; wifi.show`);
+        return lines.join('\n');
+      }
+      if (mode === 'Deauth via bettercap') {
+        let lines = [
+          `sudo bettercap -iface ${iface}`,
+          `# In bettercap interactive shell:`,
+          `wifi.recon on`,
+          `wifi.deauth ${v.bssid||'<BSSID>'}`,
+        ];
+        return lines.join('\n');
+      }
+      if (mode === 'Rogue AP (KARMA)') {
+        let lines = [
+          `sudo bettercap -iface ${iface}`,
+          `# In bettercap interactive shell:`,
+          `set wifi.ap.ssid "${v.ssid||'FreeWiFi'}"`,
+        ];
+        if (v.channel) lines.push(`set wifi.ap.channel ${v.channel}`);
+        if (v.karma)   lines.push(`set wifi.ap.karma true`);
+        lines.push(`wifi.ap on`);
+        return lines.join('\n');
+      }
+      if (mode === 'Probe Sniff') {
+        return [
+          `sudo bettercap -iface ${iface}`,
+          `# In bettercap interactive shell:`,
+          `wifi.recon on`,
+          `events.stream on`,
+        ].join('\n');
+      }
+    }
+  },
+
+  tshark: {
+    name: 'tshark',
+    color: 'var(--warn)',
+    tier: 'Analysis',
+    tierColor: 'rgba(210,153,34,0.1)',
+    desc: 'CLI packet analysis. Filter 802.11 frames, extract handshakes, decode beacons and probes.',
+    modes: ['Live Capture', 'Read PCAP', 'Filter Beacons', 'Filter Probes', 'Extract Handshake'],
+    fields: {
+      'Live Capture': [
+        { id:'iface',   label:'Interface',       type:'text',   placeholder:'wlan0mon', required:true },
+        { id:'filter',  label:'Display Filter',  type:'text',   placeholder:'wlan.fc.type_subtype == 0x08', hint:'Wireshark display filter syntax' },
+        { id:'count',   label:'Packet Count (-c)', type:'text', placeholder:'100' },
+        { id:'outfile', label:'Save to File (-w)', type:'text', placeholder:'capture.pcap' },
+      ],
+      'Read PCAP': [
+        { id:'infile',  label:'Input File (-r)', type:'text',   placeholder:'capture.pcap', required:true },
+        { id:'filter',  label:'Display Filter',  type:'text',   placeholder:'eapol' },
+        { id:'fields',  label:'Print Fields (-T fields)', type:'text', placeholder:'wlan.sa,wlan.da', hint:'Comma-separated field names' },
+      ],
+      'Filter Beacons': [
+        { id:'infile',  label:'Input File (-r)', type:'text',   placeholder:'capture.pcap', required:true },
+        { id:'ssid',    label:'Filter SSID',     type:'text',   placeholder:'MyNetwork', hint:'Leave blank for all beacons' },
+      ],
+      'Filter Probes': [
+        { id:'infile',  label:'Input File (-r)', type:'text',   placeholder:'capture.pcap', required:true },
+        { id:'mac',     label:'Filter Client MAC', type:'text', placeholder:'AA:BB:CC:DD:EE:FF', hint:'Leave blank for all probes' },
+      ],
+      'Extract Handshake': [
+        { id:'infile',  label:'Input File (-r)', type:'text',   placeholder:'capture.pcap', required:true },
+        { id:'bssid',   label:'AP BSSID',        type:'text',   placeholder:'AA:BB:CC:DD:EE:FF' },
+      ]
+    },
+    build(mode, v) {
+      if (mode === 'Live Capture') {
+        let cmd = `tshark -i ${v.iface||'<interface>'}`;
+        if (v.filter)  cmd += ` -Y "${v.filter}"`;
+        if (v.count)   cmd += ` -c ${v.count}`;
+        if (v.outfile) cmd += ` -w ${v.outfile}`;
+        return cmd;
+      }
+      if (mode === 'Read PCAP') {
+        let cmd = `tshark -r ${v.infile||'<file.pcap>'}`;
+        if (v.filter) cmd += ` -Y "${v.filter}"`;
+        if (v.fields) {
+          cmd += ` -T fields`;
+          v.fields.split(',').forEach(f => { cmd += ` -e ${f.trim()}`; });
+        }
+        return cmd;
+      }
+      if (mode === 'Filter Beacons') {
+        let filter = `wlan.fc.type_subtype == 0x08`;
+        if (v.ssid) filter += ` && wlan_mgt.ssid == "${v.ssid}"`;
+        return `tshark -r ${v.infile||'<file.pcap>'} -Y "${filter}"`;
+      }
+      if (mode === 'Filter Probes') {
+        let filter = `wlan.fc.type_subtype == 0x04`;
+        if (v.mac) filter += ` && wlan.sa == ${v.mac}`;
+        return `tshark -r ${v.infile||'<file.pcap>'} -Y "${filter}"`;
+      }
+      if (mode === 'Extract Handshake') {
+        let filter = `eapol`;
+        if (v.bssid) filter += ` && (wlan.sa == ${v.bssid} || wlan.da == ${v.bssid})`;
+        return `tshark -r ${v.infile||'<file.pcap>'} -Y "${filter}"`;
+      }
+    }
+  }
+};
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let currentTool = 'airodump';
+let currentMode = null;
+let history = [];
+
+// ─── Render ──────────────────────────────────────────────────────────────────
+function selectTool(toolId, btn) {
+  currentTool = toolId;
+  currentMode = null;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPanel();
+}
+
+function selectMode(mode) {
+  currentMode = mode;
+  renderFields();
+}
+
+function renderPanel() {
+  const tool = TOOLS[currentTool];
+  currentMode = tool.modes[0];
+  const panel = document.getElementById('builderPanel');
+  panel.innerHTML = `
+    <div class="panel-header">
+      <h2>${tool.name}</h2>
+      <span class="ph-badge" style="background:${tool.tierColor};color:${tool.color};border:1px solid ${tool.color}40">${tool.tier}</span>
+    </div>
+    <p style="font-size:13px;color:var(--text-dim)">${tool.desc}</p>
+    <div class="mode-tabs" id="modeTabs"></div>
+    <div id="fieldsArea"></div>
+    <div class="output-box">
+      <div class="output-header">
+        <span>&#9654; Generated Command</span>
+        <div class="output-actions">
+          <button class="btn-copy" onclick="copyCommand()">Copy</button>
+          <button class="btn-clear" onclick="clearOutput()">Clear</button>
+        </div>
+      </div>
+      <div class="output-pre empty" id="outputPre">Fill in the fields above and click Generate →</div>
+    </div>
+    <button class="btn-generate" onclick="generateCommand()">&#9889; Generate Command</button>
+    <div class="history-section">
+      <div class="history-label">Command History</div>
+      <div class="history-list" id="historyList"><div class="history-empty">No commands generated yet.</div></div>
+    </div>
+  `;
+  renderModeTabs();
+  renderFields();
+  renderHistory();
+}
+
+function renderModeTabs() {
+  const tool = TOOLS[currentTool];
+  const tabs = document.getElementById('modeTabs');
+  if (!tabs) return;
+  tabs.innerHTML = tool.modes.map(m =>
+    `<button class="mode-tab ${m===currentMode?'active':''}" onclick="selectMode('${m.replace(/'/g,"\\'")}')">${m}</button>`
+  ).join('');
+}
+
+function renderFields() {
+  const tool = TOOLS[currentTool];
+  const fields = tool.fields[currentMode] || [];
+  const area = document.getElementById('fieldsArea');
+  if (!area) return;
+
+  // Update tab active state
+  document.querySelectorAll('.mode-tab').forEach(t => {
+    t.classList.toggle('active', t.textContent === currentMode);
+  });
+
+  if (fields.length === 0) {
+    area.innerHTML = `<p style="font-size:13px;color:var(--text-dim);font-style:italic">No parameters needed for this mode.</p>`;
+    return;
+  }
+
+  const checkboxes = fields.filter(f => f.type === 'checkbox');
+  const inputs     = fields.filter(f => f.type !== 'checkbox');
+
+  let html = `<div class="form-grid">`;
+  inputs.forEach(f => {
+    html += `<div class="form-group">
+      <label for="f_${f.id}">${f.label}${f.required?'<span class="req">*</span>':''}${f.hint?`<span class="tip">${f.hint}</span>`:''}
+      </label>`;
+    if (f.type === 'select') {
+      html += `<select id="f_${f.id}">`;
+      f.options.forEach(o => { html += `<option value="${o}">${o}</option>`; });
+      html += `</select>`;
+    } else {
+      html += `<input type="text" id="f_${f.id}" placeholder="${f.placeholder||''}" />`;
+    }
+    html += `</div>`;
+  });
+  html += `</div>`;
+
+  if (checkboxes.length > 0) {
+    html += `<div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:4px;">`;
+    checkboxes.forEach(f => {
+      html += `<div class="checkbox-row">
+        <input type="checkbox" id="f_${f.id}" />
+        <label for="f_${f.id}">${f.label}${f.hint?` <span style="opacity:0.6;font-size:10px">(${f.hint})</span>`:''}</label>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  area.innerHTML = html;
+}
+
+function getValues() {
+  const tool = TOOLS[currentTool];
+  const fields = tool.fields[currentMode] || [];
+  const v = {};
+  fields.forEach(f => {
+    const el = document.getElementById(`f_${f.id}`);
+    if (!el) return;
+    if (f.type === 'checkbox') v[f.id] = el.checked;
+    else v[f.id] = el.value.trim();
+  });
+  return v;
+}
+
+function generateCommand() {
+  const tool = TOOLS[currentTool];
+  const v = getValues();
+  let cmd;
+  try {
+    cmd = tool.build(currentMode, v);
+  } catch(e) {
+    cmd = '# Error building command: ' + e.message;
+  }
+  if (!cmd) cmd = '# Could not build command — check required fields.';
+
+  const pre = document.getElementById('outputPre');
+  pre.textContent = cmd;
+  pre.classList.remove('empty');
+
+  // Add to history
+  history.unshift({ tool: tool.name, mode: currentMode, cmd });
+  if (history.length > 20) history.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (!list) return;
+  if (history.length === 0) {
+    list.innerHTML = `<div class="history-empty">No commands generated yet.</div>`;
+    return;
+  }
+  list.innerHTML = history.map((h,i) => `
+    <div class="history-item" onclick="loadHistory(${i})">
+      <span class="hi-cmd">${escHtml(h.cmd.split('\n')[0])}</span>
+      <span class="hi-tool">${escHtml(h.tool)}</span>
+    </div>
+  `).join('');
+}
+
+function loadHistory(i) {
+  const h = history[i];
+  if (!h) return;
+  const pre = document.getElementById('outputPre');
+  if (pre) {
+    pre.textContent = h.cmd;
+    pre.classList.remove('empty');
+  }
+}
+
+function copyCommand() {
+  const pre = document.getElementById('outputPre');
+  if (!pre || pre.classList.contains('empty')) return;
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    if (btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 1500); }
+  });
+}
+
+function clearOutput() {
+  const pre = document.getElementById('outputPre');
+  if (pre) {
+    pre.textContent = 'Fill in the fields above and click Generate →';
+    pre.classList.add('empty');
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+renderPanel();
+</script>
+
+</body>
+</html>
