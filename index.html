@@ -61,6 +61,16 @@
     .mc-tag.green { background:rgba(63,185,80,0.08); color:var(--accent2); }
     .mc-tag.red   { background:rgba(247,129,102,0.08); color:var(--accent3); }
 
+    /* Command Builder Banner */
+    .cmd-builder-banner { background:linear-gradient(135deg,rgba(63,185,80,0.08) 0%,rgba(88,166,255,0.08) 100%); border:1px solid rgba(63,185,80,0.3); border-radius:var(--radius); padding:24px 28px; display:flex; align-items:center; gap:20px; max-width:960px; margin:0 auto 0; text-decoration:none; transition:border-color 0.15s,transform 0.15s; }
+    .cmd-builder-banner:hover { border-color:var(--accent2); transform:translateY(-2px); }
+    .cbb-icon { font-size:2.4rem; flex-shrink:0; }
+    .cbb-body { flex:1; }
+    .cbb-title { font-size:1.1rem; color:var(--text-head); font-weight:700; margin-bottom:4px; }
+    .cbb-title span { color:var(--accent2); }
+    .cbb-desc { font-size:13px; color:var(--text-dim); line-height:1.5; }
+    .cbb-arrow { font-size:1.4rem; color:var(--accent2); flex-shrink:0; }
+
     /* Tools section */
     .tools-section { background:var(--bg-card); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:60px 40px; }
     .tools-inner { max-width:960px; margin:0 auto; }
@@ -99,6 +109,7 @@
       <a href="#curriculum">Curriculum</a>
       <a href="#tools">Tools</a>
       <a href="#prereqs">Prerequisites</a>
+      <a href="wifi-command-builder/" style="color:var(--accent2);font-weight:600">⚡ Command Builder</a>
     </div>
   </nav>
 
@@ -115,6 +126,17 @@
       <div class="stat"><div class="sv">25+</div><div class="sl">Tools Covered</div></div>
       <div class="stat"><div class="sv">5</div><div class="sl">Attack Chains</div></div>
     </div>
+  </div>
+
+  <div style="padding:32px 40px 0;max-width:960px;margin:0 auto;">
+    <a href="wifi-command-builder/" class="cmd-builder-banner">
+      <span class="cbb-icon">⚡</span>
+      <div class="cbb-body">
+        <div class="cbb-title">WiFi <span>Command Builder</span> — New Tool!</div>
+        <div class="cbb-desc">Like nmap/Zenmap but for Wi-Fi. Fill in the fields and instantly generate ready-to-run commands for airodump-ng, aireplay-ng, hashcat, reaver, hcxdumptool, mdk4, bettercap, tshark and more.</div>
+      </div>
+      <span class="cbb-arrow">→</span>
+    </a>
   </div>
 
   <div class="curriculum" id="curriculum">
